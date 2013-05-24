@@ -11,3 +11,13 @@
 *.lai
 *.la
 *.a
+
+# CMake local files
+/CMakeCache.txt
+/CMakeFiles
+/cmake_install.cmake
+/Makefile
+
+# Compilation outputs
+/bin
+/lib
