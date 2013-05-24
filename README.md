@@ -16,7 +16,9 @@ alternatives (e.g. [ARToolKit](http://www.hitl.washington.edu/artoolkit/), or
 [reacTIVision](http://reactivision.sourceforge.net/), among many others), but
 we decided to release Chilitags anyway, as there seemed to be a demand for it.
 
-
+[Watch a video of CHILI tag in
+action](http://www.youtube.com/watch?v=F_gSwHZ2u1Y), in a real experiment with
+kids.
 
 Overview
 --------
@@ -145,7 +147,6 @@ for a research project.  Let us make that easy for you:
  * Chilitags, Robust Fiducial Markers for Augmented Reality. Q. Bonnard, G.
    Zufferey, A. Mazzei, S. Cuendet, N. Li, P. Dillenbourg. CHILI, EPFL,
    Switzerland. `http://chili.epfl.ch/`. 2013.
-
 
     @misc{chilitags,
         title = {Chilitags, Robust Fiducial Markers for Augmented Reality.},
