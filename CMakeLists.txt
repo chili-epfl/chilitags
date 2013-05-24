@@ -8,6 +8,9 @@ set(CPACK_PACKAGE_VERSION_PATCH "0")
 
 add_subdirectory (src/lib)
 
+# documentation generation
+include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
+
 ##########################################
 ##           Options                   ###
 ##########################################
