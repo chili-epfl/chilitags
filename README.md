@@ -98,18 +98,23 @@ following commands:
 
  * `sudo apt-get install libopencv-dev cmake`
 
- to install the OpenCV libraries and cmake
+ to install the OpenCV libraries and `cmake`
 
- * `cmake .`
+ * `mkdir build && cd build`
+ * `cmake ..`
 
- in the root folder of this release to generate the makefile
+ to generate the `makefile`
 
  * `make`
  
  to compile `detector` and `creator` in the `bin` folder, linked against the
  `libchilitags.so` library in the `lib` folder.
 
- * `bin/detector` to start the sample program with default parameters for the camera.
+ * `sudo make install`
+
+to install the library system-wide (see `CMake` options to install in another prefix).
+
+ * `detector` to start the sample program with default parameters for the camera.
 
 ### Markers Generation
 
