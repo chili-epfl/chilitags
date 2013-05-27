@@ -16,9 +16,9 @@ alternatives (e.g. [ARToolKit](http://www.hitl.washington.edu/artoolkit/), or
 [reacTIVision](http://reactivision.sourceforge.net/), among many others), but
 we decided to release Chilitags anyway, as there seemed to be a demand for it.
 
-[Watch a video of CHILI tag in
-action](http://www.youtube.com/watch?v=F_gSwHZ2u1Y), in a real experiment with
-kids.
+The following videos show real applications of Chilitags for research in [tangible
+learning](http://youtu.be/vnlLeCYxmCs) or [paper-based
+interfaces](http://youtu.be/F_gSwHZ2u1Y).
 
 Overview
 --------
@@ -49,9 +49,6 @@ case scenario for the sample code running in real time on a single thread of an
 Intel Core i7-620m, with a camera set for 960x720x30fps, in an unevenly lit,
 large scene.
 
-Other videos show real applications of CHilitags for reasearch in [tangible
-learning](http://youtu.be/vnlLeCYxmCs) or [paper-based
-interfaces](http://youtu.be/F_gSwHZ2u1Y).
 
 
 ### Content
@@ -101,26 +98,30 @@ following commands:
  to install the OpenCV libraries and `cmake`
 
  * `mkdir build && cd build`
+
+ to create the `build` folder where the compilation output will be placed
+
  * `cmake ..`
 
  to generate the `makefile`
 
  * `make`
  
- to compile `detector` and `creator` in the `bin` folder, linked against the
- `libchilitags.so` library in the `lib` folder.
+ to compile `detector` and `creator` in the `build` folder.
 
  * `sudo make install`
 
-to install the library system-wide (see `CMake` options to install in another prefix).
+ to install the library system-wide (see `CMake` options to install in another prefix).
 
- * `detector` to start the sample program with default parameters for the camera.
+ * `./detector`
+ 
+ to start the sample program with default parameters for the camera.
 
 ### Markers Generation
 
 Once the software is up and running, the markers can be generated using the
 `creator` executable.  We also [generated sets of
-markers](http://chili.epfl.ch/TODO) with various settings.
+markers](http://chili.epfl.ch/files/content/sites/chili/files/files/tags.zip) with various settings.
 
 The `README` file accompanying `creator` gives important guidelines on how to
 design and print chilitags.  It also explains the usage of `creator`.
