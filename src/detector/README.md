@@ -19,7 +19,7 @@ Usage of `detector`
 *x-res y-res* are the resolution parameter to give to the camera.
 By default, `detector` grabs 640x480 images.
 
-*camera-index* is the index of the camera to use to grabe images.
+*camera-index* is the index of the camera to use to grab images.
 By default, it is 0.
 If multiple cameras are attached to the computer, you can select them by increasing the index.
 For example, 1 is the second camera attached to the computer.

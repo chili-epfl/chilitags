@@ -1,4 +1,4 @@
-Chilitags, Robust Fiducial Markers for Augmented Reality
+Chilitags: Robust Fiducial Markers for Augmented Reality
 ========================================================
 
 Chilitags are a C++ cross-platform software library for the detection and
@@ -148,21 +148,21 @@ terms (but you don't have to share the sources of the rest of your software).
 You should also credit the authors.
 
 We especially appreciate a reference in your paper, should you use Chilitags
-for a research project.  Let us make that easy for you:
+for a research project. Let us make that easy for you:
 
- * Chilitags, Robust Fiducial Markers for Augmented Reality. Q. Bonnard, G.
+ * Chilitags: Robust Fiducial Markers for Augmented Reality. Q. Bonnard, G.
    Zufferey, A. Mazzei, S. Cuendet, N. Li, P. Dillenbourg. CHILI, EPFL,
    Switzerland. `http://chili.epfl.ch/`. 2013.
 
-    @misc{chilitags,
-        title = {Chilitags, Robust Fiducial Markers for Augmented Reality.},
-        author={Q. Bonnard, G. Zufferey, A. Mazzei, S. Cuendet, N. Li, P. Dillenbourg},
-        publisher={CHILI, EPFL, Switzerland},
-        url={http://chili.epfl.ch/TODO},
-        year={2013},
-    }
+	@misc{chilitags,
+		title = {Chilitags: Robust Fiducial Markers for Augmented Reality.},
+		author={Bonnard, Quentin and Zufferey, Guillaume and Mazzei, Andrea and Cuendet, S\'{e}bastien and Li, Nan and Dillenbourg, Pierre},
+		publisher={CHILI, EPFL, Switzerland},
+		url={http://chili.epfl.ch/software},
+		year={2013}
+	}
 
-Should you require an different licence, please contact [CHILI](http://chili.epfl.ch).
+Should you require a different licence, please contact [CHILI](http://chili.epfl.ch).
 
 Contributing and Issues
 -----------------------
