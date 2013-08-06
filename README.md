@@ -154,6 +154,7 @@ for a research project. Let us make that easy for you:
    Zufferey, A. Mazzei, S. Cuendet, N. Li, P. Dillenbourg. CHILI, EPFL,
    Switzerland. `http://chili.epfl.ch/`. 2013.
 
+```
 	@misc{chilitags,
 		title = {Chilitags: Robust Fiducial Markers for Augmented Reality.},
 		author={Bonnard, Quentin and Zufferey, Guillaume and Mazzei, Andrea and Cuendet, S\'{e}bastien and Li, Nan and Dillenbourg, Pierre},
@@ -161,6 +162,7 @@ for a research project. Let us make that easy for you:
 		url={http://chili.epfl.ch/software},
 		year={2013}
 	}
+```
 
 Should you require a different licence, please contact [CHILI](http://chili.epfl.ch).
 
@@ -168,11 +170,11 @@ Contributing and Issues
 -----------------------
 
 This release intends to be minimal, with only the core functionality of
-Chilitags: given an image, identify which tag is where.  Such a release is
-especially adapted to developers who want to embed marker detection in their
-C++ application.  More user-friendly releases (e.g. bindings to other
-languages, TUIO wrapper, etc.) or additional features (tracking, calibration,
-3D postions, etc.) may come in further releases.
+Chilitags: given an image, identify which tag is where. Additional features
+(tracking, calibration, 3D positions, etc.) may come in further releases.
+The current release is especially adapted to developers who want to embed
+marker detection in their C++ application. A [TUIO server for chilitags](https://github.com/qbonnard/chilitags-tuio)
+allows the use of chilitags with other, independent applications. 
 
 Despite the efforts done to extract this release from "research code",
 Chilitags can easily be improved on the software engineering level.  Chilitags
