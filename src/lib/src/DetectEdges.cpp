@@ -24,7 +24,7 @@ chilitags::DetectEdges::DetectEdges(
         const int pLowThreshold,
         const int pHighThreshold,
         const int pApertureSize,
-        const IplImage *const *pInputImage
+        const cv::Mat *pInputImage
         ) :
 	mLowThreshold(pLowThreshold),
 	mHighThreshold(pHighThreshold),
@@ -41,7 +41,7 @@ chilitags::DetectEdges::~DetectEdges()
 
 void chilitags::DetectEdges::run()
 {
-	const IplImage *const tInputImage = *mInputImage;
+	const cv::Mat tInputImage = *mInputImage;
 	CvConvenience::matchImageFormats(tInputImage, &mOutputImage, true);
 	cvCanny(tInputImage,mOutputImage,mLowThreshold,mHighThreshold,mApertureSize);
 }

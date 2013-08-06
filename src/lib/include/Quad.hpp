@@ -31,30 +31,30 @@ namespace chilitags {
 struct Quad {
 
 	static const size_t scNPoints = 4;
-	CvPoint2D32f mCorners[scNPoints];
+	cv::Point2f mCorners[scNPoints];
 
 	Quad() { }
 
-	Quad(const CvPoint2D32f pCorners[4]) {
+	Quad(const cv::Point2f pCorners[4]) {
 		for (size_t i=0; i<Quad::scNPoints; ++i) mCorners[i] = pCorners[i];
 	}
 
 
-	CvPoint2D32f &operator [](size_t pIndex) {
+	cv::Point2f &operator [](size_t pIndex) {
 		return mCorners[pIndex];
 	}
 
-	const CvPoint2D32f &operator [] (size_t pIndex) const {
+	const cv::Point2f &operator [] (size_t pIndex) const {
 		return mCorners[pIndex];
 	}
 
 	// Returns the intersection of the diagonals.
-	CvPoint2D32f getCenter() const {
+	cv::Point2f getCenter() const {
 		using namespace CvConvenience;
 
-		CvPoint2D32f d1 = mCorners[2] - mCorners[0];
-		CvPoint2D32f d2 = mCorners[3] - mCorners[1];
-		CvPoint2D32f d3 = mCorners[0] - mCorners[1];
+		cv::Point2f d1 = mCorners[2] - mCorners[0];
+		cv::Point2f d2 = mCorners[3] - mCorners[1];
+		cv::Point2f d3 = mCorners[0] - mCorners[1];
 
 		float ratio = cross(d1, d2);
 
@@ -69,15 +69,15 @@ struct Quad {
 	// Returns the area of the quadrilateral
 	float getScale() const {
 		using namespace CvConvenience;
-		CvPoint2D32f d1 = mCorners[2] - mCorners[0];
-		CvPoint2D32f d2 = mCorners[3] - mCorners[1];
+		cv::Point2f d1 = mCorners[2] - mCorners[0];
+		cv::Point2f d2 = mCorners[3] - mCorners[1];
 		return 0.5f*cross(d1, d2);
 	}
 
 	// Returns the orientation in gradian of the top-left to top-right vector
 	float getAngle() const {
 		using namespace CvConvenience;
-		CvPoint2D32f tTopLine = mCorners[1]-mCorners[0];
+		cv::Point2f tTopLine = mCorners[1]-mCorners[0];
 		return std::atan2(tTopLine.y, tTopLine.x);
 	}
 

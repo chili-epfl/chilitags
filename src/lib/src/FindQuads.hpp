@@ -29,7 +29,7 @@ namespace chilitags {
 class FindQuads : public Pipeable
 {
 public:
-FindQuads(const IplImage *const *pBinaryImage);
+FindQuads(const cv::Mat *pBinaryImage);
 ~FindQuads();
 
 const Quad *const *QuadCorners() const {
@@ -42,9 +42,9 @@ const size_t *NumQuads() const {
 protected:
 virtual void run();
 
-const IplImage *const *mBinaryImage;
+const cv::Mat *mBinaryImage;
 static const int scScaledCopiesCount = 3;
-IplImage *mScaledCopies[scScaledCopiesCount];
+cv::Mat mScaledCopies[scScaledCopiesCount];
 CvMemStorage* mStorage;
 
 static const int scMaxNumQuads = 1000;

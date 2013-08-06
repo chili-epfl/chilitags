@@ -30,7 +30,7 @@
 #include "Refine.hpp"
 
 chilitags::DetectChilitags::DetectChilitags(
-        const IplImage *const *pInputImage,
+        const cv::Mat *pInputImage,
         Registrar &pRegistrar) :
 	mPipeline(0),
 	mPipeables(),

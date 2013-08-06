@@ -29,7 +29,7 @@ static const int scDataSize = 6;
 static const int scTagWarpZoom = 16;
 }
 
-chilitags::ReadBits::ReadBits(const IplImage *const *pInputImage) :
+chilitags::ReadBits::ReadBits(const cv::Mat *pInputImage) :
 	mBinarize(0.95f, 0.5f, pInputImage),
 	mMatrix(new unsigned char[scDataSize*scDataSize])
 {
@@ -47,7 +47,7 @@ chilitags::ReadBits::~ReadBits()
 void chilitags::ReadBits::run()
 {
 	mBinarize.start();
-	const IplImage * tBinarizedImage = *mBinarize.GetOutputImage();
+	const cv::Mat tBinarizedImage = *mBinarize.GetOutputImage();
 	unsigned char *tData = (unsigned char *) (tBinarizedImage)->imageData;
 	int tWidthStep = tBinarizedImage->widthStep;
 

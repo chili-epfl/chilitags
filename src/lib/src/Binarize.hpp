@@ -34,11 +34,11 @@ public:
 Binarize(
         float pThreshold,
         float pWindowSizePerc,
-        const IplImage *const *pInputImage);
+        const cv::Mat *pInputImage);
 
 virtual ~Binarize();
 
-const IplImage *const *GetOutputImage() const {
+const cv::Mat *GetOutputImage() const {
 	return &mOutputImage;
 };
 
@@ -47,11 +47,11 @@ void run();
 
 float mThreshold;
 float mWindowSizePerc;
-const IplImage *const *mInputImage;
+const cv::Mat *mInputImage;
 int mInputWidth;
 int mInputHeight;
-IplImage *mIntegralImage;
-IplImage *mOutputImage;
+cv::Mat mIntegralImage;
+cv::Mat mOutputImage;
 
 private:
 Binarize(const Binarize&);

@@ -20,98 +20,36 @@
 #ifndef CvConvenience_HPP
 #define CvConvenience_HPP
 
-#include <opencv2/core/types_c.h>
+#include <opencv2/core/core.hpp>
 
 // This namespace provides some conveninent operators and functions for
-// CvPoint2D32f. It also provides matchImageFormats(), which checks whether two
+// Point2f. It also provides matchImageFormats(), which checks whether two
 // images have an expected format, and adapt it if necessary.
 
 namespace CvConvenience {
-
-inline CvPoint2D32f operator *(const float pA, const CvPoint2D32f pB)
-{
-	CvPoint2D32f tResult = pB;
-	tResult.x *= pA;
-	tResult.y *= pA;
-	return tResult;
-}
-
-inline CvPoint2D32f operator -(const CvPoint2D32f pA, const CvPoint2D32f pB)
-{
-	CvPoint2D32f tResult = pA;
-	tResult.x -= pB.x;
-	tResult.y -= pB.y;
-	return tResult;
-}
-
-inline CvPoint2D32f operator +(const CvPoint2D32f pA, const CvPoint2D32f pB)
-{
-	CvPoint2D32f tResult = pA;
-	tResult.x += pB.x;
-	tResult.y += pB.y;
-	return tResult;
-}
 
 inline float square(float value){
 	return value*value;
 }
 
-inline float squaredNorm(CvPoint2D32f p) {
+inline float squaredNorm(cv::Point2f p) {
 	return square(p.x)+square(p.y);
 }
-inline float squaredDist(CvPoint2D32f a, CvPoint2D32f b){
+inline float squaredDist(cv::Point2f a, cv::Point2f b){
 	return squaredNorm(b-a);
 }
 
-inline float norm(CvPoint2D32f p) {
+inline float norm(cv::Point2f p) {
 	return std::sqrt(squaredNorm(p));
 }
-inline float dist(CvPoint2D32f a, CvPoint2D32f b) {
+inline float dist(cv::Point2f a, cv::Point2f b) {
 	return norm(a-b);
 }
 
-inline float cross(CvPoint2D32f a, CvPoint2D32f b){
+inline float cross(cv::Point2f a, cv::Point2f b){
 	return a.x*b.y - a.y*b.x;
 }
 
-
-
-inline bool matchImageFormats(int pWidth, int pHeight, IplImage **pDstImage)
-{
-	if (pWidth != (*pDstImage)->width
-	    || pHeight != (*pDstImage)->height)
-	{
-		int tDepth = (*pDstImage)->depth;
-		int tChannels = (*pDstImage)->nChannels;
-		cvReleaseImage(pDstImage);
-		*pDstImage = cvCreateImage(cvSize(pWidth, pHeight), tDepth, tChannels);
-		return true;
-	}
-	return false;
-}
-
-inline bool matchImageFormats(int pWidth, int pHeight, int pDepth, int pNChannels, IplImage **pDstImage)
-{
-	if (pWidth != (*pDstImage)->width
-	    || pHeight != (*pDstImage)->height
-	    || pDepth != (*pDstImage)->depth
-	    || pNChannels != (*pDstImage)->nChannels)
-	{
-		cvReleaseImage(pDstImage);
-		*pDstImage = cvCreateImage(cvSize(pWidth, pHeight), pDepth, pNChannels);
-		return true;
-	}
-	return false;
-}
-
-inline bool matchImageFormats(const IplImage *pSrcImage, IplImage **pDstImage, bool pSizeOnly = false)
-{
-	if (pSizeOnly)
-	{
-		return matchImageFormats(pSrcImage->width, pSrcImage->height, pDstImage);
-	}
-	return matchImageFormats(pSrcImage->width, pSrcImage->height, pSrcImage->depth, pSrcImage->nChannels, pDstImage);
-}
 }
 
 #endif

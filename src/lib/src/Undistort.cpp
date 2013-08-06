@@ -37,7 +37,7 @@ const int scTagWarpZoom = 16;
 }
 
 chilitags::Undistort::Undistort(
-        const IplImage *const *pInputImage,
+        const cv::Mat *pInputImage,
         const Quad *pCorners) :
 	mInputImage(pInputImage),
 	mCorners(pCorners),

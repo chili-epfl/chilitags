@@ -30,11 +30,11 @@
 namespace {
 const float scClose = 1.0f/10.0f;
 const float scFar = 1.0f-scClose;
-const CvScalar scWhite = CV_RGB(255,255,255);
-const CvScalar scBlack = CV_RGB(0, 0, 0);
+const cv::Scalar scWhite = CV_RGB(255,255,255);
+const cv::Scalar scBlack = CV_RGB(0, 0, 0);
 const float scMaxRefinement = 4.0f;
 
-CvRect findBoundingBox(const CvPoint2D32f *pCorners) {
+CvRect findBoundingBox(const cv::Point2f *pCorners) {
 	float tMinX = pCorners[0].x;
 	float tMaxX = pCorners[0].x;
 	float tMinY = pCorners[0].y;
@@ -57,21 +57,21 @@ CvRect findROI(const CvRect &pMinimalROI) {
 }
 
 chilitags::Refine::Refine(
-        const IplImage *const *pInputImage,
+        const cv::Mat *pInputImage,
         const int *pDecodedTag,
         Registrar &pRegistrar) :
 	mInputImage(pInputImage),
 	mDecodedTag(pDecodedTag),
 	mBoundingBox(cvRect(0,0,1,1)),
 	mROI(findROI(mBoundingBox)),
-	mInternalCorners(new CvPoint[Quad::scNPoints]),
-	mROICopy(cvCreateImage(cvSize(mROI.width, mROI.height), (*mInputImage)->depth, (*mInputImage)->nChannels)),
-	mMask(cvCloneImage(mROICopy)),
-	mTempImg(cvCreateImage(cvGetSize(mROICopy), IPL_DEPTH_32F, 1)),
-	mEigenImg(cvCloneImage(mTempImg)),
+	mInternalCorners(new cv::Point[Quad::scNPoints]),
+	mROICopy(),
+	mMask(),
+	mTempImg(),
+	mEigenImg(),
 	mNCorners(Quad::scNPoints),
-	mRefinedCorners(new CvPoint2D32f[mNCorners]),
-	mOrderedCorners(new CvPoint2D32f[mNCorners]),
+	mRefinedCorners(new cv::Point2f[mNCorners]),
+	mOrderedCorners(new cv::Point2f[mNCorners]),
 	mRegistrar(pRegistrar)
 {
 #ifdef DEBUG_Refine
@@ -83,10 +83,6 @@ chilitags::Refine::~Refine()
 {
 	delete []mOrderedCorners;
 	delete []mRefinedCorners;
-	cvReleaseImage(&mEigenImg);
-	cvReleaseImage(&mTempImg);
-	cvReleaseImage(&mMask);
-	cvReleaseImage(&mROICopy);
 	delete []mInternalCorners;
 }
 
@@ -95,9 +91,9 @@ void chilitags::Refine::run()
 	int tDecodedTag = *mDecodedTag;
 	if (tDecodedTag > -1)
 	{
-		IplImage * tInputImage = (IplImage *) *mInputImage; //const cast: just changing and restoring the ROI
+		cv::Mat tInputImage = (cv::Mat) *mInputImage; //const cast: just changing and restoring the ROI
 
-		const CvPoint2D32f *tInputCorners = mRegistrar.getCorners(tDecodedTag);
+		const cv::Point2f *tInputCorners = mRegistrar.getCorners(tDecodedTag);
 		mNCorners = Quad::scNPoints;
 		mBoundingBox = findBoundingBox(tInputCorners);
 		mROI = findROI(mBoundingBox);

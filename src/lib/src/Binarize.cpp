@@ -29,7 +29,7 @@
 chilitags::Binarize::Binarize(
         float pThreshold,
         float pWindowSizePerc,
-        const IplImage *const *pInputImage) :
+        const cv::Mat *pInputImage) :
 	mThreshold(pThreshold),
 	mWindowSizePerc(pWindowSizePerc),
 	mInputImage(pInputImage),
@@ -49,7 +49,7 @@ chilitags::Binarize::~Binarize(){
 }
 
 void chilitags::Binarize::run(){
-	const IplImage *const tInputImage= *mInputImage;
+	const cv::Mat tInputImage= *mInputImage;
 	if (CvConvenience::matchImageFormats(tInputImage, &mOutputImage, true))
 	{
 		mInputWidth = tInputImage->width;

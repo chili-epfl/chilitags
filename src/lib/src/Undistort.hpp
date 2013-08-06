@@ -30,9 +30,9 @@ class Undistort : public Pipeable
 {
 public:
 Undistort(
-        const IplImage *const *pInputImage,
+        const cv::Mat *pInputImage,
         const Quad *pCorners);
-const IplImage *const *GetOutputImage() const {
+const cv::Mat *GetOutputImage() const {
 	return &mUndistortedTag;
 }
 
@@ -41,14 +41,14 @@ virtual ~Undistort();
 protected:
 void run();
 
-const IplImage *const *mInputImage;
+const cv::Mat *mInputImage;
 const Quad *mCorners;
 
-CvPoint2D32f mSrcBoundaries[4];
-CvPoint2D32f mDstBoundaries[4];
+cv::Point2f mSrcBoundaries[4];
+cv::Point2f mDstBoundaries[4];
 CvMat *mTransformation;
 
-IplImage *mUndistortedTag;
+cv::Mat mUndistortedTag;
 
 private:
 Undistort(const Undistort&);

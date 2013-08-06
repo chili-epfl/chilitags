@@ -39,7 +39,7 @@ bool isTheSame(const chilitags::Quad &pQuad, float pP0X, float pP0Y, float pP1X,
 }
 
 chilitags::FindQuads::FindQuads(
-        const IplImage *const *pBinaryImage) :
+        const cv::Mat *pBinaryImage) :
 	mBinaryImage(pBinaryImage),
 	mStorage(cvCreateMemStorage()),
 	mQuadsCorners(new Quad[scMaxNumQuads]),
@@ -69,10 +69,10 @@ void chilitags::FindQuads::run()
 {
 	cvClearMemStorage(mStorage);
 	mNumQuads = 0;
-	const IplImage *const tBinaryImage = *mBinaryImage;
+	const cv::Mat tBinaryImage = *mBinaryImage;
 #ifdef DEBUG_FindQuads
-	IplImage *tContourImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
-	IplImage *tNoiseImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
+	cv::MattContourImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
+	cv::MattNoiseImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
 #endif
 
 	if (CvConvenience::matchImageFormats(tBinaryImage, &(mScaledCopies[0])))
@@ -108,10 +108,10 @@ void chilitags::FindQuads::run()
 				    && cvCheckContourConvexity(tApproxContourSeq))
 				{
 					//FIXME: take the right points, not simply the first 4
-					CvPoint* tPoint0 = (CvPoint*) cvGetSeqElem(tApproxContourSeq, 1);
-					CvPoint* tPoint1 = (CvPoint*) cvGetSeqElem(tApproxContourSeq, 0);
-					CvPoint* tPoint2 = (CvPoint*) cvGetSeqElem(tApproxContourSeq, 2);
-					CvPoint* tPoint3 = (CvPoint*) cvGetSeqElem(tApproxContourSeq, 3);
+					cv::Point* tPoint0 = (cv::Point*) cvGetSeqElem(tApproxContourSeq, 1);
+					cv::Point* tPoint1 = (cv::Point*) cvGetSeqElem(tApproxContourSeq, 0);
+					cv::Point* tPoint2 = (cv::Point*) cvGetSeqElem(tApproxContourSeq, 2);
+					cv::Point* tPoint3 = (cv::Point*) cvGetSeqElem(tApproxContourSeq, 3);
 					float tP0X = (float)(tPoint0->x*tScale);
 					float tP0Y = (float)(tPoint0->y*tScale);
 					float tP1X = (float)(tPoint1->x*tScale);

@@ -29,7 +29,7 @@ namespace chilitags {
 class ReadBits : public Pipeable
 {
 public:
-ReadBits(const IplImage *const *pInputImage);
+ReadBits(const cv::Mat *pInputImage);
 const unsigned char *const *GetBits() const {
 	return &mMatrix;
 }

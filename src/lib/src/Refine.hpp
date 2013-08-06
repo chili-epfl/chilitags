@@ -31,32 +31,32 @@ class Refine : public Pipeable
 public:
 
 Refine(
-        const IplImage *const *pInputImage,
+        const cv::Mat *pInputImage,
         const int *pDecodedTag,
         Registrar &pRegistrar);
 virtual ~Refine();
 
-const CvPoint2D32f*const *GetRefinedCorners() const {
+const cv::Point2f*const *GetRefinedCorners() const {
 	return &mOrderedCorners;
 }
 
 protected:
 void run();
 
-const IplImage *const *mInputImage;
+const cv::Mat *mInputImage;
 const int *mDecodedTag;
 
 CvRect mBoundingBox;
 CvRect mROI;
-CvPoint *mInternalCorners;
-IplImage *mROICopy;
-IplImage *mMask;
-IplImage *mTempImg;
-IplImage *mEigenImg;
+cv::Point *mInternalCorners;
+cv::Mat mROICopy;
+cv::Mat mMask;
+cv::Mat mTempImg;
+cv::Mat mEigenImg;
 
 int mNCorners;
-CvPoint2D32f* mRefinedCorners;
-CvPoint2D32f* mOrderedCorners;
+cv::Point2f* mRefinedCorners;
+cv::Point2f* mOrderedCorners;
 
 Registrar &mRegistrar;
 

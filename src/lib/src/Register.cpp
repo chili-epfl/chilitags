@@ -43,7 +43,7 @@ void chilitags::Register::run()
 	{
 		int tRotation = *mRotation;
 		const Quad tCorners = *mCorners;
-		CvPoint2D32f tOrientedCorners[4];
+		cv::Point2f tOrientedCorners[4];
 		for (size_t i = 0; i < Quad::scNPoints; ++i) {
 			tOrientedCorners[i] = tCorners[(i+tRotation)%4];
 		}
