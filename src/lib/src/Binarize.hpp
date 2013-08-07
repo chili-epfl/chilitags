@@ -48,8 +48,6 @@ void run();
 float mThreshold;
 float mWindowSizePerc;
 const cv::Mat *mInputImage;
-int mInputWidth;
-int mInputHeight;
 cv::Mat mIntegralImage;
 cv::Mat mOutputImage;
 

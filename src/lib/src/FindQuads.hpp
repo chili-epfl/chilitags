@@ -45,7 +45,6 @@ virtual void run();
 const cv::Mat *mBinaryImage;
 static const int scScaledCopiesCount = 3;
 cv::Mat mScaledCopies[scScaledCopiesCount];
-CvMemStorage* mStorage;
 
 static const int scMaxNumQuads = 1000;
 Quad *const mQuadsCorners;

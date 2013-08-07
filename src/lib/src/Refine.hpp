@@ -36,7 +36,7 @@ Refine(
         Registrar &pRegistrar);
 virtual ~Refine();
 
-const cv::Point2f*const *GetRefinedCorners() const {
+const std::vector<cv::Point2f> *GetRefinedCorners() const {
 	return &mOrderedCorners;
 }
 
@@ -46,17 +46,15 @@ void run();
 const cv::Mat *mInputImage;
 const int *mDecodedTag;
 
-CvRect mBoundingBox;
-CvRect mROI;
+cv::Rect mBoundingBox;
+cv::Rect mROI;
 cv::Point *mInternalCorners;
 cv::Mat mROICopy;
 cv::Mat mMask;
-cv::Mat mTempImg;
-cv::Mat mEigenImg;
 
 int mNCorners;
-cv::Point2f* mRefinedCorners;
-cv::Point2f* mOrderedCorners;
+std::vector<cv::Point2f> mRefinedCorners;
+std::vector<cv::Point2f> mOrderedCorners;
 
 Registrar &mRegistrar;
 

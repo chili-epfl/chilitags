@@ -41,15 +41,9 @@ bool isTheSame(const chilitags::Quad &pQuad, float pP0X, float pP0Y, float pP1X,
 chilitags::FindQuads::FindQuads(
         const cv::Mat *pBinaryImage) :
 	mBinaryImage(pBinaryImage),
-	mStorage(cvCreateMemStorage()),
 	mQuadsCorners(new Quad[scMaxNumQuads]),
 	mNumQuads(0)
 {
-	int tScale = 1;
-	for (int i = 0; i < scScaledCopiesCount; ++i) {
-		mScaledCopies[i] = cvCreateImage(cvSize((*pBinaryImage)->width/tScale,(*pBinaryImage)->height/tScale),(*pBinaryImage)->depth,(*pBinaryImage)->nChannels);
-		tScale <<= 1;
-	}
 #ifdef DEBUG_FindQuads
 	cvNamedWindow("contours");
 	cvNamedWindow("noise");
@@ -58,68 +52,63 @@ chilitags::FindQuads::FindQuads(
 
 chilitags::FindQuads::~FindQuads()
 {
-	for (int i = 0; i < scScaledCopiesCount; ++i) {
-		cvReleaseImage(&(mScaledCopies[i]));
-	}
 	delete [] mQuadsCorners;
-	cvReleaseMemStorage(&mStorage);
 }
 
 void chilitags::FindQuads::run()
 {
-	cvClearMemStorage(mStorage);
+	//TODO function too long, split it
+
 	mNumQuads = 0;
 	const cv::Mat tBinaryImage = *mBinaryImage;
 #ifdef DEBUG_FindQuads
-	cv::MattContourImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
-	cv::MattNoiseImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
+	cv::Mat tContourImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
+	cv::Mat tNoiseImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
 #endif
 
-	if (CvConvenience::matchImageFormats(tBinaryImage, &(mScaledCopies[0])))
-	{
-		int tScale = 2;
-		for (int i = 1; i < scScaledCopiesCount; ++i) {
-			CvConvenience::matchImageFormats(tBinaryImage->width/tScale, tBinaryImage->height/tScale, tBinaryImage->depth, tBinaryImage->nChannels, &(mScaledCopies[i]));
-			tScale <<= 1;
-		}
-	}
-
-	cvCopy(tBinaryImage, mScaledCopies[0]);
+	mScaledCopies[0] = tBinaryImage;
 	for (int i = 1; i < scScaledCopiesCount; ++i) {
-		cvPyrDown(mScaledCopies[i-1], mScaledCopies[i]);
+		cv::pyrDown(mScaledCopies[i-1], mScaledCopies[i]);
 	}
 
 	for (int i = scScaledCopiesCount-1; i>=0; --i) //starting with the lowest definition, so the highest definition are last, and can simply override the first ones.
 	{
 		int tScale = 1 << i;
-		CvSeq *tContourSeq = 0;
-		cvFindContours(mScaledCopies[i], mStorage, &tContourSeq, sizeof(CvContour), CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
+		std::vector<std::vector<cv::Point> > contours;
+		std::vector<cv::Vec4i> hierarchy;
+		cv::findContours(mScaledCopies[i], contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
 
-		for (; tContourSeq != 0; tContourSeq = tContourSeq->h_next)
+		for (std::vector<std::vector<cv::Point> >::iterator contour = contours.begin();
+			contour != contours.end();
+			++contour)
 		{
-			double tPerimeter = std::abs(cvArcLength(tContourSeq,CV_WHOLE_SEQ, 0));
-			double tArea = std::abs(cvContourArea(tContourSeq));
+			double tPerimeter = std::abs(cv::arcLength(*contour, false)); //FIXME? not sure about false
+			double tArea = std::abs(cv::contourArea(*contour));
 
 			if (tPerimeter > Quad::scNPoints*scMinTagSize && tArea > scMinTagSize*scMinTagSize)
 			{
-				CvSeq *tApproxContourSeq = cvApproxPoly( tContourSeq, sizeof(CvContour), mStorage, CV_POLY_APPROX_DP, cvContourPerimeter(tContourSeq)*0.02, 0);
+				std::vector<cv::Point> approxContour;
+				cv::approxPolyDP( *contour, approxContour, tPerimeter*0.02, false); //TODO not sure about false
 
-				if (tApproxContourSeq->total >= (int) Quad::scNPoints
-				    && cvCheckContourConvexity(tApproxContourSeq))
+				//TODO: get convex hull
+				//http://stackoverflow.com/questions/10533233/opencv-c-obj-c-advanced-square-detection
+
+				if (approxContour.size() >= (int) Quad::scNPoints
+				    && cv::isContourConvex(approxContour))
 				{
 					//FIXME: take the right points, not simply the first 4
-					cv::Point* tPoint0 = (cv::Point*) cvGetSeqElem(tApproxContourSeq, 1);
-					cv::Point* tPoint1 = (cv::Point*) cvGetSeqElem(tApproxContourSeq, 0);
-					cv::Point* tPoint2 = (cv::Point*) cvGetSeqElem(tApproxContourSeq, 2);
-					cv::Point* tPoint3 = (cv::Point*) cvGetSeqElem(tApproxContourSeq, 3);
-					float tP0X = (float)(tPoint0->x*tScale);
-					float tP0Y = (float)(tPoint0->y*tScale);
-					float tP1X = (float)(tPoint1->x*tScale);
-					float tP1Y = (float)(tPoint1->y*tScale);
-					float tP2X = (float)(tPoint2->x*tScale);
-					float tP2Y = (float)(tPoint2->y*tScale);
-					float tP3X = (float)(tPoint3->x*tScale);
-					float tP3Y = (float)(tPoint3->y*tScale);
+					cv::Point tPoint0 = approxContour[1];
+					cv::Point tPoint1 = approxContour[0];
+					cv::Point tPoint2 = approxContour[2];
+					cv::Point tPoint3 = approxContour[3];
+					float tP0X = (float)(tPoint0.x*tScale);
+					float tP0Y = (float)(tPoint0.y*tScale);
+					float tP1X = (float)(tPoint1.x*tScale);
+					float tP1Y = (float)(tPoint1.y*tScale);
+					float tP2X = (float)(tPoint2.x*tScale);
+					float tP2Y = (float)(tPoint2.y*tScale);
+					float tP3X = (float)(tPoint3.x*tScale);
+					float tP3Y = (float)(tPoint3.y*tScale);
 					unsigned int tQuadIndex = 0;
 					while (tQuadIndex < mNumQuads && !isTheSame(mQuadsCorners[tQuadIndex], tP0X, tP0Y, tP1X, tP1Y, tP2X, tP2Y, tP3X, tP3Y)) ++tQuadIndex;
 					if (tQuadIndex == mNumQuads) ++mNumQuads;

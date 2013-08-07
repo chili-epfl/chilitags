@@ -48,8 +48,7 @@ void chilitags::ReadBits::run()
 {
 	mBinarize.start();
 	const cv::Mat tBinarizedImage = *mBinarize.GetOutputImage();
-	unsigned char *tData = (unsigned char *) (tBinarizedImage)->imageData;
-	int tWidthStep = tBinarizedImage->widthStep;
+	int tWidthStep = tBinarizedImage.cols;
 
 #ifdef DEBUG_ReadBits
 	cvShowImage("ReadBits", tBinarizedImage);
@@ -66,7 +65,7 @@ void chilitags::ReadBits::run()
 				for(int x=0; x<scTagWarpZoom; ++x)
 				{
 					int tPosition = (scTagWarpZoom*i+y)*tWidthStep + j*scTagWarpZoom+x;
-					tVotesForWhite += tData[tPosition]/255;
+					tVotesForWhite += tBinarizedImage.at<char>(tPosition)/255;
 				}
 			}
 			mMatrix[i*scDataSize + j] = (tVotesForWhite > scTagWarpZoom*scTagWarpZoom/2);

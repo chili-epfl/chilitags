@@ -23,22 +23,20 @@
 chilitags::EnsureGreyscale::EnsureGreyscale(
         const cv::Mat *pInputImage) :
 	mInputImage(pInputImage),
-	mOutputImage(cvCreateImage(cvSize(1,1), IPL_DEPTH_8U, 1))
+	mOutputImage()
 {
 }
 
 chilitags::EnsureGreyscale::~EnsureGreyscale()
 {
-	cvReleaseImage(&mOutputImage);
 }
 
 void chilitags::EnsureGreyscale::run()
 {
 	const cv::Mat tInputImage = *mInputImage;
-	CvConvenience::matchImageFormats(tInputImage, &mOutputImage, true);
-	if (tInputImage->nChannels != 1) {
-		cvCvtColor(tInputImage, mOutputImage, CV_BGR2GRAY);
+	if (tInputImage.channels() != 1) {
+		cv::cvtColor(tInputImage, mOutputImage, CV_BGR2GRAY);
 	} else {
-		cvCopy(tInputImage, mOutputImage);
+		mOutputImage = tInputImage;
 	}
 }

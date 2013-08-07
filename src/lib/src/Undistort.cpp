@@ -41,18 +41,9 @@ chilitags::Undistort::Undistort(
         const Quad *pCorners) :
 	mInputImage(pInputImage),
 	mCorners(pCorners),
-	mTransformation(cvCreateMat(3, 3, CV_32FC1)),
-	mUndistortedTag(cvCreateImage(cvSize(scTagWarpZoom*scDataSize,scTagWarpZoom*scDataSize), (*pInputImage)->depth, (*pInputImage)->nChannels))
+	mTransformation(),
+	mUndistortedTag()
 {
-	mDstBoundaries[0].x = 0.0f;
-	mDstBoundaries[0].y = 0.0f;
-	mDstBoundaries[1].x = (float) mUndistortedTag->width;
-	mDstBoundaries[1].y = 0.0f;
-	mDstBoundaries[2].x = (float) mUndistortedTag->width;
-	mDstBoundaries[2].y = (float) mUndistortedTag->height;
-	mDstBoundaries[3].x = 0.0f;
-	mDstBoundaries[3].y = (float) mUndistortedTag->height;
-
 #ifdef DEBUG_Undistort
 	cvNamedWindow("Undistort");
 #endif
@@ -60,13 +51,20 @@ chilitags::Undistort::Undistort(
 
 chilitags::Undistort::~Undistort()
 {
-	cvReleaseImage(&mUndistortedTag);
-	cvReleaseMat(&mTransformation);
 }
 
 
 void chilitags::Undistort::run()
 {
+	mDstBoundaries[0].x = 0.0f;
+	mDstBoundaries[0].y = 0.0f;
+	mDstBoundaries[1].x = (float) mInputImage->cols;
+	mDstBoundaries[1].y = 0.0f;
+	mDstBoundaries[2].x = (float) mInputImage->cols;
+	mDstBoundaries[2].y = (float) mInputImage->rows;
+	mDstBoundaries[3].x = 0.0f;
+	mDstBoundaries[3].y = (float) mInputImage->rows;
+
 	mSrcBoundaries[2].x = (*mCorners)[0].x*scClose + (*mCorners)[2].x*scFar;
 	mSrcBoundaries[2].y = (*mCorners)[0].y*scClose + (*mCorners)[2].y*scFar;
 	mSrcBoundaries[3].x = (*mCorners)[1].x*scClose + (*mCorners)[3].x*scFar;
@@ -76,8 +74,8 @@ void chilitags::Undistort::run()
 	mSrcBoundaries[1].x = (*mCorners)[3].x*scClose + (*mCorners)[1].x*scFar;
 	mSrcBoundaries[1].y = (*mCorners)[3].y*scClose + (*mCorners)[1].y*scFar;
 
-	cvGetPerspectiveTransform(mSrcBoundaries, mDstBoundaries, mTransformation );
-	cvWarpPerspective(*mInputImage, mUndistortedTag, mTransformation, CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS, cvScalar(0, 0, 0));
+	mTransformation = cv::getPerspectiveTransform(mSrcBoundaries, mDstBoundaries);
+	cv::warpPerspective(*mInputImage, mUndistortedTag, mTransformation, mUndistortedTag.size());
 
 #ifdef DEBUG_Undistort
 	cout << *mCorners << endl;

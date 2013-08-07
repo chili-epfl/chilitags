@@ -46,7 +46,7 @@ const Quad *mCorners;
 
 cv::Point2f mSrcBoundaries[4];
 cv::Point2f mDstBoundaries[4];
-CvMat *mTransformation;
+cv::Mat mTransformation;
 
 cv::Mat mUndistortedTag;
 

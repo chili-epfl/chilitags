@@ -30,18 +30,15 @@ chilitags::DetectEdges::DetectEdges(
 	mHighThreshold(pHighThreshold),
 	mApertureSize(pApertureSize),
 	mInputImage(pInputImage),
-	mOutputImage(cvCreateImage(cvSize(1,1), IPL_DEPTH_8U,1))
+	mOutputImage()
 {
 }
 
 chilitags::DetectEdges::~DetectEdges()
 {
-	cvReleaseImage(&mOutputImage);
 }
 
 void chilitags::DetectEdges::run()
 {
-	const cv::Mat tInputImage = *mInputImage;
-	CvConvenience::matchImageFormats(tInputImage, &mOutputImage, true);
-	cvCanny(tInputImage,mOutputImage,mLowThreshold,mHighThreshold,mApertureSize);
+	cv::Canny(*mInputImage, mOutputImage,mLowThreshold,mHighThreshold,mApertureSize);
 }
