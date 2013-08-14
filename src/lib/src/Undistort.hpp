@@ -32,6 +32,7 @@ public:
 Undistort(
         const cv::Mat *pInputImage,
         const Quad *pCorners);
+
 const cv::Mat *GetOutputImage() const {
 	return &mUndistortedTag;
 }
@@ -44,9 +45,10 @@ void run();
 const cv::Mat *mInputImage;
 const Quad *mCorners;
 
+const cv::Size mSize;
+
 cv::Point2f mSrcBoundaries[4];
 cv::Point2f mDstBoundaries[4];
-cv::Mat mTransformation;
 
 cv::Mat mUndistortedTag;
 

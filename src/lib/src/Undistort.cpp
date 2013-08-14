@@ -19,12 +19,9 @@
 
 #include "Undistort.hpp"
 
-//#define DEBUG_Undistort
+#define DEBUG_Undistort
 #ifdef DEBUG_Undistort
 #include <opencv2/highgui/highgui.hpp>
-#include <iostream>
-using std::cout;
-using std::endl;
 #endif
 
 namespace {
@@ -41,11 +38,20 @@ chilitags::Undistort::Undistort(
         const Quad *pCorners) :
 	mInputImage(pInputImage),
 	mCorners(pCorners),
-	mTransformation(),
+	mSize(scTagWarpZoom*scDataSize, scTagWarpZoom*scDataSize),
 	mUndistortedTag()
 {
+	mDstBoundaries[0].x = 0.0f;
+	mDstBoundaries[0].y = 0.0f;
+	mDstBoundaries[1].x = (float) mSize.width;
+	mDstBoundaries[1].y = 0.0f;
+	mDstBoundaries[2].x = (float) mSize.width;
+	mDstBoundaries[2].y = (float) mSize.height;
+	mDstBoundaries[3].x = 0.0f;
+	mDstBoundaries[3].y = (float) mSize.height;
+
 #ifdef DEBUG_Undistort
-	cvNamedWindow("Undistort");
+	cv::namedWindow("Undistort");
 #endif
 }
 
@@ -56,30 +62,17 @@ chilitags::Undistort::~Undistort()
 
 void chilitags::Undistort::run()
 {
-	mDstBoundaries[0].x = 0.0f;
-	mDstBoundaries[0].y = 0.0f;
-	mDstBoundaries[1].x = (float) mInputImage->cols;
-	mDstBoundaries[1].y = 0.0f;
-	mDstBoundaries[2].x = (float) mInputImage->cols;
-	mDstBoundaries[2].y = (float) mInputImage->rows;
-	mDstBoundaries[3].x = 0.0f;
-	mDstBoundaries[3].y = (float) mInputImage->rows;
+	Quad tCorners = *mCorners;
+	mSrcBoundaries[0] = tCorners[0]*scClose + tCorners[2]*scFar;
+	mSrcBoundaries[1] = tCorners[1]*scClose + tCorners[3]*scFar;
+	mSrcBoundaries[2] = tCorners[2]*scClose + tCorners[0]*scFar;
+	mSrcBoundaries[3] = tCorners[3]*scClose + tCorners[1]*scFar;
 
-	mSrcBoundaries[2].x = (*mCorners)[0].x*scClose + (*mCorners)[2].x*scFar;
-	mSrcBoundaries[2].y = (*mCorners)[0].y*scClose + (*mCorners)[2].y*scFar;
-	mSrcBoundaries[3].x = (*mCorners)[1].x*scClose + (*mCorners)[3].x*scFar;
-	mSrcBoundaries[3].y = (*mCorners)[1].y*scClose + (*mCorners)[3].y*scFar;
-	mSrcBoundaries[0].x = (*mCorners)[2].x*scClose + (*mCorners)[0].x*scFar;
-	mSrcBoundaries[0].y = (*mCorners)[2].y*scClose + (*mCorners)[0].y*scFar;
-	mSrcBoundaries[1].x = (*mCorners)[3].x*scClose + (*mCorners)[1].x*scFar;
-	mSrcBoundaries[1].y = (*mCorners)[3].y*scClose + (*mCorners)[1].y*scFar;
-
-	mTransformation = cv::getPerspectiveTransform(mSrcBoundaries, mDstBoundaries);
-	cv::warpPerspective(*mInputImage, mUndistortedTag, mTransformation, mUndistortedTag.size());
+	cv::Matx33f tTransformation = cv::getPerspectiveTransform(mSrcBoundaries, mDstBoundaries);
+	cv::warpPerspective(*mInputImage, mUndistortedTag, tTransformation, mSize);
 
 #ifdef DEBUG_Undistort
-	cout << *mCorners << endl;
-	cvShowImage("Undistort", mUndistortedTag);
+	cv::imshow("Undistort", mUndistortedTag);
 	cvWaitKey(0);
 #endif
 }
