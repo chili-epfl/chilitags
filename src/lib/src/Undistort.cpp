@@ -28,8 +28,8 @@ namespace {
 const int scTagMargin = 2;
 const int scDataSize = 6;
 const int scTagSize = scDataSize+2*scTagMargin;
-const float scClose = scTagMargin/(float) scTagSize;
-const float scFar = 1.0f - scClose;
+const float scFar = scTagMargin/(float) scTagSize;
+const float scClose = 1.0f - scFar;
 const int scTagWarpZoom = 16;
 }
 
