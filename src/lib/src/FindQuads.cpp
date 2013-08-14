@@ -30,39 +30,41 @@ namespace {
 const int scMatrixSize = 10;
 const int scMinTagSize = 2*scMatrixSize;
 
-bool isTheSame(const chilitags::Quad &pQuad, float pP0X, float pP0Y, float pP1X, float pP1Y, float pP2X, float pP2Y, float pP3X, float pP3Y)
-{
-	static const int scEpsilon = chilitags::Quad::scNPoints*1;
-	float tDistSum = pP0X+pP0Y+pP1X+pP1Y+pP2X+pP2Y+pP3X+pP3Y-pQuad[0].x-pQuad[0].y-pQuad[1].x-pQuad[1].y-pQuad[2].x-pQuad[2].y-pQuad[3].x-pQuad[3].y;
-	return -scEpsilon < tDistSum && tDistSum < scEpsilon;
-}
+struct IsSimilarTo{
+	IsSimilarTo(chilitags::Quad pQuad):mQuad(pQuad){}
+	bool operator()(const chilitags::Quad &pQuad) {
+		// TODO make it function of the dist
+		static const int scEpsilon = chilitags::Quad::scNPoints*1;
+		// TODO no seriously, do something
+		float tDistSum = mQuad[0].x+mQuad[0].y+mQuad[1].x+mQuad[1].y+mQuad[2].x+mQuad[2].y+mQuad[3].x+mQuad[3].y-pQuad[0].x-pQuad[0].y-pQuad[1].x-pQuad[1].y-pQuad[2].x-pQuad[2].y-pQuad[3].x-pQuad[3].y;
+		return -scEpsilon < tDistSum && tDistSum < scEpsilon;
+	}
+
+	private:
+	chilitags::Quad mQuad;
+};
+
 }
 
 chilitags::FindQuads::FindQuads(
         const cv::Mat *pBinaryImage) :
 	mBinaryImage(pBinaryImage),
-	mQuadsCorners(new Quad[scMaxNumQuads]),
-	mNumQuads(0)
+	mQuads()
 {
-#ifdef DEBUG_FindQuads
-	cvNamedWindow("contours");
-	cvNamedWindow("noise");
-#endif
 }
 
 chilitags::FindQuads::~FindQuads()
 {
-	delete [] mQuadsCorners;
 }
 
 void chilitags::FindQuads::run()
 {
 	//TODO function too long, split it
 
-	mNumQuads = 0;
+	mQuads.clear();
 	const cv::Mat tBinaryImage = *mBinaryImage;
 #ifdef DEBUG_FindQuads
-	cv::Mat tContourImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
+	cv::Mat tContourImage(tBinaryImage.size(), tBinaryImage->depth, 3);
 	cv::Mat tNoiseImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
 #endif
 
@@ -97,30 +99,21 @@ void chilitags::FindQuads::run()
 				    && cv::isContourConvex(approxContour))
 				{
 					//FIXME: take the right points, not simply the first 4
-					cv::Point tPoint0 = approxContour[1];
-					cv::Point tPoint1 = approxContour[0];
-					cv::Point tPoint2 = approxContour[2];
-					cv::Point tPoint3 = approxContour[3];
-					float tP0X = (float)(tPoint0.x*tScale);
-					float tP0Y = (float)(tPoint0.y*tScale);
-					float tP1X = (float)(tPoint1.x*tScale);
-					float tP1Y = (float)(tPoint1.y*tScale);
-					float tP2X = (float)(tPoint2.x*tScale);
-					float tP2Y = (float)(tPoint2.y*tScale);
-					float tP3X = (float)(tPoint3.x*tScale);
-					float tP3Y = (float)(tPoint3.y*tScale);
-					unsigned int tQuadIndex = 0;
-					while (tQuadIndex < mNumQuads && !isTheSame(mQuadsCorners[tQuadIndex], tP0X, tP0Y, tP1X, tP1Y, tP2X, tP2Y, tP3X, tP3Y)) ++tQuadIndex;
-					if (tQuadIndex == mNumQuads) ++mNumQuads;
+					Quad tCandidate;
+					tCandidate[0] = tScale*approxContour[1];
+					tCandidate[1] = tScale*approxContour[0];
+					tCandidate[2] = tScale*approxContour[2];
+					tCandidate[3] = tScale*approxContour[3];
 
-					mQuadsCorners[tQuadIndex][0].x   = tP0X;
-					mQuadsCorners[tQuadIndex][0].y   = tP0Y;
-					mQuadsCorners[tQuadIndex][1].x = tP1X;
-					mQuadsCorners[tQuadIndex][1].y   = tP1Y;
-					mQuadsCorners[tQuadIndex][3].x = tP2X;
-					mQuadsCorners[tQuadIndex][3].y   = tP2Y;
-					mQuadsCorners[tQuadIndex][2].x = tP3X;
-					mQuadsCorners[tQuadIndex][2].y   = tP3Y;
+					IsSimilarTo tIsSimilarToCandidate(tCandidate);
+
+					std::vector<Quad>::iterator tSameQuad = std::find_if(
+						mQuads.begin(),
+						mQuads.end(),
+						tIsSimilarToCandidate);
+					if (tSameQuad != mQuads.end()) *tSameQuad = tCandidate;
+					else mQuads.push_back(tCandidate);
+
 #ifdef DEBUG_FindQuads
 					if (tApproxContourSeq->total == scNCornersInQuads) cvDrawContours(tContourImage, tApproxContourSeq, cvScalar(0.0,255.0,0.0), cvScalar(0.0,255.0,0.0), 100);
 					else cvDrawContours(tContourImage, tApproxContourSeq, cvScalar(0.0,255.0,255.0), cvScalar(0.0,255.0,255.0), 100);

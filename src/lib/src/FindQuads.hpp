@@ -32,11 +32,8 @@ public:
 FindQuads(const cv::Mat *pBinaryImage);
 ~FindQuads();
 
-const Quad *const *QuadCorners() const {
-	return &mQuadsCorners;
-}
-const size_t *NumQuads() const {
-	return &mNumQuads;
+const std::vector<Quad> *Quads() const {
+	return &mQuads;
 }
 
 protected:
@@ -46,9 +43,7 @@ const cv::Mat *mBinaryImage;
 static const int scScaledCopiesCount = 3;
 cv::Mat mScaledCopies[scScaledCopiesCount];
 
-static const int scMaxNumQuads = 1000;
-Quad *const mQuadsCorners;
-size_t mNumQuads;
+std::vector<Quad> mQuads;
 
 private:
 FindQuads(const FindQuads&);
