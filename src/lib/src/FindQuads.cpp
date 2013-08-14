@@ -100,8 +100,8 @@ void chilitags::FindQuads::run()
 				{
 					//FIXME: take the right points, not simply the first 4
 					Quad tCandidate;
-					tCandidate[0] = tScale*approxContour[1];
-					tCandidate[1] = tScale*approxContour[0];
+					tCandidate[0] = tScale*approxContour[0];
+					tCandidate[1] = tScale*approxContour[1];
 					tCandidate[2] = tScale*approxContour[2];
 					tCandidate[3] = tScale*approxContour[3];
 
