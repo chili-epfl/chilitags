@@ -30,30 +30,16 @@
 namespace {
 const float scClose = 1.0f/10.0f;
 const float scFar = 1.0f-scClose;
-const cv::Scalar scWhite = CV_RGB(255,255,255);
-const cv::Scalar scBlack = CV_RGB(0, 0, 0);
-const float scMaxRefinement = 4.0f;
+const cv::Scalar scWhite(255,255,255);
+const cv::Scalar scBlack(0, 0, 0);
+const float scMaxRefinement = 4.0f; // TODO make relative to resolution
 
-//TODO cv::boundingRect
-cv::Rect findBoundingBox(const cv::Point2f *pCorners) {
-	float tMinX = pCorners[0].x;
-	float tMaxX = pCorners[0].x;
-	float tMinY = pCorners[0].y;
-	float tMaxY = pCorners[0].y;
-	for (size_t i = 1; i < chilitags::Quad::scNPoints; ++i) {
-		tMinX = MIN(tMinX, pCorners[i].x);
-		tMaxX = MAX(tMaxX, pCorners[i].x);
-		tMinY = MIN(tMinY, pCorners[i].y);
-		tMaxY = MAX(tMaxY, pCorners[i].y);
-	}
-	return cvRect((int)tMinX, (int)tMinY, (int)(tMaxX-tMinX), (int)(tMaxY-tMinY));
-}
-
+//TODO take more; use length of tag rather than bbox
 cv::Rect findROI(const cv::Rect &pMinimalROI) {
 	static const float scMarginRatio = scClose;
 	int tXMargin = (int)(scMarginRatio*pMinimalROI.width);
 	int tYMargin = (int)(scMarginRatio*pMinimalROI.height);
-	return cvRect(pMinimalROI.x-tXMargin, pMinimalROI.y-tYMargin, pMinimalROI.width+2*tXMargin, pMinimalROI.width+2*tYMargin);         //FIXME: border effect
+	return cv::Rect(pMinimalROI.x-tXMargin, pMinimalROI.y-tYMargin, pMinimalROI.width+2*tXMargin, pMinimalROI.width+2*tYMargin);         //FIXME: border effect
 }
 }
 
@@ -63,24 +49,17 @@ chilitags::Refine::Refine(
         Registrar &pRegistrar) :
 	mInputImage(pInputImage),
 	mDecodedTag(pDecodedTag),
-	mBoundingBox(cvRect(0,0,1,1)),
-	mROI(findROI(mBoundingBox)),
-	mInternalCorners(new cv::Point[Quad::scNPoints]),
-	mROICopy(),
-	mMask(),
-	mNCorners(Quad::scNPoints),
-	mRefinedCorners(),
-	mOrderedCorners(),
+	mRefinedCorners(4),
+	mOrderedCorners(4),
 	mRegistrar(pRegistrar)
 {
 #ifdef DEBUG_Refine
-	cvNamedWindow("Refine");
+	cv::namedWindow("Refine");
 #endif
 }
 
 chilitags::Refine::~Refine()
 {
-	delete []mInternalCorners;
 }
 
 void chilitags::Refine::run()
@@ -88,75 +67,58 @@ void chilitags::Refine::run()
 	int tDecodedTag = *mDecodedTag;
 	if (tDecodedTag > -1)
 	{
-		cv::Mat tInputImage = *mInputImage;
-
+		const cv::Mat tInputImage = *mInputImage;
 		const cv::Point2f *tInputCorners = mRegistrar.getCorners(tDecodedTag);
-		mBoundingBox = findBoundingBox(tInputCorners);
-		mROI = findROI(mBoundingBox);
-		int tPreviousRoiX = mROI.x;
-		int tPreviousRoiY = mROI.y;
-		mROI.x = cv::max(mROI.x, 0);
-		mROI.y = cv::max(mROI.y, 0);
-		mROI.width -= mROI.x - tPreviousRoiX;
-		mROI.height -= mROI.y - tPreviousRoiY;
-		mROI.width = cv::min(mROI.x+mROI.width, tInputImage.cols)-mROI.x;
-		mROI.height = cv::min(mROI.y+mROI.height, tInputImage.rows)-mROI.y;
 
-		//CvConvenience::matchImageFormats(mROI.width, mROI.height, tInputImage->depth, tInputImage->nChannels, &mROICopy);
-		//CvConvenience::matchImageFormats(mROICopy, &mMask);
-		//CvConvenience::matchImageFormats(mROICopy->width, mROICopy->height, IPL_DEPTH_32F, 1, &mTempImg);
-		//CvConvenience::matchImageFormats(mTempImg, &mEigenImg);
+		std::vector<cv::Point2f> tInputCornersVector;
+		tInputCornersVector.assign(tInputCorners, tInputCorners+4);
+		cv::Rect tBoundingBox = cv::boundingRect(tInputCornersVector);
+		cv::Rect tROI = findROI(tBoundingBox);
 
-		//std::cout
-		//	<< tInputCorners[0].x << " - " <<  tInputCorners[0].y << " - "
-		//	<< tInputCorners[1].x << " - " <<  tInputCorners[1].y << " - "
-		//	<< tInputCorners[2].x << " - " <<  tInputCorners[2].y << " - "
-		//	<< tInputCorners[3].x << " - " <<  tInputCorners[3].y <<
-		//std::endl;
+		int tPreviousRoiX = tROI.x;
+		int tPreviousRoiY = tROI.y;
+		tROI.x = std::max(tROI.x, 0);
+		tROI.y = std::max(tROI.y, 0);
+		tROI.width -= tROI.x - tPreviousRoiX;
+		tROI.height -= tROI.y - tPreviousRoiY;
+		tROI.width = cv::min(tROI.x+tROI.width, tInputImage.cols)-tROI.x;
+		tROI.height = cv::min(tROI.y+tROI.height, tInputImage.rows)-tROI.y;
 
+		cv::Point2f tRoiTL = tROI.tl();
+		mRefinedCorners[0] = tInputCorners[0] - tRoiTL;
+		mRefinedCorners[1] = tInputCorners[1] - tRoiTL;
+		mRefinedCorners[2] = tInputCorners[2] - tRoiTL;
+		mRefinedCorners[3] = tInputCorners[3] - tRoiTL;
 
-		mRefinedCorners[0].x = (float)(tInputCorners[0].x - mROI.x);
-		mRefinedCorners[0].y = (float)(tInputCorners[0].y - mROI.y);
-		mRefinedCorners[1].x = (float)(tInputCorners[1].x - mROI.x);
-		mRefinedCorners[1].y = (float)(tInputCorners[1].y - mROI.y);
-		mRefinedCorners[2].x = (float)(tInputCorners[2].x - mROI.x);
-		mRefinedCorners[2].y = (float)(tInputCorners[2].y - mROI.y);
-		mRefinedCorners[3].x = (float)(tInputCorners[3].x - mROI.x);
-		mRefinedCorners[3].y = (float)(tInputCorners[3].y - mROI.y);
+		cv::Mat tMask(tROI.size(), tInputImage.type(), scWhite);
+		mInternalCorners[0] = mRefinedCorners[0]*scClose + mRefinedCorners[2]*scFar;
+		mInternalCorners[1] = mRefinedCorners[1]*scClose + mRefinedCorners[3]*scFar;
+		mInternalCorners[2] = mRefinedCorners[2]*scClose + mRefinedCorners[0]*scFar;
+		mInternalCorners[3] = mRefinedCorners[3]*scClose + mRefinedCorners[1]*scFar;
 
-		cv::Mat tRoi = tInputImage(mROI);
-		cv::rectangle(mMask, cvPoint(0,0), cvPoint(mMask.rows, mMask.cols), scWhite, CV_FILLED);
-		mInternalCorners[0].x = (int)(mRefinedCorners[0].x*scClose + mRefinedCorners[2].x*scFar);
-		mInternalCorners[0].y = (int)(mRefinedCorners[0].y*scClose + mRefinedCorners[2].y*scFar);
-		mInternalCorners[1].x = (int)(mRefinedCorners[1].x*scClose + mRefinedCorners[3].x*scFar);
-		mInternalCorners[1].y = (int)(mRefinedCorners[1].y*scClose + mRefinedCorners[3].y*scFar);
-		mInternalCorners[2].x = (int)(mRefinedCorners[2].x*scClose + mRefinedCorners[0].x*scFar);
-		mInternalCorners[2].y = (int)(mRefinedCorners[2].y*scClose + mRefinedCorners[0].y*scFar);
-		mInternalCorners[3].x = (int)(mRefinedCorners[3].x*scClose + mRefinedCorners[1].x*scFar);
-		mInternalCorners[3].y = (int)(mRefinedCorners[3].y*scClose + mRefinedCorners[1].y*scFar);
 		const int tNPoints[1] = {Quad::scNPoints};
 		const cv::Point *tCornersArray[1] = {mInternalCorners};
-		cv::fillPoly(mMask, tCornersArray, tNPoints, 1, scBlack);
-		mROICopy = cv::Scalar(0);
-		tRoi.copyTo( mROICopy, mMask);
+		cv::fillPoly(tMask, tCornersArray, tNPoints, 1, scBlack);
+		cv::Mat tROICopy(tROI.size(), tInputImage.type());
+		tInputImage(tROI).copyTo( tROICopy, tMask);
+#ifdef DEBUG_Refine
+		cv::imshow("Refine", tROICopy);
+		cv::waitKey(0);
+#endif
 
 		mRefinedCorners.clear();
-		cv::goodFeaturesToTrack(mROICopy, mRefinedCorners, Quad::scNPoints, 0.1, 20);
-		cv::cornerSubPix(mROICopy, mRefinedCorners, cv::Size(5, 5), cv::Size(-1, -1), cv::TermCriteria(cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS, 100, 0.000001));
+		cv::goodFeaturesToTrack(tROICopy, mRefinedCorners, Quad::scNPoints, 0.1, 20);
+		cv::cornerSubPix(tROICopy, mRefinedCorners, cv::Size(5, 5), cv::Size(-1, -1), cv::TermCriteria(cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS, 100, 0.000001));
 
-		mRefinedCorners[0].x += mROI.x;
-		mRefinedCorners[0].y += mROI.y;
-		mRefinedCorners[1].x += mROI.x;
-		mRefinedCorners[1].y += mROI.y;
-		mRefinedCorners[2].x += mROI.x;
-		mRefinedCorners[2].y += mROI.y;
-		mRefinedCorners[3].x += mROI.x;
-		mRefinedCorners[3].y += mROI.y;
+		mRefinedCorners[0] += tRoiTL;
+		mRefinedCorners[1] += tRoiTL;
+		mRefinedCorners[2] += tRoiTL;
+		mRefinedCorners[3] += tRoiTL;
 
 		for (size_t i = 0; i < Quad::scNPoints; ++i) {
 			int tClosestCornerIndex = 0;
 			float tClosestCornerDist = CvConvenience::squaredDist(tInputCorners[i], mRefinedCorners[0]);
-			for (int j = 1; j < mNCorners; ++j) {
+			for (size_t j = 1; j < mRefinedCorners.size(); ++j) {
 				float tDist = CvConvenience::squaredDist(tInputCorners[i], mRefinedCorners[j]);
 				if (tDist < tClosestCornerDist)
 				{
@@ -174,16 +136,16 @@ void chilitags::Refine::run()
 #endif
 
 #ifdef DEBUG_Refine
-		for(int i=0; i<mNCorners; ++i)
+		cv::Mat tDebugImage = tInputImage.clone();
+		for(int i=0; i<Quad::scNPoints; ++i)
 		{
-			cvCircle(tInputImage, cvPointFrom32f(tInputCorners[i]), 3, cvScalarAll(128), 2);
-			cvLine(tInputImage, cvPointFrom32f(mOrderedCorners[i]), cvPointFrom32f(mOrderedCorners[i]), scWhite, 5);
+			cv::circle(tDebugImage, tInputCorners[i], 3, cvScalarAll(128), 2);
+			cv::line(tDebugImage, mOrderedCorners[i], mOrderedCorners[i], scWhite, 5);
 			printf("%1.1f  %1.1f        ", mOrderedCorners[i].x, mOrderedCorners[i].y);
 		}
 		printf("\n");
-		//cvShowImage("Refine", tInputImage);
-		//cvMoveWindow("Refine", 1600, 0);
-		//cvWaitKey(5);
+		cv::imshow("Refine", tInputImage);
+		cv::waitKey(0);
 #endif
 
 		cv::Point2f tOldStyleCorners[4];

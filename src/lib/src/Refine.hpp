@@ -46,14 +46,9 @@ void run();
 const cv::Mat *mInputImage;
 const int *mDecodedTag;
 
-cv::Rect mBoundingBox;
-cv::Rect mROI;
-cv::Point *mInternalCorners;
-cv::Mat mROICopy;
-cv::Mat mMask;
-
-int mNCorners;
+cv::Point mInternalCorners[4];
 std::vector<cv::Point2f> mRefinedCorners;
+
 std::vector<cv::Point2f> mOrderedCorners;
 
 Registrar &mRegistrar;
