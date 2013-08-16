@@ -61,22 +61,20 @@ int main(int argc, char* argv[])
 		tYRes = std::atoi(argv[2]);
 	}
 	if (argc > 3) {
-		tCameraIndex = atoi(argv[3]);
+		tCameraIndex = std::atoi(argv[3]);
 	}
 
 	// The source of input images
-	CvCapture *tCapture = cvCaptureFromCAM(tCameraIndex);
-	if (!tCapture)
+	cv::VideoCapture tCapture(tCameraIndex);
+	if (!tCapture.isOpened())
 	{
-		std::cerr << "unable to initialise CVCapture" << std::endl;
+		std::cerr << "Unable to initialise video capture." << std::endl;
 		return 1;
 	}
-	cvSetCaptureProperty(tCapture, CV_CAP_PROP_FRAME_WIDTH, tXRes);
-	cvSetCaptureProperty(tCapture, CV_CAP_PROP_FRAME_HEIGHT, tYRes);
-	cvSetCaptureProperty(tCapture, CV_CAP_PROP_FPS, tCameraIndex);
-	cvSetCaptureProperty(tCapture, CV_CAP_PROP_MODE, 1);
+	tCapture.set(CV_CAP_PROP_FRAME_WIDTH, tXRes);
+	tCapture.set(CV_CAP_PROP_FRAME_HEIGHT, tYRes);
 
-	cvNamedWindow("DisplayChilitags");
+	cv::namedWindow("DisplayChilitags");
 
 #ifdef WIN32
 	timeBeginPeriod(1);
@@ -91,16 +89,16 @@ int main(int argc, char* argv[])
 	chilitags::DetectChilitags tDetectChilitags(&tInputImage);
 
 	// Main loop, exiting when 'q is pressed'
-	for (tInputImage = cvQueryFrame(tCapture);
+	for (tCapture.read(tInputImage);
 		'q' != cvWaitKey(1);
-		tInputImage = cvQueryFrame(tCapture)) {
+		tCapture.read(tInputImage)) {
 
 		// Detect tags on the current image.
 		tDetectChilitags.update();
 
 		// The color (magenta) that will be used for all information
 		// overlaid on the captured image
-		const static CvScalar sColor= CV_RGB(255, 0, 255);
+		const static cv::Scalar scColor(255, 0, 255);
 
 		// These constants will be used be given to OpenCv for drawing with
 		// sub-pixel accuracy with fixed point precision coordinates
@@ -139,9 +137,9 @@ int main(int argc, char* argv[])
 				for (size_t i = 0; i < chilitags::Quad::scNPoints; ++i) {
 					cv::line(
 						tOutputImage,
-						cvPointFrom32f(scPrecision*tCorners[i]),
-						cvPointFrom32f(scPrecision*tCorners[(i+1)%4]),
-						sColor, 1, CV_AA, scShift);
+						scPrecision*tCorners[i],
+						scPrecision*tCorners[(i+1)%4],
+						scColor, 1, CV_AA, scShift);
 				}
 
 				// The quadrilateral is given under the form of a Quad class,
@@ -152,7 +150,7 @@ int main(int argc, char* argv[])
 				// We will print the identifier of the tag at its center
 				std::sprintf(tTextBuffer, "%d", tTagId);
 				cv::putText(tOutputImage, tTextBuffer, cv::Point(tCenter.x, tCenter.y),
-					CV_FONT_HERSHEY_SIMPLEX, 0.5, sColor);
+					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 
 				// Other points an be computed from the four corners of the Quad.
 				// Chilitags are oriented. It means that the points 0,1,2,3 of
@@ -169,22 +167,22 @@ int main(int argc, char* argv[])
 				std::sprintf(tTextBuffer, "The top border is %.1fpx long.",
 					cv::norm(tCorners[0] - tCorners[1]));
 				cv::putText(tOutputImage, tTextBuffer, cvPoint(tTop.x, tTop.y),
-					CV_FONT_HERSHEY_SIMPLEX, 0.5, sColor);
+					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 				std::sprintf(tTextBuffer, "The right border is %.1fpx long.",
 					cv::norm(tCorners[1] - tCorners[2]));
 				cv::putText(tOutputImage, tTextBuffer, cvPoint(tRight.x, tRight.y),
-					CV_FONT_HERSHEY_SIMPLEX, 0.5, sColor);
+					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 
 				// And we draw a line from the center to the midlle of these sides,
 				// to show the orientation of the tag.
 				cv::line(tOutputImage,
-					cvPointFrom32f(scPrecision*tCenter),
-					cvPointFrom32f(scPrecision*tTop),
-					sColor, 1, CV_AA, scShift);
+					scPrecision*tCenter,
+					scPrecision*tTop,
+					scColor, 1, CV_AA, scShift);
 				cv::line(tOutputImage,
-					cvPointFrom32f(scPrecision*tCenter),
-					cvPointFrom32f(scPrecision*tRight),
-					sColor, 1, CV_AA, scShift);
+					scPrecision*tCenter,
+					scPrecision*tRight,
+					scColor, 1, CV_AA, scShift);
 			}
 		}
 		
@@ -194,7 +192,7 @@ int main(int argc, char* argv[])
 			tOutputImage.cols, tOutputImage.rows,
 			1000.f/(float) (tNewTimeStamp-mPreviousMillisTimestamp));
 		cv::putText(tOutputImage, tTextBuffer, cvPoint(32,32),
-					CV_FONT_HERSHEY_SIMPLEX, 0.5, sColor);
+					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 		mPreviousMillisTimestamp = tNewTimeStamp;
 
 		// Finally...
@@ -204,7 +202,8 @@ int main(int argc, char* argv[])
 #ifdef WIN32
 	timeEndPeriod(1);
 #endif
-	cvDestroyWindow("DisplayChilitags");
+	cv::destroyWindow("DisplayChilitags");
+	tCapture.release();
 
 	return 0;
 }
