@@ -21,7 +21,7 @@
 #define Binarize_HPP
 
 #include "Pipeable.hpp"
-#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
 
 namespace chilitags {
 

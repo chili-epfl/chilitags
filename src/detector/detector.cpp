@@ -28,6 +28,7 @@
 // OpenCV goodness for I/O
 #include <opencv2/highgui/highgui.hpp>
 
+#include <iostream>
 // C-Style string to int conversion and string formatting.
 #include <cstdio>
 

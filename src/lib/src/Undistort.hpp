@@ -21,7 +21,6 @@
 #define Undistort_HPP
 
 #include "Pipeable.hpp"
-#include <opencv2/opencv.hpp>
 #include <Quad.hpp>
 
 namespace chilitags {

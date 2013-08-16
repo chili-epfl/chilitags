@@ -18,6 +18,7 @@
 *******************************************************************************/
 
 #include "EnsureGreyscale.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
 
 chilitags::EnsureGreyscale::EnsureGreyscale(
         const cv::Mat *pInputImage) :

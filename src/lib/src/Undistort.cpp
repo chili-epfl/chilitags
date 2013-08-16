@@ -18,10 +18,10 @@
 *******************************************************************************/
 
 #include "Undistort.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
 
-#define DEBUG_Undistort
+//#define DEBUG_Undistort
 #ifdef DEBUG_Undistort
-#include <opencv2/highgui/highgui.hpp>
 #endif
 
 namespace {

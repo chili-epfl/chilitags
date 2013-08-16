@@ -18,10 +18,10 @@
 *******************************************************************************/
 
 #include "FindQuads.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
 
 //#define DEBUG_FindQuads
 #ifdef DEBUG_FindQuads
-#include <opencv2/highgui/highgui.hpp>
 #include <stdlib.h>
 #include <time.h>
 #endif

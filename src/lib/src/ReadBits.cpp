@@ -21,7 +21,6 @@
 
 //#define DEBUG_ReadBits
 #ifdef DEBUG_ReadBits
-#include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #endif
 

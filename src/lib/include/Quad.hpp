@@ -20,8 +20,7 @@
 #ifndef Quad_HPP
 #define Quad_HPP
 
-#include <opencv2/core/types_c.h>
-#include <cmath>
+#include <opencv2/core/core.hpp>
 
 namespace chilitags {
 

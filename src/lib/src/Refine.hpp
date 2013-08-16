@@ -21,7 +21,6 @@
 #define Refine_HPP
 
 #include "Pipeable.hpp"
-#include <opencv2/opencv.hpp>
 #include <Registrar.hpp>
 
 namespace chilitags {

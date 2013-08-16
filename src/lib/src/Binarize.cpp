@@ -18,6 +18,7 @@
 *******************************************************************************/
 
 #include "Binarize.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
 
 chilitags::Binarize::Binarize(
         float pThreshold,

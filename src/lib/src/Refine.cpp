@@ -19,11 +19,11 @@
 
 #include "Refine.hpp"
 #include <Quad.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 //#define DEBUG_Refine
 #ifdef DEBUG_Refine
 #include <stdio.h>
-#include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #endif
 
