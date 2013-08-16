@@ -22,6 +22,7 @@
 
 //#define DEBUG_Undistort
 #ifdef DEBUG_Undistort
+#include <opencv2/highgui/highgui.hpp>
 #endif
 
 namespace {
@@ -73,6 +74,6 @@ void chilitags::Undistort::run()
 
 #ifdef DEBUG_Undistort
 	cv::imshow("Undistort", mUndistortedTag);
-	cvWaitKey(0);
+	cv::waitKey(0);
 #endif
 }

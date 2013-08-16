@@ -139,7 +139,7 @@ void chilitags::Refine::run()
 		cv::Mat tDebugImage = tInputImage.clone();
 		for(int i=0; i<Quad::scNPoints; ++i)
 		{
-			cv::circle(tDebugImage, tInputCorners[i], 3, cvScalarAll(128), 2);
+			cv::circle(tDebugImage, tInputCorners[i], 3, cv::Scalar::all(128), 2);
 			cv::line(tDebugImage, mOrderedCorners[i], mOrderedCorners[i], scWhite, 5);
 			printf("%1.1f  %1.1f        ", mOrderedCorners[i].x, mOrderedCorners[i].y);
 		}

@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 
 	// Main loop, exiting when 'q is pressed'
 	for (tCapture.read(tInputImage);
-		'q' != cvWaitKey(1);
+		'q' != cv::waitKey(1);
 		tCapture.read(tInputImage)) {
 
 		// Detect tags on the current image.
@@ -167,11 +167,11 @@ int main(int argc, char* argv[])
 				// We display the length in pixel of these sides
 				std::sprintf(tTextBuffer, "The top border is %.1fpx long.",
 					cv::norm(tCorners[0] - tCorners[1]));
-				cv::putText(tOutputImage, tTextBuffer, cvPoint(tTop.x, tTop.y),
+				cv::putText(tOutputImage, tTextBuffer, tTop,
 					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 				std::sprintf(tTextBuffer, "The right border is %.1fpx long.",
 					cv::norm(tCorners[1] - tCorners[2]));
-				cv::putText(tOutputImage, tTextBuffer, cvPoint(tRight.x, tRight.y),
+				cv::putText(tOutputImage, tTextBuffer, tRight,
 					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 
 				// And we draw a line from the center to the midlle of these sides,
@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
 		std::sprintf(tTextBuffer, "%dx%d@%.1f fps (press q to quit)",
 			tOutputImage.cols, tOutputImage.rows,
 			1000.f/(float) (tNewTimeStamp-mPreviousMillisTimestamp));
-		cv::putText(tOutputImage, tTextBuffer, cvPoint(32,32),
+		cv::putText(tOutputImage, tTextBuffer, cv::Point(32,32),
 					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 		mPreviousMillisTimestamp = tNewTimeStamp;
 

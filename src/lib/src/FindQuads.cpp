@@ -22,8 +22,7 @@
 
 //#define DEBUG_FindQuads
 #ifdef DEBUG_FindQuads
-#include <stdlib.h>
-#include <time.h>
+#include <opencv2/highgui/highgui.hpp>
 #endif
 
 namespace {
@@ -61,11 +60,13 @@ void chilitags::FindQuads::run()
 {
 	//TODO function too long, split it
 
+
 	mQuads.clear();
 	const cv::Mat tBinaryImage = *mBinaryImage;
 #ifdef DEBUG_FindQuads
-	cv::Mat tContourImage(tBinaryImage.size(), tBinaryImage->depth, 3);
-	cv::Mat tNoiseImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
+	cv::RNG tRNG( 0xFFFFFFFF );
+	cv::Mat tContourImage = cv::Mat::zeros(tBinaryImage.size(), CV_8UC3);
+	cv::Mat tNoiseImage = cv::Mat::zeros(tContourImage.size(), tContourImage.type());
 #endif
 
 	mScaledCopies[0] = tBinaryImage;
@@ -115,31 +116,34 @@ void chilitags::FindQuads::run()
 					else mQuads.push_back(tCandidate);
 
 #ifdef DEBUG_FindQuads
-					if (tApproxContourSeq->total == scNCornersInQuads) cvDrawContours(tContourImage, tApproxContourSeq, cvScalar(0.0,255.0,0.0), cvScalar(0.0,255.0,0.0), 100);
-					else cvDrawContours(tContourImage, tApproxContourSeq, cvScalar(0.0,255.0,255.0), cvScalar(0.0,255.0,255.0), 100);
+					std::vector<std::vector<cv::Point> >tApproxContours;
+					tApproxContours.push_back(approxContour);
+					cv::Scalar tContourColor(0, 255, (approxContour.size() == Quad::scNPoints)?0:255);
+					cv::drawContours(tContourImage, tApproxContours, 0, tContourColor);
 				}
 				else
 				{
-					cvDrawContours(tContourImage, tApproxContourSeq, cvScalar(0.0,0.0,255.0), cvScalar(0.0,0.0,255.0), 100);
+					std::vector<std::vector<cv::Point> >tApproxContours;
+					tApproxContours.push_back(approxContour);
+					cv::drawContours(tContourImage, tApproxContours, 0, cv::Scalar(0,0,255));
 				}
 			}
 			else
 			{
 				//if (tPerimeter >  scNCornersInQuads*scMinTagSize)
 				{
-					double tR = rand() % 255;
-					double tG = rand() % 255;
-					double tB = rand() % 255;
-					cvDrawContours(tNoiseImage, tContourSeq, cvScalar(tB, tG, tR), cvScalar(tB, tG, tR), 100);
+					int tRandomNumber= (unsigned) tRNG;
+					cv::Scalar tRandomColor( tRandomNumber&255, (tRandomNumber>>8)&255, (tRandomNumber>>16)&255 );
+					std::vector<std::vector<cv::Point> >tContours;
+					tContours.push_back(*contour);
+					cv::drawContours(tNoiseImage, tContours, 0, tRandomColor);
 				}
 			}
 		}
 	}
-	cvShowImage("noise", tNoiseImage);
-	cvShowImage("contours", tContourImage);
-	cvReleaseImage(&tNoiseImage);
-	cvReleaseImage(&tContourImage);
-	cvWaitKey(5);
+	cv::imshow("noise", tNoiseImage);
+	cv::imshow("contours", tContourImage);
+	cv::waitKey(0);
 #else
 				}
 			}
