@@ -22,7 +22,6 @@
 
 #include <opencv2/core/types_c.h>
 #include <cmath>
-#include "CvConvenience.hpp"
 
 namespace chilitags {
 
@@ -50,17 +49,16 @@ struct Quad {
 
 	// Returns the intersection of the diagonals.
 	cv::Point2f getCenter() const {
-		using namespace CvConvenience;
 
 		cv::Point2f d1 = mCorners[2] - mCorners[0];
 		cv::Point2f d2 = mCorners[3] - mCorners[1];
 		cv::Point2f d3 = mCorners[0] - mCorners[1];
 
-		float ratio = cross(d1, d2);
+		float ratio = d1.cross(d2);
 
 		static const float eps = 1e-8f;
 		if (std::abs(ratio) > eps) {
-		return mCorners[0] + (cross(d2, d3) / ratio) * d1;
+		return mCorners[0] + (d2.cross(d3) / ratio) * d1;
 		}
 
 		return mCorners[0];
@@ -68,15 +66,13 @@ struct Quad {
 
 	// Returns the area of the quadrilateral
 	float getScale() const {
-		using namespace CvConvenience;
 		cv::Point2f d1 = mCorners[2] - mCorners[0];
 		cv::Point2f d2 = mCorners[3] - mCorners[1];
-		return 0.5f*cross(d1, d2);
+		return 0.5f*d1.cross(d2);
 	}
 
 	// Returns the orientation in gradian of the top-left to top-right vector
 	float getAngle() const {
-		using namespace CvConvenience;
 		cv::Point2f tTopLine = mCorners[1]-mCorners[0];
 		return std::atan2(tTopLine.y, tTopLine.x);
 	}

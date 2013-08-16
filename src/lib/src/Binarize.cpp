@@ -18,7 +18,6 @@
 *******************************************************************************/
 
 #include "Binarize.hpp"
-#include <CvConvenience.hpp>
 
 chilitags::Binarize::Binarize(
         float pThreshold,
@@ -42,6 +41,17 @@ void chilitags::Binarize::run(){
 	int tHalfSection = int (std::min(mInputWidth,mInputHeight) * mWindowSizePerc /2.0f);
 
 	cv::integral(tInputImage, mIntegralImage, CV_32S);
+	mOutputImage.create(tInputImage.size(), tInputImage.type());
+
+//TODO If you need to process a whole row of a 2d array, the most efficient way is to get the pointer to the row first, and then just use plain C operator [] :
+// compute sum of positive matrix elements
+// (assuming that M is double-precision matrix)
+// double sum=0;
+// for(int i = 0; i < M.rows; i++)
+    //const double* Mi = M.ptr<double>(i);
+	//for(int j = 0; j < M.cols; j++)
+		//sum += std::max(Mi[j], 0.);
+	//}
 
 	for (int tY=0; tY<mInputHeight; ++tY)
 	{

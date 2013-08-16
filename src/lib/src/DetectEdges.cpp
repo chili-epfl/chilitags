@@ -18,7 +18,7 @@
 *******************************************************************************/
 
 #include "DetectEdges.hpp"
-#include <CvConvenience.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 chilitags::DetectEdges::DetectEdges(
         const int pLowThreshold,

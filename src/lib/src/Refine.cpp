@@ -117,9 +117,9 @@ void chilitags::Refine::run()
 
 		for (size_t i = 0; i < Quad::scNPoints; ++i) {
 			int tClosestCornerIndex = 0;
-			float tClosestCornerDist = CvConvenience::squaredDist(tInputCorners[i], mRefinedCorners[0]);
+			double tClosestCornerDist = cv::norm(tInputCorners[i] - mRefinedCorners[0]);
 			for (size_t j = 1; j < mRefinedCorners.size(); ++j) {
-				float tDist = CvConvenience::squaredDist(tInputCorners[i], mRefinedCorners[j]);
+				double tDist = cv::norm(tInputCorners[i] - mRefinedCorners[j]);
 				if (tDist < tClosestCornerDist)
 				{
 					tClosestCornerIndex = j;

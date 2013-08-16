@@ -25,10 +25,6 @@
 // This header provides an easy way to use the tag detection information
 #include <Chilitag.hpp>
 
-// CvConvenience provides operators to add and multiply CvPoint2D32f
-// and compute distances between them
-using namespace CvConvenience; 
-
 // OpenCV goodness for I/O
 #include <opencv2/highgui/highgui.hpp>
 
@@ -171,11 +167,11 @@ int main(int argc, char* argv[])
 
 				// We display the length in pixel of these sides
 				std::sprintf(tTextBuffer, "The top border is %.1fpx long.",
-					dist(tCorners[0], tCorners[1]));
+					cv::norm(tCorners[0] - tCorners[1]));
 				cv::putText(tOutputImage, tTextBuffer, cvPoint(tTop.x, tTop.y),
 					CV_FONT_HERSHEY_SIMPLEX, 0.5, sColor);
 				std::sprintf(tTextBuffer, "The right border is %.1fpx long.",
-					dist(tCorners[1], tCorners[2]));
+					cv::norm(tCorners[1] - tCorners[2]));
 				cv::putText(tOutputImage, tTextBuffer, cvPoint(tRight.x, tRight.y),
 					CV_FONT_HERSHEY_SIMPLEX, 0.5, sColor);
 
