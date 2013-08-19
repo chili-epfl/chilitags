@@ -36,7 +36,7 @@ Refine(
 virtual ~Refine();
 
 const std::vector<cv::Point2f> *GetRefinedCorners() const {
-	return &mOrderedCorners;
+	return &mRefinedCorners;
 }
 
 protected:
@@ -45,10 +45,7 @@ void run();
 const cv::Mat *mInputImage;
 const int *mDecodedTag;
 
-cv::Point mInternalCorners[4];
 std::vector<cv::Point2f> mRefinedCorners;
-
-std::vector<cv::Point2f> mOrderedCorners;
 
 Registrar &mRegistrar;
 
