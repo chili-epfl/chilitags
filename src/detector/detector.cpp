@@ -29,27 +29,6 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <iostream>
-// C-Style string to int conversion and string formatting.
-#include <cstdio>
-
-// Some basic, portable timing
-#ifdef WIN32
-#include <Windows.h>
-#else
-#include <sys/time.h>
-#include <unistd.h>
-#endif
-namespace {
-	static long GetTime() {
-	#ifdef WIN32
-		return timeGetTime();
-	#else
-		struct timeval tTimeval;
-		gettimeofday(&tTimeval, 0);
-		return tTimeval.tv_sec*1000l + (long) (tTimeval.tv_usec/1000.0f + 0.5f);
-	#endif
-	}
-}
 
 int main(int argc, char* argv[])
 {
@@ -77,11 +56,8 @@ int main(int argc, char* argv[])
 
 	cv::namedWindow("DisplayChilitags");
 
-#ifdef WIN32
-	timeBeginPeriod(1);
-#endif
 	// The time at which run was last called, to compute the fps.
-	long mPreviousMillisTimestamp(GetTime());
+	int64 tTickCount = cv::getTickCount();
 
 	// The tag detection happens in the DetectChilitags class.
 	// All it needs is a pointer to a OpenCv Image, i.e. a cv::Mat *
@@ -90,9 +66,10 @@ int main(int argc, char* argv[])
 	chilitags::DetectChilitags tDetectChilitags(&tInputImage);
 
 	// Main loop, exiting when 'q is pressed'
-	for (tCapture.read(tInputImage);
-		'q' != cv::waitKey(1);
-		tCapture.read(tInputImage)) {
+	for (; 'q' != cv::waitKey(1); ) {
+
+		// Capture a new image.
+		tCapture.read(tInputImage);
 
 		// Detect tags on the current image.
 		tDetectChilitags.update();
@@ -101,17 +78,13 @@ int main(int argc, char* argv[])
 		// overlaid on the captured image
 		const static cv::Scalar scColor(255, 0, 255);
 
-		// These constants will be used be given to OpenCv for drawing with
+		// These constants will be given to OpenCv for drawing with
 		// sub-pixel accuracy with fixed point precision coordinates
 		static const int scShift = 16;
 		static const float scPrecision = 1<<scShift;
 
-		// A buffer for the various string formatting
-		char tTextBuffer[256];
-		
 		// We dont want to draw directly on the input image, so we clone it
-		cv::Mat tOutputImage;
-		tInputImage.copyTo(tOutputImage);
+		cv::Mat tOutputImage = tInputImage.clone();
 
 		// We iterate over the 1024 possible tags (from #0 to #1023)
 		for (int tTagId = 0; tTagId < 1024; ++tTagId) {
@@ -149,8 +122,7 @@ int main(int argc, char* argv[])
 				cv::Point2f tCenter = tCorners.getCenter();
 
 				// We will print the identifier of the tag at its center
-				std::sprintf(tTextBuffer, "%d", tTagId);
-				cv::putText(tOutputImage, tTextBuffer, cv::Point(tCenter.x, tCenter.y),
+				cv::putText(tOutputImage, cv::format("%d", tTagId), tCenter,
 					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 
 				// Other points an be computed from the four corners of the Quad.
@@ -165,13 +137,14 @@ int main(int argc, char* argv[])
 				cv::Point2f tRight = 0.5f*(tCorners[1]+tCorners[2]);
 
 				// We display the length in pixel of these sides
-				std::sprintf(tTextBuffer, "The top border is %.1fpx long.",
-					cv::norm(tCorners[0] - tCorners[1]));
-				cv::putText(tOutputImage, tTextBuffer, tTop,
+				cv::putText(tOutputImage,
+					cv::format("The top border is %.2fpx long.",
+						cv::norm(tCorners[0] - tCorners[1])), tTop,
 					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
-				std::sprintf(tTextBuffer, "The right border is %.1fpx long.",
-					cv::norm(tCorners[1] - tCorners[2]));
-				cv::putText(tOutputImage, tTextBuffer, tRight,
+
+				cv::putText(tOutputImage,
+					cv::format("The right border is %.2fpx long.",
+						cv::norm(tCorners[1] - tCorners[2])), tRight,
 					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 
 				// And we draw a line from the center to the midlle of these sides,
@@ -188,21 +161,19 @@ int main(int argc, char* argv[])
 		}
 		
 		// Some stats on the current frame (resolution and framerate)
-		long tNewTimeStamp = GetTime();
-		std::sprintf(tTextBuffer, "%dx%d@%.1f fps (press q to quit)",
-			tOutputImage.cols, tOutputImage.rows,
-			1000.f/(float) (tNewTimeStamp-mPreviousMillisTimestamp));
-		cv::putText(tOutputImage, tTextBuffer, cv::Point(32,32),
-					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
-		mPreviousMillisTimestamp = tNewTimeStamp;
+		int64 tNewTickCount = cv::getTickCount();
+		cv::putText(tOutputImage,
+			cv::format("%dx%d@%.0f fps (press q to quit)",
+				tOutputImage.cols, tOutputImage.rows,
+				cv::getTickFrequency() / ((double) (tNewTickCount-tTickCount))),
+			cv::Point(32,32),
+			cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
+		tTickCount = tNewTickCount;
 
 		// Finally...
 		cv::imshow("DisplayChilitags", tOutputImage);
 	}
 
-#ifdef WIN32
-	timeEndPeriod(1);
-#endif
 	cv::destroyWindow("DisplayChilitags");
 	tCapture.release();
 
