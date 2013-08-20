@@ -18,27 +18,27 @@
 *******************************************************************************/
 
 #include "EnsureGreyscale.hpp"
-#include "CvConvenience.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
 
 chilitags::EnsureGreyscale::EnsureGreyscale(
-        const IplImage *const *pInputImage) :
+        const cv::Mat *pInputImage) :
 	mInputImage(pInputImage),
-	mOutputImage(cvCreateImage(cvSize(1,1), IPL_DEPTH_8U, 1))
+	mOutputImage()
 {
 }
 
 chilitags::EnsureGreyscale::~EnsureGreyscale()
 {
-	cvReleaseImage(&mOutputImage);
 }
 
 void chilitags::EnsureGreyscale::run()
 {
-	const IplImage *const tInputImage = *mInputImage;
-	CvConvenience::matchImageFormats(tInputImage, &mOutputImage, true);
-	if (tInputImage->nChannels != 1) {
-		cvCvtColor(tInputImage, mOutputImage, CV_BGR2GRAY);
+	const cv::Mat tInputImage = *mInputImage;
+	if (tInputImage.channels() != 1) {
+		// assuming BGR
+		cv::cvtColor(tInputImage, mOutputImage, CV_BGR2GRAY);
 	} else {
-		cvCopy(tInputImage, mOutputImage);
+		// Shallow copy should be OK, since we only give access to a const Mat
+		mOutputImage = tInputImage;
 	}
 }

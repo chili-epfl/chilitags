@@ -18,150 +18,150 @@
 *******************************************************************************/
 
 #include "FindQuads.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
 
 //#define DEBUG_FindQuads
 #ifdef DEBUG_FindQuads
 #include <opencv2/highgui/highgui.hpp>
-#include <stdlib.h>
-#include <time.h>
 #endif
 
 namespace {
 const int scMatrixSize = 10;
 const int scMinTagSize = 2*scMatrixSize;
 
-bool isTheSame(const chilitags::Quad &pQuad, float pP0X, float pP0Y, float pP1X, float pP1Y, float pP2X, float pP2Y, float pP3X, float pP3Y)
-{
-	static const int scEpsilon = chilitags::Quad::scNPoints*1;
-	float tDistSum = pP0X+pP0Y+pP1X+pP1Y+pP2X+pP2Y+pP3X+pP3Y-pQuad[0].x-pQuad[0].y-pQuad[1].x-pQuad[1].y-pQuad[2].x-pQuad[2].y-pQuad[3].x-pQuad[3].y;
-	return -scEpsilon < tDistSum && tDistSum < scEpsilon;
+struct IsSimilarTo{
+	IsSimilarTo(chilitags::Quad pQuad):mQuad(pQuad){}
+	bool operator()(const chilitags::Quad &pQuad) {
+		// TODO make it function of the perimeter
+		static const int scEpsilon = chilitags::Quad::scNPoints*1;
+		// TODO no seriously, do something
+		float tDistSum = mQuad[0].x+mQuad[0].y+mQuad[1].x+mQuad[1].y+mQuad[2].x+mQuad[2].y+mQuad[3].x+mQuad[3].y-pQuad[0].x-pQuad[0].y-pQuad[1].x-pQuad[1].y-pQuad[2].x-pQuad[2].y-pQuad[3].x-pQuad[3].y;
+		return -scEpsilon < tDistSum && tDistSum < scEpsilon;
+	}
+
+	private:
+	chilitags::Quad mQuad;
+};
+
+#ifdef DEBUG_FindQuads
+void drawContour(cv::Mat &pImage, std::vector<cv::Point> &pContour, cv::Scalar pColor, cv::Point pOffset) {
+	std::vector<std::vector<cv::Point> >tContours;
+	tContours.push_back(pContour);
+	cv::drawContours(pImage, tContours, 0, pColor, 1, CV_AA, cv::noArray(), INT_MAX, pOffset);
+	double tPerimeter = std::abs(cv::arcLength(pContour, true));
+	cv::putText(pImage, cv::format("%.1f", tPerimeter), pOffset+pContour[0],
+		cv::FONT_HERSHEY_SIMPLEX, 1.0, pColor);
 }
+#endif
+
 }
 
 chilitags::FindQuads::FindQuads(
-        const IplImage *const *pBinaryImage) :
+        const cv::Mat *pBinaryImage) :
 	mBinaryImage(pBinaryImage),
-	mStorage(cvCreateMemStorage()),
-	mQuadsCorners(new Quad[scMaxNumQuads]),
-	mNumQuads(0)
+	mQuads()
 {
-	int tScale = 1;
-	for (int i = 0; i < scScaledCopiesCount; ++i) {
-		mScaledCopies[i] = cvCreateImage(cvSize((*pBinaryImage)->width/tScale,(*pBinaryImage)->height/tScale),(*pBinaryImage)->depth,(*pBinaryImage)->nChannels);
-		tScale <<= 1;
-	}
 #ifdef DEBUG_FindQuads
-	cvNamedWindow("contours");
-	cvNamedWindow("noise");
+	cv::namedWindow("FindQuads");
 #endif
 }
 
 chilitags::FindQuads::~FindQuads()
 {
-	for (int i = 0; i < scScaledCopiesCount; ++i) {
-		cvReleaseImage(&(mScaledCopies[i]));
-	}
-	delete [] mQuadsCorners;
-	cvReleaseMemStorage(&mStorage);
 }
 
 void chilitags::FindQuads::run()
 {
-	cvClearMemStorage(mStorage);
-	mNumQuads = 0;
-	const IplImage *const tBinaryImage = *mBinaryImage;
+	//TODO function too long, split it
+
+	mQuads.clear();
+	const cv::Mat tBinaryImage = *mBinaryImage;
 #ifdef DEBUG_FindQuads
-	IplImage *tContourImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
-	IplImage *tNoiseImage = cvCreateImage(cvSize(tBinaryImage->width,tBinaryImage->height),tBinaryImage->depth,3);
+	cv::RNG tRNG( 0xFFFFFFFF );
+	cv::Mat tDebugImage = cv::Mat::zeros(cv::Size(2*tBinaryImage.cols, tBinaryImage.rows), CV_8UC3);
 #endif
 
-	if (CvConvenience::matchImageFormats(tBinaryImage, &(mScaledCopies[0])))
-	{
-		int tScale = 2;
-		for (int i = 1; i < scScaledCopiesCount; ++i) {
-			CvConvenience::matchImageFormats(tBinaryImage->width/tScale, tBinaryImage->height/tScale, tBinaryImage->depth, tBinaryImage->nChannels, &(mScaledCopies[i]));
-			tScale <<= 1;
-		}
-	}
-
-	cvCopy(tBinaryImage, mScaledCopies[0]);
+	mScaledCopies[0] = tBinaryImage;
 	for (int i = 1; i < scScaledCopiesCount; ++i) {
-		cvPyrDown(mScaledCopies[i-1], mScaledCopies[i]);
+		cv::pyrDown(mScaledCopies[i-1], mScaledCopies[i]);
 	}
 
 	for (int i = scScaledCopiesCount-1; i>=0; --i) //starting with the lowest definition, so the highest definition are last, and can simply override the first ones.
 	{
 		int tScale = 1 << i;
-		CvSeq *tContourSeq = 0;
-		cvFindContours(mScaledCopies[i], mStorage, &tContourSeq, sizeof(CvContour), CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
+#ifdef DEBUG_FindQuads
+		cv::Point tOffset(tDebugImage.cols-2*mScaledCopies[i].cols,0);
+		cv::Size tScaledSize = mScaledCopies[i].size();
+#endif
+		std::vector<std::vector<cv::Point> > contours;
+		cv::findContours(mScaledCopies[i], contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
 
-		for (; tContourSeq != 0; tContourSeq = tContourSeq->h_next)
+		for (std::vector<std::vector<cv::Point> >::iterator contour = contours.begin();
+			contour != contours.end();
+			++contour)
 		{
-			double tPerimeter = std::abs(cvArcLength(tContourSeq,CV_WHOLE_SEQ, 0));
-			double tArea = std::abs(cvContourArea(tContourSeq));
+			double tPerimeter = std::abs(cv::arcLength(*contour, true));
+			double tArea = std::abs(cv::contourArea(*contour));
 
 			if (tPerimeter > Quad::scNPoints*scMinTagSize && tArea > scMinTagSize*scMinTagSize)
 			{
-				CvSeq *tApproxContourSeq = cvApproxPoly( tContourSeq, sizeof(CvContour), mStorage, CV_POLY_APPROX_DP, cvContourPerimeter(tContourSeq)*0.02, 0);
+				std::vector<cv::Point> approxContour;
+				cv::approxPolyDP( *contour, approxContour, tPerimeter*0.02, true);
 
-				if (tApproxContourSeq->total >= (int) Quad::scNPoints
-				    && cvCheckContourConvexity(tApproxContourSeq))
+				//TODO: get convex hull
+				//http://stackoverflow.com/questions/10533233/opencv-c-obj-c-advanced-square-detection
+
+				if (approxContour.size() == (int) Quad::scNPoints
+				    && cv::isContourConvex(approxContour))
 				{
-					//FIXME: take the right points, not simply the first 4
-					CvPoint* tPoint0 = (CvPoint*) cvGetSeqElem(tApproxContourSeq, 1);
-					CvPoint* tPoint1 = (CvPoint*) cvGetSeqElem(tApproxContourSeq, 0);
-					CvPoint* tPoint2 = (CvPoint*) cvGetSeqElem(tApproxContourSeq, 2);
-					CvPoint* tPoint3 = (CvPoint*) cvGetSeqElem(tApproxContourSeq, 3);
-					float tP0X = (float)(tPoint0->x*tScale);
-					float tP0Y = (float)(tPoint0->y*tScale);
-					float tP1X = (float)(tPoint1->x*tScale);
-					float tP1Y = (float)(tPoint1->y*tScale);
-					float tP2X = (float)(tPoint2->x*tScale);
-					float tP2Y = (float)(tPoint2->y*tScale);
-					float tP3X = (float)(tPoint3->x*tScale);
-					float tP3Y = (float)(tPoint3->y*tScale);
-					unsigned int tQuadIndex = 0;
-					while (tQuadIndex < mNumQuads && !isTheSame(mQuadsCorners[tQuadIndex], tP0X, tP0Y, tP1X, tP1Y, tP2X, tP2Y, tP3X, tP3Y)) ++tQuadIndex;
-					if (tQuadIndex == mNumQuads) ++mNumQuads;
+					Quad tCandidate;
+					tCandidate[0] = tScale*approxContour[0];
+					tCandidate[1] = tScale*approxContour[1];
+					tCandidate[2] = tScale*approxContour[2];
+					tCandidate[3] = tScale*approxContour[3];
 
-					mQuadsCorners[tQuadIndex][0].x   = tP0X;
-					mQuadsCorners[tQuadIndex][0].y   = tP0Y;
-					mQuadsCorners[tQuadIndex][1].x = tP1X;
-					mQuadsCorners[tQuadIndex][1].y   = tP1Y;
-					mQuadsCorners[tQuadIndex][3].x = tP2X;
-					mQuadsCorners[tQuadIndex][3].y   = tP2Y;
-					mQuadsCorners[tQuadIndex][2].x = tP3X;
-					mQuadsCorners[tQuadIndex][2].y   = tP3Y;
+					IsSimilarTo tIsSimilarToCandidate(tCandidate);
+
+					std::vector<Quad>::iterator tSameQuad = std::find_if(
+						mQuads.begin(),
+						mQuads.end(),
+						tIsSimilarToCandidate);
+					if (false && tSameQuad != mQuads.end()) // TODO move to Decode
+					{
+						*tSameQuad = tCandidate;
 #ifdef DEBUG_FindQuads
-					if (tApproxContourSeq->total == scNCornersInQuads) cvDrawContours(tContourImage, tApproxContourSeq, cvScalar(0.0,255.0,0.0), cvScalar(0.0,255.0,0.0), 100);
-					else cvDrawContours(tContourImage, tApproxContourSeq, cvScalar(0.0,255.0,255.0), cvScalar(0.0,255.0,255.0), 100);
+						drawContour(tDebugImage, approxContour, cv::Scalar(0,255,255), tOffset);
+#endif
+					}
+					else
+					{
+						mQuads.push_back(tCandidate);
+#ifdef DEBUG_FindQuads
+						drawContour(tDebugImage, approxContour, cv::Scalar(0,255,0), tOffset);
+#endif
+					}
 				}
-				else
+#ifdef DEBUG_FindQuads
+				else // not quadrilaterals
 				{
-					cvDrawContours(tContourImage, tApproxContourSeq, cvScalar(0.0,0.0,255.0), cvScalar(0.0,0.0,255.0), 100);
+					drawContour(tDebugImage, approxContour, cv::Scalar(0,0,255), tOffset);
 				}
+#endif
 			}
-			else
+#ifdef DEBUG_FindQuads
+			else // too small
 			{
-				//if (tPerimeter >  scNCornersInQuads*scMinTagSize)
-				{
-					double tR = rand() % 255;
-					double tG = rand() % 255;
-					double tB = rand() % 255;
-					cvDrawContours(tNoiseImage, tContourSeq, cvScalar(tB, tG, tR), cvScalar(tB, tG, tR), 100);
-				}
+				drawContour(tDebugImage, *contour, cv::Scalar(128,128,128), tOffset);
 			}
+#endif
 		}
+#ifdef DEBUG_FindQuads
+		cv::putText(tDebugImage, cv::format("%d", contours.size()), tOffset+cv::Point(32,32),
+			cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(255));
+#endif
 	}
-	cvShowImage("noise", tNoiseImage);
-	cvShowImage("contours", tContourImage);
-	cvReleaseImage(&tNoiseImage);
-	cvReleaseImage(&tContourImage);
-	cvWaitKey(5);
-#else
-				}
-			}
-		}
-	}
+#ifdef DEBUG_FindQuads
+	cv::imshow("FindQuads", tDebugImage);
+	cv::waitKey(0);
 #endif
 }

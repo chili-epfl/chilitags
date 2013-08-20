@@ -37,7 +37,7 @@ public:
 // The result of the detection will be stored into pRegistrar.
 // See Chilitag and Registrar on why changing the default value of pRegistrar.
 DetectChilitags(
-        const IplImage *const *pInputImage,
+        const cv::Mat *pInputImage,
         Registrar &pRegistrar = Registrar::GetDefault());
 virtual ~DetectChilitags();
 
