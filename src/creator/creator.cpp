@@ -20,12 +20,10 @@
 #include <cstdlib>
 #include <string>
 #include <Codec.hpp>
-#include <opencv2/opencv.hpp>
+#include <iostream>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
-bool isSymmetricallyInside(int i, int pLimit, int pSize) {
-	return (pLimit <= i && i < pSize - pLimit);
-}
 
 int main(int argc, char **argv)
 {
@@ -41,40 +39,34 @@ int main(int argc, char **argv)
 	}
 
 	std::string tOutputFilename = std::string(argv[1])+".png";
+	int tTagId = std::atoi(argv[1]);
 	int tZoom = (argc > 2) ? std::atoi(argv[2]) : 1;
 	bool tNoMargin = (argc > 3 && argv[3][0] == 'n');
 
-	static const int scDataSize = 6;
-	unsigned char *tData = new unsigned char[scDataSize*scDataSize];
+	// Creating the image of the bit matrix
+	cv::Size tDataSize(6,6);
+	unsigned char tDataMatrix[tDataSize.area()];
 	chilitags::Codec tCodec(10, 16, 10, "1010101010", "10001000000100001");
-	tCodec.getTagEncodedId(std::atoi(argv[1]), tData);
+	tCodec.getTagEncodedId(tTagId, tDataMatrix);
+	cv::Mat tDataImage(tDataSize, CV_8U, tDataMatrix);
+	tDataImage *= 255;
 
-	static const int scBorderSize = 2;
-	static const int scMarginSize = tNoMargin ? 0 : 2;
-	static const int scOutputImageSize = scMarginSize+scBorderSize+scDataSize+scBorderSize+scMarginSize;
+	// Adding the black border arounf the bit matrix
+	cv::Size tBorderSize(2,2);
+	cv::Mat tTagImage(tDataImage.size()+tBorderSize*2, CV_8U, cv::Scalar(0));
+	tDataImage.copyTo(tTagImage(cv::Rect(tBorderSize, tDataImage.size())));
 
-	IplImage *tOutputImage = cvCreateImage(cvSize(tZoom*scOutputImageSize, tZoom*scOutputImageSize), IPL_DEPTH_8U, 1);
-	int tOutputImageStep = tOutputImage->widthStep;
-	uchar *tOutputImageData = (uchar *)tOutputImage->imageData;
-	for(int i=0; i<scOutputImageSize; ++i) {
-		for(int j=0; j<scOutputImageSize; ++j) {
-			uchar tPixel = 0;
-			if (!isSymmetricallyInside(i, scMarginSize, scOutputImageSize)
-			    || !isSymmetricallyInside(j, scMarginSize, scOutputImageSize)) {
-				tPixel = 255;
-			} else if (isSymmetricallyInside(i, scMarginSize+scBorderSize, scOutputImageSize)
-			           && isSymmetricallyInside(j, scMarginSize+scBorderSize, scOutputImageSize)) {
-				tPixel = tData[(i-scMarginSize-scBorderSize)*scDataSize+j-scMarginSize-scBorderSize] ? 255 : 0;
-			}
-			for(int y=i*tZoom; y<(i+1)*tZoom; ++y) {
-				for(int x=j*tZoom; x<(j+1)*tZoom; ++x) {
-					tOutputImageData[y*tOutputImageStep+x] = tPixel;
-				}
-			}
-		}
-	}
+	// Adding the optionnal white margin
+	cv::Size tMarginSize(0,0);
+	if (!tNoMargin) tMarginSize += tBorderSize;
+	cv::Mat tOutlinedImage(tTagImage.size()+tMarginSize*2, CV_8U, cv::Scalar(255));
+	tTagImage.copyTo(tOutlinedImage(cv::Rect(tMarginSize, tTagImage.size())));
 
-	cvSaveImage(tOutputFilename.c_str(), tOutputImage);
+	// Resizing to specified zoom
+	cv::Mat tOutputImage(tOutlinedImage.size()*tZoom, CV_8U);
+	cv::resize(tOutlinedImage, tOutputImage, tOutputImage.size(), 0, 0, cv::INTER_NEAREST);
+
+	cv::imwrite(tOutputFilename, tOutputImage);
 
 	return 0;
 }

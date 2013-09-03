@@ -30,7 +30,7 @@
 #include "Refine.hpp"
 
 chilitags::DetectChilitags::DetectChilitags(
-        const IplImage *const *pInputImage,
+        const cv::Mat *pInputImage,
         Registrar &pRegistrar) :
 	mPipeline(0),
 	mPipeables(),
@@ -42,9 +42,7 @@ chilitags::DetectChilitags::DetectChilitags(
 	mPipeables.push_back(tDetectEdges);
 	FindQuads *tFindQuads = new FindQuads(tDetectEdges->GetOutputImage());
 	mPipeables.push_back(tFindQuads);
-	Map<Quad> *tMap = new Map<Quad>(
-	        tFindQuads->QuadCorners(),
-	        tFindQuads->NumQuads());
+	Map<std::vector<Quad> > *tMap = new Map<std::vector<Quad> >(tFindQuads->Quads());
 	mPipeables.push_back(tMap);
 	*tEnsureGreyscale | *tDetectEdges | *tFindQuads | *tMap;
 

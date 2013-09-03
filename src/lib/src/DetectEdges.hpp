@@ -21,7 +21,7 @@
 #define DetectEdges_HPP
 
 #include "Pipeable.hpp"
-#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
 
 namespace chilitags {
 
@@ -33,11 +33,11 @@ DetectEdges(
         const int pLowThreshold,
         const int pHighThreshold,
         const int pApertureSize,
-        const IplImage *const *pInputImage);
+        const cv::Mat *pInputImage);
 
 virtual ~DetectEdges();
 
-const IplImage *const *GetOutputImage() const {
+const cv::Mat *GetOutputImage() const {
 	return &mOutputImage;
 }
 
@@ -46,8 +46,8 @@ protected:
 const int mLowThreshold;
 const int mHighThreshold;
 const int mApertureSize;
-const IplImage *const *mInputImage;
-IplImage *mOutputImage;
+const cv::Mat *mInputImage;
+cv::Mat mOutputImage;
 
 void run();
 

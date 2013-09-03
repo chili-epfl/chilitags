@@ -46,7 +46,7 @@ public:
 // the tags detected from two different cameras.
 Chilitag(
 	int pMarkerId,
-	int pNFramesToPersist = 0,
+	int pNFramesToPersist = 1,
 	Registrar &pRegistrar = Registrar::GetDefault());
 
 // Returns true if the tag was present on the image given to the last update

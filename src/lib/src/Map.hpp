@@ -25,20 +25,18 @@
 
 namespace chilitags {
 
-template <class T>
+template <class Iterable>
 class Map : public Pipeable
 {
 public:
 
-Map(const T *const *pDomain,
-    const size_t *pSize) :
+Map(const Iterable *pDomain) :
 	mFunction(0),
-	mVariable(**pDomain),
-	mDomain(pDomain),
-	mSize(pSize){
+	mVariable(),
+	mDomain(pDomain){
 }
 
-const T *Variable() const {
+const typename Iterable::value_type *Variable() const {
 	return &mVariable;
 }
 void Function(Pipeable *pFunction){
@@ -48,19 +46,17 @@ void Function(Pipeable *pFunction){
 protected:
 void run()
 {
-	const unsigned int tSize = *mSize;
-	const T *const tDomain = *mDomain;
-	for (unsigned int i = 0; i < tSize; ++i)
+	for (typename Iterable::const_iterator it = mDomain->begin();
+		it != mDomain->end(); ++it)
 	{
-		mVariable = tDomain[i];
+		mVariable = *it;
 		mFunction->start();
 	}
 }
 
 Pipeable *mFunction;
-T mVariable;
-const T *const *mDomain;
-const size_t *mSize;
+typename Iterable::value_type mVariable;
+const Iterable *mDomain;
 
 private:
 Map(const Map&);

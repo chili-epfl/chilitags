@@ -21,7 +21,6 @@
 #define Undistort_HPP
 
 #include "Pipeable.hpp"
-#include <opencv2/opencv.hpp>
 #include <Quad.hpp>
 
 namespace chilitags {
@@ -30,9 +29,10 @@ class Undistort : public Pipeable
 {
 public:
 Undistort(
-        const IplImage *const *pInputImage,
+        const cv::Mat *pInputImage,
         const Quad *pCorners);
-const IplImage *const *GetOutputImage() const {
+
+const cv::Mat *GetOutputImage() const {
 	return &mUndistortedTag;
 }
 
@@ -41,14 +41,15 @@ virtual ~Undistort();
 protected:
 void run();
 
-const IplImage *const *mInputImage;
+const cv::Mat *mInputImage;
 const Quad *mCorners;
 
-CvPoint2D32f mSrcBoundaries[4];
-CvPoint2D32f mDstBoundaries[4];
-CvMat *mTransformation;
+const cv::Size mSize;
 
-IplImage *mUndistortedTag;
+cv::Point2f mSrcBoundaries[4];
+cv::Point2f mDstBoundaries[4];
+
+cv::Mat mUndistortedTag;
 
 private:
 Undistort(const Undistort&);

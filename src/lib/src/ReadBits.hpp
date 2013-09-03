@@ -21,7 +21,6 @@
 #define ReadBits_HPP
 
 #include "Pipeable.hpp"
-#include <opencv2/opencv.hpp>
 #include "Binarize.hpp"
 
 namespace chilitags {
@@ -29,7 +28,7 @@ namespace chilitags {
 class ReadBits : public Pipeable
 {
 public:
-ReadBits(const IplImage *const *pInputImage);
+ReadBits(const cv::Mat *pInputImage);
 const unsigned char *const *GetBits() const {
 	return &mMatrix;
 }

@@ -21,7 +21,7 @@
 #define EnsureGreyscale_HPP
 
 #include "Pipeable.hpp"
-#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
 
 namespace chilitags {
 
@@ -29,18 +29,18 @@ class EnsureGreyscale : public Pipeable
 {
 public:
 
-EnsureGreyscale(const IplImage *const *pInputImage);
+EnsureGreyscale(const cv::Mat *pInputImage);
 virtual ~EnsureGreyscale();
 
-const IplImage *const *GetOutputImage() const {
+const cv::Mat *GetOutputImage() const {
 	return &mOutputImage;
 }
 
 protected:
 void run();
 
-const IplImage *const *mInputImage;
-IplImage * mOutputImage;
+const cv::Mat *mInputImage;
+cv::Mat mOutputImage;
 
 private:
 EnsureGreyscale(const EnsureGreyscale&);

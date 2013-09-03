@@ -180,7 +180,5 @@ Despite the efforts done to extract this release from "research code",
 Chilitags can easily be improved on the software engineering level.  Chilitags
 have been extensively used in the past years, but no proper tests have been
 developed.  Documentation have been created only for this release, and can
-probably be augmented.  The coding style can also be improved, especially
-regarding the purity of the C++ regarding C aspects, or the use of legacy
-features of OpenCV.  Contributions are very welcome.
+probably be augmented. Contributions are very welcome.
 

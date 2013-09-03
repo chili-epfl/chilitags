@@ -21,7 +21,7 @@
 #define Binarize_HPP
 
 #include "Pipeable.hpp"
-#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
 
 namespace chilitags {
 
@@ -34,11 +34,11 @@ public:
 Binarize(
         float pThreshold,
         float pWindowSizePerc,
-        const IplImage *const *pInputImage);
+        const cv::Mat *pInputImage);
 
 virtual ~Binarize();
 
-const IplImage *const *GetOutputImage() const {
+const cv::Mat *GetOutputImage() const {
 	return &mOutputImage;
 };
 
@@ -47,11 +47,9 @@ void run();
 
 float mThreshold;
 float mWindowSizePerc;
-const IplImage *const *mInputImage;
-int mInputWidth;
-int mInputHeight;
-IplImage *mIntegralImage;
-IplImage *mOutputImage;
+const cv::Mat *mInputImage;
+cv::Mat mIntegralImage;
+cv::Mat mOutputImage;
 
 private:
 Binarize(const Binarize&);

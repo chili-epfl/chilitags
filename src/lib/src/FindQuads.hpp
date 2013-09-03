@@ -21,7 +21,6 @@
 #define FindQuads_H
 
 #include "Pipeable.hpp"
-#include <opencv2/opencv.hpp>
 #include <Quad.hpp>
 
 namespace chilitags {
@@ -29,27 +28,21 @@ namespace chilitags {
 class FindQuads : public Pipeable
 {
 public:
-FindQuads(const IplImage *const *pBinaryImage);
+FindQuads(const cv::Mat *pBinaryImage);
 ~FindQuads();
 
-const Quad *const *QuadCorners() const {
-	return &mQuadsCorners;
-}
-const size_t *NumQuads() const {
-	return &mNumQuads;
+const std::vector<Quad> *Quads() const {
+	return &mQuads;
 }
 
 protected:
 virtual void run();
 
-const IplImage *const *mBinaryImage;
+const cv::Mat *mBinaryImage;
 static const int scScaledCopiesCount = 3;
-IplImage *mScaledCopies[scScaledCopiesCount];
-CvMemStorage* mStorage;
+cv::Mat mScaledCopies[scScaledCopiesCount];
 
-static const int scMaxNumQuads = 1000;
-Quad *const mQuadsCorners;
-size_t mNumQuads;
+std::vector<Quad> mQuads;
 
 private:
 FindQuads(const FindQuads&);
