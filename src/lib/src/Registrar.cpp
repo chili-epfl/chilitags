@@ -23,7 +23,7 @@ chilitags::Registrar *chilitags::Registrar::sDefaultRegistrar = 0;
 
 chilitags::Registrar::Registrar() :
 	mCodec(10, 16, 10, "1010101010", "10001000000100001"),
-	mCorners(new CvPoint2D32f *[mCodec.getMaxTagsNumber()]),
+	mCorners(new cv::Point2f *[mCodec.getMaxTagsNumber()]),
 	mFrameId(0),
 	mLastDetectedFrame(new int[mCodec.getMaxTagsNumber()])
 {
@@ -46,7 +46,7 @@ void chilitags::Registrar::registerChilitag(int pId)
 
 	if (tCountBeforeAdding < mCodec.getNTotalTagsTracked())
 	{
-		mCorners[tTrackingId] = new CvPoint2D32f[4];
+		mCorners[tTrackingId] = new cv::Point2f[4];
 		mLastDetectedFrame[tTrackingId] = -1;
 	}
 }
@@ -57,7 +57,7 @@ void chilitags::Registrar::reset()
 	mFrameId = (mFrameId<0) ? 0 : mFrameId;
 }
 
-void chilitags::Registrar::set(int pId, const CvPoint2D32f *pCorners)
+void chilitags::Registrar::set(int pId, const cv::Point2f *pCorners)
 {
 	int tTrackingId = mCodec.getTrackingId(pId);
 	mLastDetectedFrame[tTrackingId] = mFrameId;

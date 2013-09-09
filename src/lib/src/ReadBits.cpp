@@ -21,7 +21,7 @@
 
 //#define DEBUG_ReadBits
 #ifdef DEBUG_ReadBits
-#include <opencv2/highgui/highgui.hpp>
+#include <iostream>
 #endif
 
 namespace {
@@ -29,12 +29,12 @@ static const int scDataSize = 6;
 static const int scTagWarpZoom = 16;
 }
 
-chilitags::ReadBits::ReadBits(const IplImage *const *pInputImage) :
+chilitags::ReadBits::ReadBits(const cv::Mat *pInputImage) :
 	mBinarize(0.95f, 0.5f, pInputImage),
 	mMatrix(new unsigned char[scDataSize*scDataSize])
 {
 #ifdef DEBUG_ReadBits
-	cvNamedWindow("ReadBits");
+	cv::namedWindow("ReadBits");
 #endif
 }
 
@@ -47,13 +47,12 @@ chilitags::ReadBits::~ReadBits()
 void chilitags::ReadBits::run()
 {
 	mBinarize.start();
-	const IplImage * tBinarizedImage = *mBinarize.GetOutputImage();
-	unsigned char *tData = (unsigned char *) (tBinarizedImage)->imageData;
-	int tWidthStep = tBinarizedImage->widthStep;
+	const cv::Mat tBinarizedImage = *mBinarize.GetOutputImage();
+	int tWidthStep = tBinarizedImage.cols;
 
 #ifdef DEBUG_ReadBits
-	cvShowImage("ReadBits", tBinarizedImage);
-	cvWaitKey(0);
+	cv::imshow("ReadBits", tBinarizedImage);
+	cv::waitKey(0);
 #endif
 
 	for (int i = 0; i < scDataSize; ++i)
@@ -66,10 +65,16 @@ void chilitags::ReadBits::run()
 				for(int x=0; x<scTagWarpZoom; ++x)
 				{
 					int tPosition = (scTagWarpZoom*i+y)*tWidthStep + j*scTagWarpZoom+x;
-					tVotesForWhite += tData[tPosition]/255;
+					tVotesForWhite += tBinarizedImage.at<uchar>(tPosition)/255;
 				}
 			}
 			mMatrix[i*scDataSize + j] = (tVotesForWhite > scTagWarpZoom*scTagWarpZoom/2);
+#ifdef DEBUG_ReadBits
+			std::cout << (int) mMatrix[i*scDataSize + j];
+#endif
 		}
+#ifdef DEBUG_ReadBits
+		std::cout << std::endl;
+#endif
 	}
 }

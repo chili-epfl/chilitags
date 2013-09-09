@@ -21,7 +21,7 @@
 #define Registrar_HPP
 
 #include "Codec.hpp"
-#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
 
 namespace chilitags {
 
@@ -61,10 +61,10 @@ int getFrameId() const {
 void reset();
 
 // Allows to individually set the information of newly detected tags.
-void set(int pId, const CvPoint2D32f *pCorners);
+void set(int pId, const cv::Point2f *pCorners);
 
 // Accessor to the corners of a tag. See Chilitag::getCorners()
-const CvPoint2D32f *getCorners(int pId) const {
+const cv::Point2f *getCorners(int pId) const {
 	return mCorners[mCodec.getTrackingId(pId)];
 }
 
@@ -78,7 +78,7 @@ int getLastDetectedFrame(int pId) const {
 protected:
 static Registrar *sDefaultRegistrar;
 Codec mCodec;
-CvPoint2D32f **mCorners;
+cv::Point2f **mCorners;
 int mFrameId;
 int *mLastDetectedFrame;
 

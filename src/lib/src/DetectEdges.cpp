@@ -18,30 +18,27 @@
 *******************************************************************************/
 
 #include "DetectEdges.hpp"
-#include <CvConvenience.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 chilitags::DetectEdges::DetectEdges(
         const int pLowThreshold,
         const int pHighThreshold,
         const int pApertureSize,
-        const IplImage *const *pInputImage
+        const cv::Mat *pInputImage
         ) :
 	mLowThreshold(pLowThreshold),
 	mHighThreshold(pHighThreshold),
 	mApertureSize(pApertureSize),
 	mInputImage(pInputImage),
-	mOutputImage(cvCreateImage(cvSize(1,1), IPL_DEPTH_8U,1))
+	mOutputImage()
 {
 }
 
 chilitags::DetectEdges::~DetectEdges()
 {
-	cvReleaseImage(&mOutputImage);
 }
 
 void chilitags::DetectEdges::run()
 {
-	const IplImage *const tInputImage = *mInputImage;
-	CvConvenience::matchImageFormats(tInputImage, &mOutputImage, true);
-	cvCanny(tInputImage,mOutputImage,mLowThreshold,mHighThreshold,mApertureSize);
+	cv::Canny(*mInputImage, mOutputImage,mLowThreshold,mHighThreshold,mApertureSize);
 }
