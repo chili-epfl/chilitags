@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
 				chilitags::Quad tCorners = tTag.getCorners();
 
 				// We start by drawing this quadrilateral
-				for (size_t i = 0; i < chilitags::Quad::scNPoints; ++i) {
+				for (size_t i = 0; i < tCorners.size(); ++i) {
 					cv::line(
 						tOutputImage,
 						scPrecision*tCorners[i],

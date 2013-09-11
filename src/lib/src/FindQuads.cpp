@@ -33,7 +33,7 @@ struct IsSimilarTo{
 	IsSimilarTo(chilitags::Quad pQuad):mQuad(pQuad){}
 	bool operator()(const chilitags::Quad &pQuad) {
 		// TODO make it function of the perimeter
-		static const int scEpsilon = chilitags::Quad::scNPoints*1;
+		static const int scEpsilon = mQuad.size() * 1;
 		// TODO no seriously, do something
 		float tDistSum = mQuad[0].x+mQuad[0].y+mQuad[1].x+mQuad[1].y+mQuad[2].x+mQuad[2].y+mQuad[3].x+mQuad[3].y-pQuad[0].x-pQuad[0].y-pQuad[1].x-pQuad[1].y-pQuad[2].x-pQuad[2].y-pQuad[3].x-pQuad[3].y;
 		return -scEpsilon < tDistSum && tDistSum < scEpsilon;
@@ -103,7 +103,8 @@ void chilitags::FindQuads::run()
 			double tPerimeter = std::abs(cv::arcLength(*contour, true));
 			double tArea = std::abs(cv::contourArea(*contour));
 
-			if (tPerimeter > Quad::scNPoints*scMinTagSize && tArea > scMinTagSize*scMinTagSize)
+			if (tPerimeter > 4*scMinTagSize   // Quad -> 4 points
+			    && tArea > scMinTagSize*scMinTagSize)
 			{
 				std::vector<cv::Point> approxContour;
 				cv::approxPolyDP( *contour, approxContour, tPerimeter*0.02, true);
@@ -111,7 +112,7 @@ void chilitags::FindQuads::run()
 				//TODO: get convex hull
 				//http://stackoverflow.com/questions/10533233/opencv-c-obj-c-advanced-square-detection
 
-				if (approxContour.size() == (int) Quad::scNPoints
+				if (approxContour.size() == 4 // Quad -> 4 points
 				    && cv::isContourConvex(approxContour))
 				{
 					Quad tCandidate;
