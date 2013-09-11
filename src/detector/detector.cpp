@@ -25,6 +25,12 @@
 // This header provides an easy way to use the tag detection information
 #include <Chilitag.hpp>
 
+#ifdef OPENCV3
+#include <opencv2/core/utility.hpp> // getTickCount...
+#endif
+
+#include <opencv2/core/core_c.h> // CV_AA
+
 // OpenCV goodness for I/O
 #include <opencv2/highgui/highgui.hpp>
 
@@ -52,8 +58,13 @@ int main(int argc, char* argv[])
 		std::cerr << "Unable to initialise video capture." << std::endl;
 		return 1;
 	}
+#ifdef OPENCV3
+	tCapture.set(cv::CAP_PROP_FRAME_WIDTH, tXRes);
+	tCapture.set(cv::CAP_PROP_FRAME_HEIGHT, tYRes);
+#else
 	tCapture.set(CV_CAP_PROP_FRAME_WIDTH, tXRes);
 	tCapture.set(CV_CAP_PROP_FRAME_HEIGHT, tYRes);
+#endif
 
 	cv::namedWindow("DisplayChilitags");
 

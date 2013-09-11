@@ -94,7 +94,7 @@ void chilitags::FindQuads::run()
 		cv::Size tScaledSize = mScaledCopies[i].size();
 #endif
 		std::vector<std::vector<cv::Point> > contours;
-		cv::findContours(mScaledCopies[i], contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+		cv::findContours(mScaledCopies[i], contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
 		for (std::vector<std::vector<cv::Point> >::iterator contour = contours.begin();
 			contour != contours.end();

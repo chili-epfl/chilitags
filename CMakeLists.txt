@@ -6,10 +6,14 @@ set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "1")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 
-find_package( OpenCV REQUIRED core calib3d )
+find_package( OpenCV REQUIRED core imgproc calib3d highgui ts )
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 
-add_subdirectory (src/lib)
+if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
+    add_definitions(-DOPENCV3)
+endif()
+
+add_subdirectory(src/lib)
 
 # documentation generation
 include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
@@ -32,8 +36,8 @@ if (WITH_DETECTOR)
         detector_source_files
         src/detector/*
     )
+    include_directories(${OpenCV_INCLUDE_DIRS})
     include_directories(src/lib/include)
-    find_package( OpenCV REQUIRED highgui )
     add_executable(
         chilitags-detector
         ${detector_source_files}
@@ -54,7 +58,7 @@ if (WITH_CREATOR)
         creator_source_files
         src/creator/*
     )
-    find_package( OpenCV REQUIRED imgproc highgui )
+    include_directories(${OpenCV_INCLUDE_DIRS})
     add_executable(
         chilitags-creator
         ${creator_source_files}
@@ -75,7 +79,6 @@ if (WITH_SAMPLES)
     )
     add_definitions(-std=c++11)
     include_directories(src/lib/include)
-    find_package( OpenCV REQUIRED highgui )
     add_executable(
         objects
         ${objects_source_files}

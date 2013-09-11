@@ -18,7 +18,7 @@ add_library(
 
 add_definitions(-std=c++11)
 
-include_directories(include)
+include_directories(include ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(chilitags ${OpenCV_LIBS})
 
 install (TARGETS chilitags

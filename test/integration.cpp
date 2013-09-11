@@ -1,4 +1,9 @@
+#ifdef OPENCV3
+#include <opencv2/ts.hpp>
+#else
 #include <opencv2/ts/ts.hpp>
+#endif
+
 #include <opencv2/highgui/highgui.hpp>
 #include <TagDrawer.hpp>
 

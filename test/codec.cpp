@@ -1,7 +1,16 @@
+#ifdef OPENCV3
+#include <opencv2/ts.hpp>
+#else
 #include <opencv2/ts/ts.hpp>
+#endif
+
 #include <Codec.hpp>
 
 #include "HardcodedIds.hpp"
+
+using namespace cv;
+using namespace cvtest;
+using namespace std;
 
 TEST(Codec, Code) {
 	chilitags::Codec tCodec;
