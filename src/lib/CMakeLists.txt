@@ -17,7 +17,6 @@ add_library(
 )
 
 include_directories(include)
-find_package( OpenCV REQUIRED )
 target_link_libraries(chilitags ${OpenCV_LIBS})
 
 install (TARGETS chilitags

@@ -6,6 +6,9 @@ set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "0")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 
+find_package( OpenCV REQUIRED core )
+message(STATUS "OpenCV version: ${OpenCV_VERSION}")
+
 add_subdirectory (src/lib)
 
 # documentation generation
@@ -27,7 +30,7 @@ if (COMPILE_TESTS)
         src/detector/*
     )
     include_directories(src/lib/include)
-    find_package( OpenCV REQUIRED )
+    find_package( OpenCV REQUIRED highgui )
     add_executable(
         detector
         ${detector_source_files}
@@ -45,7 +48,7 @@ if (COMPILE_CREATOR)
         creator_source_files
         src/creator/*
     )
-    find_package( OpenCV REQUIRED )
+    find_package( OpenCV REQUIRED imgproc highgui )
     add_executable(
         creator
         ${creator_source_files}
