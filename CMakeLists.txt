@@ -21,6 +21,7 @@ include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
 
 option (WITH_DETECTOR "provides a test application" ON)
 option (WITH_CREATOR "provides the marker generation tool" ON)
+option (WITH_SAMPLES "compile misc demos" OFF)
 
 if (WITH_DETECTOR)
 
@@ -61,6 +62,27 @@ if (WITH_CREATOR)
     target_link_libraries( chilitags-creator ${OpenCV_LIBS} )
 
     install (TARGETS chilitags-creator RUNTIME DESTINATION bin)
+
+endif()
+
+if (WITH_SAMPLES)
+
+    set(
+        tags3dpose_source_files
+        samples/tags_3dpose/tags_3dpose.cpp
+    )
+    add_definitions(-std=c++11)
+    include_directories(src/lib/include)
+    find_package( OpenCV REQUIRED highgui calib3d )
+    add_executable(
+        tags3dpose
+        ${tags3dpose_source_files}
+    )
+
+    target_link_libraries( tags3dpose chilitags )
+    target_link_libraries( tags3dpose ${OpenCV_LIBS} )
+
+    install (TARGETS tags3dpose RUNTIME DESTINATION bin)
 
 endif()
 
