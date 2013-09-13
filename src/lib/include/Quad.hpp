@@ -22,74 +22,57 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <vector>
-
 namespace chilitags {
 
 // A representation of a quadrilateral, with a minimum set of geometrical
 // functionalities (center, scale, and orientation).
 struct Quad {
 
-	std::vector<cv::Point2f> points;
+	static const size_t scNPoints = 4;
+	cv::Point2f mCorners[scNPoints];
 
-	Quad() {
-	    points = std::vector<cv::Point2f>(4);
-	}
+	Quad() { }
 
 	Quad(const cv::Point2f pCorners[4]) {
-	    points = std::vector<cv::Point2f>(4);
-		for (size_t i=0; i<4;i++) points[i] = pCorners[i];
-	}
-
-	int size() const {
-		return points.size();
-	}
-
-	double perimeter() const {
-		double length = 0.0;
-		for (int i = 0; i < size() - 1; i++)
-		{
-			length += cv::norm(points[i]-points[i+1]);
-		}
-		return length;
+		for (size_t i=0; i<Quad::scNPoints; ++i) mCorners[i] = pCorners[i];
 	}
 
 
 	cv::Point2f &operator [](size_t pIndex) {
-		return points[pIndex];
+		return mCorners[pIndex];
 	}
 
 	const cv::Point2f &operator [] (size_t pIndex) const {
-		return points[pIndex];
+		return mCorners[pIndex];
 	}
 
 	// Returns the intersection of the diagonals.
 	cv::Point2f getCenter() const {
 
-		cv::Point2f d1 = points[2] - points[0];
-		cv::Point2f d2 = points[3] - points[1];
-		cv::Point2f d3 = points[0] - points[1];
+		cv::Point2f d1 = mCorners[2] - mCorners[0];
+		cv::Point2f d2 = mCorners[3] - mCorners[1];
+		cv::Point2f d3 = mCorners[0] - mCorners[1];
 
 		float ratio = d1.cross(d2);
 
 		static const float eps = 1e-8f;
 		if (std::abs(ratio) > eps) {
-		return points[0] + (d2.cross(d3) / ratio) * d1;
+		return mCorners[0] + (d2.cross(d3) / ratio) * d1;
 		}
 
-		return points[0];
+		return mCorners[0];
 	}
 
 	// Returns the area of the quadrilateral
 	float getScale() const {
-		cv::Point2f d1 = points[2] - points[0];
-		cv::Point2f d2 = points[3] - points[1];
+		cv::Point2f d1 = mCorners[2] - mCorners[0];
+		cv::Point2f d2 = mCorners[3] - mCorners[1];
 		return 0.5f*d1.cross(d2);
 	}
 
 	// Returns the orientation in gradian of the top-left to top-right vector
 	float getAngle() const {
-		cv::Point2f tTopLine = points[1]-points[0];
+		cv::Point2f tTopLine = mCorners[1]-mCorners[0];
 		return std::atan2(tTopLine.y, tTopLine.x);
 	}
 

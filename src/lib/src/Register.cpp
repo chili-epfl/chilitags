@@ -44,7 +44,7 @@ void chilitags::Register::run()
 		int tRotation = *mRotation;
 		const Quad tCorners = *mCorners;
 		cv::Point2f tOrientedCorners[4];
-		for (size_t i = 0; i < 4; ++i) {
+		for (size_t i = 0; i < Quad::scNPoints; ++i) {
 			tOrientedCorners[i] = tCorners[(i+tRotation)%4];
 		}
 		mRegistrar.set(tDecodedTag, tOrientedCorners);

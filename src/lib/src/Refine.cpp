@@ -84,7 +84,7 @@ void chilitags::Refine::run()
 		static const double scProximityRatio = 1.5/10.0;
 		double tAverageSideLength =
 			cv::arcLength(mRefinedCorners, true)
-			/ 4.;
+			/ (double) Quad::scNPoints;
 		double tCornerNeighbourhood = scProximityRatio*tAverageSideLength;
 
 		cv::cornerSubPix(tInputImage(tRoi), mRefinedCorners,
