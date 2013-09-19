@@ -53,11 +53,11 @@ struct Quad {
 		cv::Point2f d2 = mCorners[3] - mCorners[1];
 		cv::Point2f d3 = mCorners[0] - mCorners[1];
 
-		float ratio = d1.cross(d2);
+		float ratio = d1.x * d2.y - d1.y * d2.x;
 
 		static const float eps = 1e-8f;
 		if (std::abs(ratio) > eps) {
-		return mCorners[0] + (d2.cross(d3) / ratio) * d1;
+		return mCorners[0] + ( (d2.x * d3.y - d2.y * d3.x) / ratio) * d1;
 		}
 
 		return mCorners[0];
@@ -67,7 +67,7 @@ struct Quad {
 	float getScale() const {
 		cv::Point2f d1 = mCorners[2] - mCorners[0];
 		cv::Point2f d2 = mCorners[3] - mCorners[1];
-		return 0.5f*d1.cross(d2);
+		return 0.5f* (d1.x * d2.y - d1.y * d2.x);
 	}
 
 	// Returns the orientation in gradian of the top-left to top-right vector
