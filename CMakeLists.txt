@@ -19,10 +19,10 @@ include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
 ##########################################
 
 
-option (COMPILE_TESTS "compile demo applications" ON)
-option (COMPILE_CREATOR "compile tag creation tool" ON)
+option (WITH_DETECTOR "provides a test application" ON)
+option (WITH_CREATOR "provides the marker generation tool" ON)
 
-if (COMPILE_TESTS)
+if (WITH_DETECTOR)
 
     file(
         GLOB_RECURSE
@@ -32,16 +32,19 @@ if (COMPILE_TESTS)
     include_directories(src/lib/include)
     find_package( OpenCV REQUIRED highgui )
     add_executable(
-        detector
+        chilitags-detector
         ${detector_source_files}
     )
 
-    target_link_libraries( detector chilitags )
-    target_link_libraries( detector ${OpenCV_LIBS} )
+    target_link_libraries( chilitags-detector chilitags )
+    target_link_libraries( chilitags-detector ${OpenCV_LIBS} )
+
+    install (TARGETS chilitags-detector RUNTIME DESTINATION bin)
+
 
 endif()
 
-if (COMPILE_CREATOR)
+if (WITH_CREATOR)
 
     file(
         GLOB_RECURSE
@@ -50,12 +53,14 @@ if (COMPILE_CREATOR)
     )
     find_package( OpenCV REQUIRED imgproc highgui )
     add_executable(
-        creator
+        chilitags-creator
         ${creator_source_files}
     )
 
-    target_link_libraries( creator chilitags )
-    target_link_libraries( creator ${OpenCV_LIBS} )
+    target_link_libraries( chilitags-creator chilitags )
+    target_link_libraries( chilitags-creator ${OpenCV_LIBS} )
+
+    install (TARGETS chilitags-creator RUNTIME DESTINATION bin)
 
 endif()
 
