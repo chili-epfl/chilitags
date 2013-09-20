@@ -30,9 +30,6 @@
 
 #include <iostream>
 
-// OpenCV key codes
-#define Q_KEY 1048689
-
 
 int main(int argc, char* argv[])
 {
@@ -70,7 +67,7 @@ int main(int argc, char* argv[])
 	chilitags::DetectChilitags tDetectChilitags(&tInputImage);
 
 	// Main loop, exiting when 'q is pressed'
-	for (; Q_KEY != cv::waitKey(10); ) {
+	for (; 'q' != (char) cv::waitKey(1); ) {
 
 		// Capture a new image.
 		tCapture.read(tInputImage);
