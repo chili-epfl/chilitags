@@ -33,6 +33,10 @@ struct Quad {
 
 	Quad() { }
 
+	Quad(const std::vector<cv::Point2f> &pCorners) {
+		for (size_t i=0; i<Quad::scNPoints; ++i) mCorners[i] = pCorners[i];
+	}
+
 	Quad(const cv::Point2f pCorners[4]) {
 		for (size_t i=0; i<Quad::scNPoints; ++i) mCorners[i] = pCorners[i];
 	}
@@ -44,6 +48,12 @@ struct Quad {
 
 	const cv::Point2f &operator [] (size_t pIndex) const {
 		return mCorners[pIndex];
+	}
+
+	std::vector<cv::Point2f> toVector() const {
+		std::vector<cv::Point2f> tResult(4);
+		for (size_t i=0; i<Quad::scNPoints; ++i) tResult[i] = mCorners[i];
+		return tResult;
 	}
 
 	// Returns the intersection of the diagonals.
