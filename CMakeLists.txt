@@ -9,16 +9,6 @@ set(CPACK_PACKAGE_VERSION_PATCH "0")
 find_package( OpenCV REQUIRED core calib3d )
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 
-find_package(PkgConfig)
-pkg_search_module(YAML yaml-cpp)
-if(YAML_FOUND)
-    message(STATUS "Compiling with support for YAML-based markers configuration")
-    add_definitions(-DWITH_YAML)
-else()
-    message(STATUS "yaml-cpp not found: I won't support markers configurations")
-endif()
-
-
 add_subdirectory (src/lib)
 
 # documentation generation
@@ -82,7 +72,7 @@ if (WITH_SAMPLES)
         samples/objects/objects.cpp
     )
     add_definitions(-std=c++11)
-    include_directories(src/lib/include ${YAML_INCLUDE_DIRS})
+    include_directories(src/lib/include)
     find_package( OpenCV REQUIRED highgui )
     add_executable(
         objects
@@ -90,7 +80,7 @@ if (WITH_SAMPLES)
     )
 
     target_link_libraries( objects chilitags )
-    target_link_libraries( objects ${OpenCV_LIBS} ${YAML_LDFLAGS} )
+    target_link_libraries( objects ${OpenCV_LIBS} )
 
     install (TARGETS objects RUNTIME DESTINATION bin)
 

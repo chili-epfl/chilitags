@@ -86,13 +86,10 @@ int main(int argc, char* argv[])
     cv::Mat tInputImage;
     chilitags::DetectChilitags detector(&tInputImage);
 
-#ifdef WITH_YAML
     chilitags::Objects objects(cameraMatrix, distCoeffs,
                                configFilename,
                                30);  //default size
-#else // no support for YAML? then detect all markers
-    chilitags::Objects objects(cameraMatrix, distCoeffs, 30);
-#endif
+
     for (; 'q' != (char) cv::waitKey(10); ) {
 
         capture.read(tInputImage);

@@ -9,9 +9,6 @@
 
 using namespace std;
 using namespace cv;
-#ifdef WITH_YAML
-using namespace YAML;
-#endif
 using namespace chilitags;
 
 Objects::Objects(InputArray cameraMatrix, 
@@ -27,7 +24,6 @@ Objects::Objects(InputArray cameraMatrix,
     init(size);
 }
 
-#ifdef WITH_YAML
 Objects::Objects(InputArray cameraMatrix, 
                  InputArray distCoeffs, 
                  const string& configuration, 
@@ -41,21 +37,6 @@ Objects::Objects(InputArray cameraMatrix,
 {
     init(defaultSize);
 }
-
-Objects::Objects(InputArray cameraMatrix, 
-                 InputArray distCoeffs, 
-                 const Node& configuration, 
-                 float defaultSize,
-                 float gain):
-                    cameraMatrix(cameraMatrix),
-                    distCoeffs(distCoeffs),
-                    _config(configuration),
-                    gain(gain),
-                    hasObjectConfiguration(true)
-{
-    init(defaultSize);
-}
-#endif
 
 void Objects::init(float size)
 {

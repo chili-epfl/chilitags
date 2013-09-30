@@ -5,12 +5,7 @@
 #include <array>
 #include <unordered_map>
 #include <memory> // for shared_ptr
-#include <opencv2/core/core.hpp> // for Point3f
-
-#ifdef WITH_YAML
-#include <yaml-cpp/yaml.h>
-#endif
-
+#include <opencv2/core/core.hpp> // for Point3f (and FileStorage)
 
 namespace chilitags {
 
@@ -51,9 +46,6 @@ class ObjectConfig {
 
 public:
     ObjectConfig(const std::string& configuration);
-#ifdef WITH_YAML
-    ObjectConfig(const YAML::Node& configuration);
-#endif // WITH_YAML
 
     std::vector<Object> objects() const;
 
@@ -61,9 +53,6 @@ public:
     const MarkerConfig* marker(int markerId) const;
 
 private:
-#ifdef WITH_YAML
-    void parse(const YAML::Node& configuration);
-#endif // WITH_YAML
     void computeCorners(MarkerConfig& marker) const;
     std::vector<Object> _objects;
     std::unordered_map<int, const MarkerConfig*> _markers;

@@ -18,8 +18,8 @@ add_library(
 
 add_definitions(-std=c++11)
 
-include_directories(include ${YAML_INCLUDE_DIRS})
-target_link_libraries(chilitags ${OpenCV_LIBS} ${YAML_LDFLAGS})
+include_directories(include)
+target_link_libraries(chilitags ${OpenCV_LIBS})
 
 install (TARGETS chilitags
 	LIBRARY DESTINATION lib

@@ -6,10 +6,6 @@
 #include <map>
 #include <unordered_map>
 
-#ifdef WITH_YAML
-#include <yaml-cpp/yaml.h>
-#endif
-
 #include <opencv2/core/core.hpp>
 
 #include "ObjectConfig.hpp"
@@ -28,14 +24,6 @@ public:
             float size,
             float gain = DEFAULT_GAIN);
 
-#ifdef WITH_YAML
-
-    Objects(cv::InputArray cameraMatrix,
-            cv::InputArray distCoeffs,
-            const std::string& configuration, 
-            float defaultSize = 0,
-            float gain = DEFAULT_GAIN);
-
     /**
      *
      * \param defaultSize: default size of markers, to be used for markers 
@@ -45,11 +33,9 @@ public:
      */
     Objects(cv::InputArray cameraMatrix,
             cv::InputArray distCoeffs,
-            const YAML::Node& configuration, 
+            const std::string& configuration, 
             float defaultSize = 0,
             float gain = DEFAULT_GAIN);
-
-#endif
 
     /** Returns the list of all detected objects with
      * their transformation matrices, in the camera

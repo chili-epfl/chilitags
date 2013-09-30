@@ -5,44 +5,50 @@
 
 using namespace std;
 using namespace cv;
-#ifdef WITH_YAML
-using namespace YAML;
-#endif
 using namespace chilitags;
 
-ObjectConfig::ObjectConfig(const string& configuration) {
+ObjectConfig::ObjectConfig(const string& filename) {
 
-#ifdef WITH_YAML
-    ifstream fin(configuration);
-    Parser parser(fin);
-    Node doc;
-    parser.GetNextDocument(doc);
-    parse(doc);
-#endif
+    FileStorage configuration(filename, FileStorage::READ);
+
+    for(auto it=configuration.root().begin();
+             it!=configuration.root().end();
+             ++it) {
+
+        Object object;
+
+        object.name = (*it).name();
+
+        for(auto marker=(*it).begin();marker!=(*it).end();++marker) {
+            MarkerConfig config;
+
+            config.id = (*marker)["marker"];
+            config.size = (*marker)["size"];
+            (*marker)["translation"][0] >> config.translation[0];
+            (*marker)["translation"][1] >> config.translation[1];
+            (*marker)["translation"][2] >> config.translation[2];
+            (*marker)["rotation"][0] >> config.rotation[0];
+            (*marker)["rotation"][1] >> config.rotation[1];
+            (*marker)["rotation"][2] >> config.rotation[2];
+            (*marker)["keep"] >> config.keep;
+
+            computeCorners(config);
+
+            object.markers.push_back(config);
+        }
+
+        _objects.push_back(object);
+
+        // store the markers pointer only *after* the object is
+        // stored in _objects, else we won't point to the correct
+        // address.
+        for (auto& m : _objects.back().markers) {
+            _markers[m.id] = &m;
+        }
+    }
+
 
 }
-
-#ifdef WITH_YAML
-ObjectConfig::ObjectConfig(const Node& configuration) {
-    parse(configuration);
-}
-
-void operator >> (const YAML::Node& node, array<float,3>& array) {
-    node[0] >> array[0];
-    node[1] >> array[1];
-    node[2] >> array[2];
-}
-
-void operator >> (const YAML::Node& node, MarkerConfig& conf) {
-
-    node["marker"] >> conf.id;
-    node["size"] >> conf.size;
-    if(const YAML::Node *pVec = node.FindValue("translation")) *pVec >> conf.translation;
-    if(const YAML::Node *pVec = node.FindValue("rotation")) *pVec >> conf.rotation;
-    if(const YAML::Node *pBool = node.FindValue("keep")) *pBool >> conf.keep;
-
-}
-#endif
 
 vector<Object> ObjectConfig::objects() const {
     return _objects;
@@ -70,40 +76,6 @@ const MarkerConfig* ObjectConfig::marker(int markerId) const {
     return _markers.at(markerId);
 
 }
-
-#ifdef WITH_YAML
-void ObjectConfig::parse(const YAML::Node& configuration){
-
-    for(auto it=configuration.begin();
-             it!=configuration.end();
-             ++it) {
-
-        Object object;
-
-        it.first() >> object.name;
-
-        for(auto marker=it.second().begin();marker!=it.second().end();++marker) {
-            MarkerConfig config;
-
-            *marker >> config;
-
-            computeCorners(config);
-
-            object.markers.push_back(config);
-        }
-
-        _objects.push_back(object);
-
-        // store the markers pointer only *after* the object is
-        // stored in _objects, else we won't point to the correct
-        // address.
-        for (auto& m : _objects.back().markers) {
-            _markers[m.id] = &m;
-        }
-    }
-
-}
-#endif // WITH_YAML
 
 void ObjectConfig::computeCorners(MarkerConfig& marker) const {
 
