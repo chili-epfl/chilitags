@@ -12,10 +12,10 @@ namespace chilitags {
 struct MarkerConfig {
     int id;
     float size = 0.;
-    std::array<float, 3> translation = {0., 0., 0.};
+    std::array<float, 3> translation = {{0., 0., 0.}};
     // the rotation is specified as a XYZ Euler rotation,
     // ie, first a rotation around X, then around Y, then around Z
-    std::array<float, 3> rotation = {0., 0., 0.};
+    std::array<float, 3> rotation = {{0., 0., 0.}};
     bool keep = false;
 
     // this array stores the 3D location of the 
