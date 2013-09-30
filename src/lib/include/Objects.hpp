@@ -46,8 +46,8 @@ public:
 private:
     void init(float size);
 
-    cv::InputArray cameraMatrix;
-    cv::InputArray distCoeffs;
+    cv::Mat cameraMatrix;
+    cv::Mat distCoeffs;
 
     void computeTransformation(const std::string& name,
                                const std::vector<cv::Point3f>& corners,

@@ -15,8 +15,8 @@ Objects::Objects(InputArray cameraMatrix,
                  InputArray distCoeffs, 
                  float size,
                  float gain):
-                    cameraMatrix(cameraMatrix),
-                    distCoeffs(distCoeffs),
+                    cameraMatrix(cameraMatrix.getMat()),
+                    distCoeffs(distCoeffs.getMat()),
                     _config(""),
                     gain(gain),
                     hasObjectConfiguration(false)
@@ -29,8 +29,8 @@ Objects::Objects(InputArray cameraMatrix,
                  const string& configuration, 
                  float defaultSize,
                  float gain):
-                    cameraMatrix(cameraMatrix),
-                    distCoeffs(distCoeffs),
+                    cameraMatrix(cameraMatrix.getMat()),
+                    distCoeffs(distCoeffs.getMat()),
                     _config(configuration),
                     gain(gain),
                     hasObjectConfiguration(true)
