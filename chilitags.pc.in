@@ -7,4 +7,4 @@ Name: chilitags
 Description: Robust Fiducial Markers for Augmented Reality
 Version: @CPACK_PACKAGE_VERSION_MAJOR@.@CPACK_PACKAGE_VERSION_MINOR@.@CPACK_PACKAGE_VERSION_PATCH@
 Libs: -L${libdir} -lchilitags
-Cflags: -I${includedir}/chilitags
+Cflags: @COMPILE_FLAGS@ -I${includedir}/chilitags
