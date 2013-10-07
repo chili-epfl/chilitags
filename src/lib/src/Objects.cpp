@@ -48,6 +48,13 @@ void Objects::init(float size)
     }
 }
 
+void Objects::resetCalibration(cv::InputArray newCameraMatrix,
+                               cv::InputArray newDistCoeffs)
+{
+    cameraMatrix = newCameraMatrix.getMat();
+    distCoeffs = newDistCoeffs.getMat();
+}
+
 map<string, Matx44d> Objects::all() const
 {
 

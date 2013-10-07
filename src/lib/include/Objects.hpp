@@ -43,6 +43,11 @@ public:
      */
     std::map<std::string, cv::Matx44d> all() const;
 
+    /** Sets new camera calibration values.
+     */
+    void resetCalibration(cv::InputArray newCameraMatrix,
+                          cv::InputArray newDistCoeffs);
+
 private:
     void init(float size);
 
