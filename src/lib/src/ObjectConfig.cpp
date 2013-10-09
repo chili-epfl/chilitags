@@ -9,6 +9,8 @@ using namespace chilitags;
 
 ObjectConfig::ObjectConfig(const string& filename) {
 
+    if(filename.empty()) return; // nothing to load...
+
     FileStorage configuration(filename, FileStorage::READ);
 
     for(auto it=configuration.root().begin();
