@@ -4,7 +4,6 @@
 #include <vector>
 #include <array>
 #include <unordered_map>
-#include <memory> // for shared_ptr
 #include <opencv2/core/core.hpp> // for Point3f (and FileStorage)
 
 namespace chilitags {

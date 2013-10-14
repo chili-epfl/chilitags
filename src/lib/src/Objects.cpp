@@ -1,7 +1,6 @@
 #include <opencv2/calib3d/calib3d.hpp>
 
 #include "Chilitag.hpp"
-#include "Estimator.hpp"
 #include "Objects.hpp"
 
 // maximum of objects or tags that can be tracked. Must be =<1024
@@ -14,11 +13,11 @@ using namespace chilitags;
 Objects::Objects(InputArray cameraMatrix, 
                  InputArray distCoeffs, 
                  float size,
-                 float gain):
+                 int persistence):
                     cameraMatrix(cameraMatrix.getMat()),
                     distCoeffs(distCoeffs.getMat()),
                     _config(""),
-                    gain(gain),
+                    persistence(persistence),
                     hasObjectConfiguration(false)
 {
     init(size);
@@ -28,11 +27,11 @@ Objects::Objects(InputArray cameraMatrix,
                  InputArray distCoeffs, 
                  const string& configuration, 
                  float defaultSize,
-                 float gain):
+                 int persistence):
                     cameraMatrix(cameraMatrix.getMat()),
                     distCoeffs(distCoeffs.getMat()),
                     _config(configuration),
-                    gain(gain),
+                    persistence(persistence),
                     hasObjectConfiguration(true)
 {
     init(defaultSize);
@@ -55,21 +54,40 @@ void Objects::resetCalibration(cv::InputArray newCameraMatrix,
     distCoeffs = newDistCoeffs.getMat();
 }
 
-map<string, Matx44d> Objects::all() const
-{
+void Objects::update() {
 
-    map<string, Matx44d> objects;
-
-    map<const Object*, vector<Chilitag>> tagsPerObject;
-    vector<Chilitag> freeTags;
+    /******************************************************************
+     * Remove estimators of objects that have no been seen for too long
+	 * and notify the others of the new frame
+     *****************************************************************/
+	for (auto t = estimatedTranslations.begin(),
+			r = estimatedRotations.begin();
+		t != estimatedTranslations.end(); ) {
+		if ((*t).second.getMeasurementAge() > persistence) {
+			t = estimatedTranslations.erase(t);
+			r = estimatedRotations.erase(r);
+		}
+		else {
+			(*t).second.predict();
+			++t;
+			(*r).second.predict();
+			++r;
+		}
+	}
 
     /***********************************************
      *    Find tags and associate them to objects
      *    if necessary.
      **********************************************/
+
+    map<const Object*, vector<Chilitag>> tagsPerObject;
+    vector<Chilitag> freeTags;
+
     for (int i = 0; i < MAX_OBJECTS; ++i)
     {
-        Chilitag tag(i);
+		// We set the tag to not persist at all,
+		// as we will handle persistence manually along with the filter.
+        Chilitag tag(i, 0);
 
         if (tag.isPresent()) {
             auto object = _config.usedBy(i);
@@ -98,8 +116,7 @@ map<string, Matx44d> Objects::all() const
 
             computeTransformation(name, 
                                   defaultMarkerCorners,
-                                  tag.getCorners().toVector(),
-                                  objects);
+                                  tag.getCorners().toVector());
         }
     }
 
@@ -123,8 +140,7 @@ map<string, Matx44d> Objects::all() const
                 computeTransformation(
                                     string("marker_") + to_string(tag.GetMarkerId()), 
                                     localcorners,
-                                    tag.getCorners().toVector(),
-                                    objects);
+                                    tag.getCorners().toVector());
             }
 
             // first, add the corners for the tag
@@ -137,53 +153,54 @@ map<string, Matx44d> Objects::all() const
 
         }
 
-        computeTransformation(name, corners, imagePoints, objects);
+        computeTransformation(name, corners, imagePoints);
 
     }
 
+}
+
+map<string, Matx44f> Objects::all() const
+{
+    map<string, Matx44f> objects;
+	vector<string> toErase;
+    for (auto& kv : estimatedTranslations) {
+		objects[kv.first] = transformationMatrix(
+			kv.second.getEstimation(),
+			estimatedRotations.at(kv.first).getEstimation());
+	}
 
     return objects;
-
 }
 
 void Objects::computeTransformation(const string& name,
                                     const vector<Point3f>& corners,
-                                    const vector<Point2f>& imagePoints,
-                                    map<string, Matx44d>& objects) const
+                                    const vector<Point2f>& imagePoints) const
 {
         // Rotation & translation vectors, computed by cv::solvePnP
         Mat rvec, tvec;
-        
+
         // Find the 3D pose of our marker
         solvePnP(corners,
                 imagePoints,
                 cameraMatrix, distCoeffs,
                 rvec, tvec, false,
                 cv::ITERATIVE);
+		rvec = Mat_<float>(rvec);
+		tvec = Mat_<float>(tvec);
 
-        // first time we see the object?
-        if (estimatedTranslations.count(name) == 0) {
-            // we 'insert' explicitly a new estimator to be able to
-            // call the Estimator constructor with a specific gain.
-            // Using estimatedTranslations[...] would call the default
-            // constructor, thus preventing setting the gain.
-            estimatedTranslations.insert(pair<string, Estimator<Mat>>(name, Estimator<Mat>(gain)));
-            estimatedRotations.insert(pair<string, Estimator<Mat>>(name, Estimator<Mat>(gain)));
-        }
+		estimatedTranslations.emplace(name, tvec);
+		estimatedRotations.emplace(name, rvec);
 
-        estimatedTranslations.at(name) << tvec;
-        estimatedRotations.at(name) << rvec;
-
-        objects[name] = transformationMatrix(estimatedTranslations.at(name)(),
-                                             estimatedRotations.at(name)());
+        estimatedTranslations.at(name).correct(tvec);
+        estimatedRotations.at(name).correct(rvec);
 }
 
-cv::Matx44d Objects::transformationMatrix(const cv::Mat& tvec, const cv::Mat& rvec) const
+cv::Matx44f Objects::transformationMatrix(const cv::Mat& tvec, const cv::Mat& rvec) const
 {
-    Matx33d rotation;
+    Matx33f rotation;
     Rodrigues(rvec, rotation);
 
-    Matx44d trans;
+    Matx44f trans;
 
     // how to do that in an OpenCV way??
     trans(0,0) = rotation(0,0);
@@ -195,9 +212,9 @@ cv::Matx44d Objects::transformationMatrix(const cv::Mat& tvec, const cv::Mat& rv
     trans(2,0) = rotation(2,0);
     trans(2,1) = rotation(2,1);
     trans(2,2) = rotation(2,2);
-    trans(0,3) = tvec.at<double>(0);
-    trans(1,3) = tvec.at<double>(1);
-    trans(2,3) = tvec.at<double>(2);
+    trans(0,3) = tvec.at<float>(0);
+    trans(1,3) = tvec.at<float>(1);
+    trans(2,3) = tvec.at<float>(2);
     trans(3,3) = 1;
 
     return trans;

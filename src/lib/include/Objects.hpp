@@ -14,15 +14,22 @@
 
 namespace chilitags {
 
-static const float DEFAULT_GAIN=0.9;
 
 class Objects {
 
 public:
+
+	/**
+	* Default number of frames during which an object is tracked after it
+	* has disappeared. This corresponds to how much tracking will "fill
+	* the holes" of the detection
+	*/
+	static const int DEFAULT_PERSISTENCE = 30;
+
     Objects(cv::InputArray cameraMatrix, 
             cv::InputArray distCoeffs, 
             float size,
-            float gain = DEFAULT_GAIN);
+            int persistence = DEFAULT_PERSISTENCE);
 
     /**
      *
@@ -35,13 +42,19 @@ public:
             cv::InputArray distCoeffs,
             const std::string& configuration, 
             float defaultSize = 0,
-            float gain = DEFAULT_GAIN);
+            int persistence = DEFAULT_PERSISTENCE);
+	
+	/** Use this method to notify a new frame containing objects to track.
+	 * It will take care of updating the tracking data for each object,
+	 * and filtering/predicting them.
+     */
+	void update();
 
     /** Returns the list of all detected objects with
      * their transformation matrices, in the camera
      * frame.
      */
-    std::map<std::string, cv::Matx44d> all() const;
+    std::map<std::string, cv::Matx44f> all() const;
 
     /** Sets new camera calibration values.
      */
@@ -59,20 +72,19 @@ private:
 
     void computeTransformation(const std::string& name,
                                const std::vector<cv::Point3f>& corners,
-                               const std::vector<cv::Point2f>& imagePoints,
-                               std::map<std::string, cv::Matx44d>& objects) const;
+                               const std::vector<cv::Point2f>& imagePoints) const;
 
-    cv::Matx44d transformationMatrix(const cv::Mat& tvec, const cv::Mat& rvec) const;
+    cv::Matx44f transformationMatrix(const cv::Mat& tvec, const cv::Mat& rvec) const;
 
-    float gain;
+    int persistence;
     bool hasObjectConfiguration;
     std::vector<cv::Point3f> defaultMarkerCorners;
 
     ObjectConfig _config;
     
     // store, for each tag, an estimator
-    mutable std::unordered_map<std::string, Estimator<cv::Mat>> estimatedTranslations;
-    mutable std::unordered_map<std::string, Estimator<cv::Mat>> estimatedRotations;
+    mutable std::unordered_map<std::string, Estimator<3>> estimatedTranslations;
+    mutable std::unordered_map<std::string, Estimator<3>> estimatedRotations;
 
 };
 

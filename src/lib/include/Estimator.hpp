@@ -1,116 +1,88 @@
-#ifndef ESTIMATOR_H
-#define ESTIMATOR_H
+#ifndef Estimator_HPP
+#define Estimator_HPP
 
-#include <cstddef>
-#include <vector>
+#include "opencv2/video/tracking.hpp"
 
-static const size_t MAX_FRAMES_ESTIMATOR=100;
+namespace chilitags {
 
-/** A simple circular buffer, based on a std::vector
- */
-template < typename T >
-class CircularVector
-{
-public:
-    CircularVector(size_t size = 20) : idx(0), size(size)
-    {
-        data = std::vector<T>();
-        data.reserve(size);
-    }
-    void push_back(const T& elt)
-    {
-        // first fill the vector, then 'rotate'
-        if (data.size() < size) 
-            data.push_back(elt);
-        else
-            data[ idx++ % size ] = elt;
-    }
-
-    std::vector<T> data;
-
-private:
-    uint idx;
-    size_t size;
-};
-
-
-template < typename T >
+template <int NDIMS>
 class Estimator {
 
 public:
 
-    /** Creates a 'stupid' estimator that returns averaged value over several measurements
-     *
-     * \param gain: allows to adjust how damped the estimation is. High gains
-     * lead to more responsive estimation, closer to observation, but less filtered.
-     * A value of 1.0 means 'no estimation'. Low gains lead to smoother results, but
-     * introduce delay. Minimum gain (0.0) means that the next estimated value is 
-     * the average of the last MAX_FRAMES_ESTIMATOR measurements.
-     */
-    Estimator(float gain = .5) : gain(gain),
-                                 length(MAX_FRAMES_ESTIMATOR * (1-gain) + 1),
-                                 dirty(true) 
+    Estimator(cv::Mat pFirstMeasurement):
+	mMeasurementAge(0),
+	mFilter(
+		2*NDIMS, //dynamic parameters: x, y, z, dx, dy, dz
+		NDIMS, //measurements: x, y, z
+		0) // no control parameters
     {
-        vals = CircularVector<T>(length);
+		// transitionMatrix =
+		// 1 0 0 1 0 0
+		// 0 1 0 0 1 0
+		// 0 0 1 0 0 1
+		// 0 0 0 1 0 0
+		// 0 0 0 0 1 0
+		// 0 0 0 0 0 1
+		mFilter.transitionMatrix = cv::Mat::zeros(
+			2*NDIMS, 2*NDIMS, CV_32F);
+		for (int i = 0; i<NDIMS; ++i) {
+			mFilter.transitionMatrix.at<float>(i, i) = 1;
+			mFilter.transitionMatrix.at<float>(i, NDIMS+i) = 1;
+			mFilter.transitionMatrix.at<float>(NDIMS+i, NDIMS+i) = 1;
+		}
+
+		cv::setIdentity(mFilter.measurementMatrix);
+		cv::setIdentity(mFilter.processNoiseCov, cv::Scalar::all(1e-5));
+		cv::setIdentity(mFilter.measurementNoiseCov, cv::Scalar::all(1e-1));
+		cv::setIdentity(mFilter.errorCovPost, cv::Scalar::all(1));
+
+		// Initialize the filter with the current position
+		// The rest (speeds) is already initialised to 0 by default.
+		pFirstMeasurement.copyTo(mFilter.statePost(cv::Rect(0,0,1,NDIMS)));
+
+		mEstimation = mFilter.predict()(cv::Rect(0,0,1,NDIMS));
     }
 
-    /**
-     * Adds an observed value to the estimator
-     */
-    void operator<<(const T& elt)
-    {
-        // max gain -> no filtering! just return last measurement
-        if (gain >= 1.0) {
-            last_val = elt;
-            dirty = false;
-            return;
-        }
+	/** Needs to be called every time there is a new frame.
+	 */
+	void predict() {
+		++mMeasurementAge;
+		mEstimation = mFilter.predict()(cv::Rect(0,0,1,NDIMS));
+	}
 
-        vals.push_back(elt);
-        dirty = true;
+	/** May be called after predict(), if a new measurement is available.
+	 */
+    void correct(cv::Mat pMeasurement)
+    {
+		mMeasurementAge = 0;
+		mEstimation = mFilter.correct(pMeasurement)(cv::Rect(0,0,1,NDIMS));
     }
 
-    /**
-     * Returns the estimated value
-     */
-    T operator()() const
+	/** Returns the latest estimation.
+	*/
+    cv::Mat getEstimation() const
     {
-        // recompute the estimate only if the estimator is 'dirty', ie
-        // new observed values have been provided.
-        if (dirty) last_val = mean();
-        return last_val;
+        return mEstimation;
     }
 
-    T mean() const
-    {
-        size_t nbvals = vals.data.size();
-
-        // clone() is required here because cv::Mat assignment does *not*
-        // copy the data, but merely a pointer to it
-        T sum = vals.data[0].clone();
-        for(uint i = 1 ; i < nbvals ; ++i) sum += vals.data[i];
-        return sum/nbvals;
-    }
-
-    T variance() const
-    {
-        T current_mean = mean();
-
-        // clone() is required here because cv::Mat assignment does *not*
-        // copy the data, but merely a pointer to it
-         T temp = (current_mean-vals.data[0])*(current_mean-vals.data[0]).clone();
-        for(uint i = 1 ; i < vals.data.size() ; ++i)
-            temp += (current_mean-vals.data[i])*(current_mean-vals.data[i]);
-        return temp/length;
-    }
+	/** Returns how many times predict() has been called without being
+	 * followed by a call to correct().
+	 * In other words, it tells how long the estimation has been computed
+	 * without actual measure.
+	 */
+	int getMeasurementAge() const
+	{
+		return mMeasurementAge;
+	}
 
 protected:
-    CircularVector<T> vals;
-    mutable T last_val;
-    bool dirty;
-    size_t length;
-    float gain;
+	int mMeasurementAge;
+	cv::KalmanFilter mFilter;
+	cv::Mat mEstimation;
+
 };
 
+}
 
 #endif
