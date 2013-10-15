@@ -1,35 +1,40 @@
-#ifndef Estimator_HPP
-#define Estimator_HPP
+#ifndef KalmanOfSpeeds_HPP
+#define KalmanOfSpeeds_HPP
 
-#include "opencv2/video/tracking.hpp"
+#include <opencv2/video/tracking.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 
 namespace chilitags {
 
-template <int NDIMS>
-class Estimator {
+/**
+ * A Kalman Filter using NDIMS measurements and their NORDERS derivates as
+ * dynamic parameters.
+ * For example, to filter 2D points using their speed and acceleration,
+ * use NDIMS=2 and NORDERS=3.
+ */
+template <int NDIMS, int NORDERS>
+class KalmanWithDerivates {
 
 public:
 
-    Estimator(cv::Mat pFirstMeasurement):
-	mMeasurementAge(0),
-	mFilter(
-		2*NDIMS, //dynamic parameters: x, y, z, dx, dy, dz
-		NDIMS, //measurements: x, y, z
-		0) // no control parameters
+    KalmanWithDerivates(cv::Mat pFirstMeasurement):
+	mFilter( NORDERS*NDIMS, NDIMS, 0),
+	mEstimation()
     {
 		// transitionMatrix =
-		// 1 0 0 1 0 0
-		// 0 1 0 0 1 0
-		// 0 0 1 0 0 1
-		// 0 0 0 1 0 0
-		// 0 0 0 0 1 0
-		// 0 0 0 0 0 1
+		// 1 0 0 1 0 0 ...
+		// 0 1 0 0 1 0 ...
+		// 0 0 1 0 0 1 ...
+		// 0 0 0 1 0 0 ...
+		// 0 0 0 0 1 0 ...
+		// 0 0 0 0 0 1 ...
+		// ...
 		mFilter.transitionMatrix = cv::Mat::zeros(
-			2*NDIMS, 2*NDIMS, CV_32F);
-		for (int i = 0; i<NDIMS; ++i) {
-			mFilter.transitionMatrix.at<float>(i, i) = 1;
-			mFilter.transitionMatrix.at<float>(i, NDIMS+i) = 1;
-			mFilter.transitionMatrix.at<float>(NDIMS+i, NDIMS+i) = 1;
+			NORDERS*NDIMS, NORDERS*NDIMS, CV_32F);
+		for (int i = 0; i<NDIMS*NORDERS; ++i) {
+			for (int j = i; j<NDIMS*NORDERS; j+=NDIMS) {
+				mFilter.transitionMatrix.at<float>(i, j) = 1;
+			}
 		}
 
 		cv::setIdentity(mFilter.measurementMatrix);
@@ -47,7 +52,6 @@ public:
 	/** Needs to be called every time there is a new frame.
 	 */
 	void predict() {
-		++mMeasurementAge;
 		mEstimation = mFilter.predict()(cv::Rect(0,0,1,NDIMS));
 	}
 
@@ -55,16 +59,51 @@ public:
 	 */
     void correct(cv::Mat pMeasurement)
     {
-		mMeasurementAge = 0;
 		mEstimation = mFilter.correct(pMeasurement)(cv::Rect(0,0,1,NDIMS));
     }
 
 	/** Returns the latest estimation.
 	*/
-    cv::Mat getEstimation() const
+    cv::Mat get() const
     {
         return mEstimation;
     }
+
+protected:
+	cv::KalmanFilter mFilter;
+	cv::Mat mEstimation;
+
+};
+
+class Estimator {
+
+public:
+	typedef KalmanWithDerivates<3,2> Filter;
+
+	Estimator(cv::Mat pFirstTranslation, cv::Mat pFirstRotation):
+	mMeasurementAge(0),
+	mTranslation(pFirstTranslation),
+	mRotation(pFirstRotation)
+	{
+	}
+
+	/** Needs to be called every time there is a new frame.
+	 */
+	void predict() {
+		++mMeasurementAge;
+		mTranslation.predict();
+		mRotation.predict();
+	}
+
+	/** May be called after predict(), if a new measurement is available.
+	 */
+    void correct(cv::Mat pTranslationMeasurement, cv::Mat pRotationMeasurement)
+    {
+		mMeasurementAge = 0;
+		mTranslation.correct(pTranslationMeasurement);
+		mRotation.correct(pRotationMeasurement);
+    }
+
 
 	/** Returns how many times predict() has been called without being
 	 * followed by a call to correct().
@@ -76,11 +115,37 @@ public:
 		return mMeasurementAge;
 	}
 
+	const Filter &translation() {return mTranslation;}
+	const Filter &rotation() {return mRotation;}
+
+	cv::Matx44f transformationMatrix() const
+	{
+		cv::Matx33f tRotationMatrix;
+		cv::Rodrigues(mRotation.get(), tRotationMatrix);
+
+		cv::Matx44f tTransformationMatrix;
+		tTransformationMatrix(0,0) = tRotationMatrix(0,0);
+		tTransformationMatrix(0,1) = tRotationMatrix(0,1);
+		tTransformationMatrix(0,2) = tRotationMatrix(0,2);
+		tTransformationMatrix(1,0) = tRotationMatrix(1,0);
+		tTransformationMatrix(1,1) = tRotationMatrix(1,1);
+		tTransformationMatrix(1,2) = tRotationMatrix(1,2);
+		tTransformationMatrix(2,0) = tRotationMatrix(2,0);
+		tTransformationMatrix(2,1) = tRotationMatrix(2,1);
+		tTransformationMatrix(2,2) = tRotationMatrix(2,2);
+
+		cv::Mat tTranslation = mTranslation.get();
+		tTransformationMatrix(0,3) = tTranslation.at<float>(0);
+		tTransformationMatrix(1,3) = tTranslation.at<float>(1);
+		tTransformationMatrix(2,3) = tTranslation.at<float>(2);
+
+		return tTransformationMatrix;
+	}
+
 protected:
 	int mMeasurementAge;
-	cv::KalmanFilter mFilter;
-	cv::Mat mEstimation;
-
+	Filter mTranslation;
+	Filter mRotation;
 };
 
 }

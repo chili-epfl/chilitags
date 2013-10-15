@@ -70,21 +70,19 @@ private:
     cv::Mat cameraMatrix;
     cv::Mat distCoeffs;
 
-    void computeTransformation(const std::string& name,
-                               const std::vector<cv::Point3f>& corners,
-                               const std::vector<cv::Point2f>& imagePoints) const;
-
-    cv::Matx44f transformationMatrix(const cv::Mat& tvec, const cv::Mat& rvec) const;
-
+    ObjectConfig _config;
+    
     int persistence;
     bool hasObjectConfiguration;
     std::vector<cv::Point3f> defaultMarkerCorners;
 
-    ObjectConfig _config;
-    
-    // store, for each tag, an estimator
-    mutable std::unordered_map<std::string, Estimator<3>> estimatedTranslations;
-    mutable std::unordered_map<std::string, Estimator<3>> estimatedRotations;
+    void updateTransformation(const std::string& name,
+                               const std::vector<cv::Point3f>& corners,
+                               const std::vector<cv::Point2f>& imagePoints);
+
+    // store, for each tag, a pair of estimators ;
+	// the first one for translations, the second one for rotations
+    std::unordered_map<std::string, Estimator> estimations;
 
 };
 

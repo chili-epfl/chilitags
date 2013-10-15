@@ -18,7 +18,9 @@ Objects::Objects(InputArray cameraMatrix,
                     distCoeffs(distCoeffs.getMat()),
                     _config(""),
                     persistence(persistence),
-                    hasObjectConfiguration(false)
+                    hasObjectConfiguration(false),
+					defaultMarkerCorners(),
+					estimations()
 {
     init(size);
 }
@@ -32,7 +34,10 @@ Objects::Objects(InputArray cameraMatrix,
                     distCoeffs(distCoeffs.getMat()),
                     _config(configuration),
                     persistence(persistence),
-                    hasObjectConfiguration(true)
+                    hasObjectConfiguration(true),
+					defaultMarkerCorners(),
+					estimations()
+
 {
     init(defaultSize);
 }
@@ -60,18 +65,13 @@ void Objects::update() {
      * Remove estimators of objects that have no been seen for too long
 	 * and notify the others of the new frame
      *****************************************************************/
-	for (auto t = estimatedTranslations.begin(),
-			r = estimatedRotations.begin();
-		t != estimatedTranslations.end(); ) {
-		if ((*t).second.getMeasurementAge() > persistence) {
-			t = estimatedTranslations.erase(t);
-			r = estimatedRotations.erase(r);
+	for (auto kv = estimations.begin(); kv != estimations.end(); ) {
+		if (kv->second.getMeasurementAge() > persistence) {
+			kv = estimations.erase(kv);
 		}
 		else {
-			(*t).second.predict();
-			++t;
-			(*r).second.predict();
-			++r;
+			kv->second.predict();
+			++kv;
 		}
 	}
 
@@ -114,7 +114,7 @@ void Objects::update() {
 
             string name(string("marker_") + to_string(tag.GetMarkerId()));
 
-            computeTransformation(name, 
+            updateTransformation(name, 
                                   defaultMarkerCorners,
                                   tag.getCorners().toVector());
         }
@@ -137,7 +137,7 @@ void Objects::update() {
             if (markerConfig->keep) {
                 vector<Point3f> localcorners(markerConfig->localcorners.cbegin(),
                                              markerConfig->localcorners.cend());
-                computeTransformation(
+                updateTransformation(
                                     string("marker_") + to_string(tag.GetMarkerId()), 
                                     localcorners,
                                     tag.getCorners().toVector());
@@ -153,28 +153,15 @@ void Objects::update() {
 
         }
 
-        computeTransformation(name, corners, imagePoints);
+        updateTransformation(name, corners, imagePoints);
 
     }
 
 }
 
-map<string, Matx44f> Objects::all() const
-{
-    map<string, Matx44f> objects;
-	vector<string> toErase;
-    for (auto& kv : estimatedTranslations) {
-		objects[kv.first] = transformationMatrix(
-			kv.second.getEstimation(),
-			estimatedRotations.at(kv.first).getEstimation());
-	}
-
-    return objects;
-}
-
-void Objects::computeTransformation(const string& name,
+void Objects::updateTransformation(const string& name,
                                     const vector<Point3f>& corners,
-                                    const vector<Point2f>& imagePoints) const
+                                    const vector<Point2f>& imagePoints) 
 {
         // Rotation & translation vectors, computed by cv::solvePnP
         Mat rvec, tvec;
@@ -188,35 +175,23 @@ void Objects::computeTransformation(const string& name,
 		rvec = Mat_<float>(rvec);
 		tvec = Mat_<float>(tvec);
 
-		estimatedTranslations.emplace(name, tvec);
-		estimatedRotations.emplace(name, rvec);
 
-        estimatedTranslations.at(name).correct(tvec);
-        estimatedRotations.at(name).correct(rvec);
+		auto entry = estimations.find(name);
+
+		if (entry == estimations.end()) {
+			entry = estimations.insert(std::make_pair(name,
+				Estimator(tvec, rvec))).first;
+		}
+
+		entry->second.correct(tvec, rvec);
 }
 
-cv::Matx44f Objects::transformationMatrix(const cv::Mat& tvec, const cv::Mat& rvec) const
+map<string, Matx44f> Objects::all() const
 {
-    Matx33f rotation;
-    Rodrigues(rvec, rotation);
+    map<string, Matx44f> objects;
+    for (auto& kv : estimations) {
+		objects[kv.first] = kv.second.transformationMatrix();
+	}
 
-    Matx44f trans;
-
-    // how to do that in an OpenCV way??
-    trans(0,0) = rotation(0,0);
-    trans(0,1) = rotation(0,1);
-    trans(0,2) = rotation(0,2);
-    trans(1,0) = rotation(1,0);
-    trans(1,1) = rotation(1,1);
-    trans(1,2) = rotation(1,2);
-    trans(2,0) = rotation(2,0);
-    trans(2,1) = rotation(2,1);
-    trans(2,2) = rotation(2,2);
-    trans(0,3) = tvec.at<float>(0);
-    trans(1,3) = tvec.at<float>(1);
-    trans(2,3) = tvec.at<float>(2);
-    trans(3,3) = 1;
-
-    return trans;
+    return objects;
 }
-
