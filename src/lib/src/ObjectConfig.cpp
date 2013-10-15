@@ -7,7 +7,10 @@ using namespace std;
 using namespace cv;
 using namespace chilitags;
 
-ObjectConfig::ObjectConfig(const string& filename) {
+ObjectConfig::ObjectConfig(const string& filename):
+_objects(),
+_markers()
+{
 
     if(filename.empty()) return; // nothing to load...
 
@@ -22,9 +25,8 @@ ObjectConfig::ObjectConfig(const string& filename) {
         object.name = (*it).name();
 
         for(auto marker=(*it).begin();marker!=(*it).end();++marker) {
-            MarkerConfig config;
+            MarkerConfig config((*marker)["marker"]);
 
-            config.id = (*marker)["marker"];
             config.size = (*marker)["size"];
             (*marker)["translation"][0] >> config.translation[0];
             (*marker)["translation"][1] >> config.translation[1];

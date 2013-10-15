@@ -19,9 +19,11 @@
 
 #include <cstdlib>
 #include <string>
+#include <Codec.hpp>
 #include <iostream>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <TagDrawer.hpp>
 
 int main(int argc, char **argv)
 {
@@ -41,7 +43,32 @@ int main(int argc, char **argv)
 	int tZoom = (argc > 2) ? std::atoi(argv[2]) : 1;
 	bool tNoMargin = (argc > 3 && argv[3][0] == 'n');
 
-	cv::imwrite(tOutputFilename, chilitags::TagDrawer()(tTagId, tZoom, !tNoMargin));
+	// Creating the image of the bit matrix
+	cv::Size tDataSize(6,6);
+	unsigned char *tDataMatrix = new unsigned char[tDataSize.area()];
+	chilitags::Codec tCodec(10, 16, 10, "1010101010", "10001000000100001");
+	tCodec.getTagEncodedId(tTagId, tDataMatrix);
+	cv::Mat tDataImage(tDataSize, CV_8U, tDataMatrix);
+	tDataImage *= 255;
+
+	// Adding the black border around the bit matrix
+	cv::Size tBorderSize(2,2);
+	cv::Mat tTagImage(tDataImage.size()+tBorderSize*2, CV_8U, cv::Scalar(0));
+	tDataImage.copyTo(tTagImage(cv::Rect(tBorderSize, tDataImage.size())));
+
+	// Adding the optionnal white margin
+	cv::Size tMarginSize(0,0);
+	if (!tNoMargin) tMarginSize += tBorderSize;
+	cv::Mat tOutlinedImage(tTagImage.size()+tMarginSize*2, CV_8U, cv::Scalar(255));
+	tTagImage.copyTo(tOutlinedImage(cv::Rect(tMarginSize, tTagImage.size())));
+
+	// Resizing to specified zoom
+	cv::Mat tOutputImage(tOutlinedImage.size()*tZoom, CV_8U);
+	cv::resize(tOutlinedImage, tOutputImage, tOutputImage.size(), 0, 0, cv::INTER_NEAREST);
+
+	cv::imwrite(tOutputFilename, tOutputImage);
+
+	delete []tDataMatrix;
 
 	return 0;
 }

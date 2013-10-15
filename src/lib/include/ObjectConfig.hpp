@@ -10,6 +10,7 @@
 namespace chilitags {
 
 struct MarkerConfig {
+	MarkerConfig(int id):id(id),corners(),localcorners(){}
     int id;
     float size = 0.;
     std::array<float, 3> translation = {{0., 0., 0.}};
@@ -30,6 +31,7 @@ struct MarkerConfig {
 };
 
 struct Object {
+	Object():name(),markers(){}
     std::string name;
     std::vector<MarkerConfig> markers;
 };
@@ -60,6 +62,6 @@ private:
 
 };
 
-};
+}
 
 #endif
