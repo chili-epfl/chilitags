@@ -191,6 +191,7 @@ cv::Matx44d Objects::transformationMatrix(const cv::Mat& tvec, const cv::Mat& rv
     trans(0,3) = tvec.at<double>(0);
     trans(1,3) = tvec.at<double>(1);
     trans(2,3) = tvec.at<double>(2);
+    trans(3,3) = 1;
 
     return trans;
 }
