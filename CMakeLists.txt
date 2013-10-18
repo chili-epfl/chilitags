@@ -22,6 +22,7 @@ include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
 option (WITH_DETECTOR "provides a test application" ON)
 option (WITH_CREATOR "provides the marker generation tool" ON)
 option (WITH_SAMPLES "compile misc demos" OFF)
+option (WITH_TESTS "build tests" OFF)
 
 if (WITH_DETECTOR)
 
@@ -86,3 +87,7 @@ if (WITH_SAMPLES)
 
 endif()
 
+if (WITH_TESTS)
+	enable_testing()
+	add_subdirectory(test)
+endif()
