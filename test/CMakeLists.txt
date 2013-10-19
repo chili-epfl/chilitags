@@ -9,3 +9,6 @@ MACRO(declare_test testname)
 
 	add_test(${testname} ${testname})
 endMACRO()
+
+add_definitions(-std=c++11)
+declare_test(codec)
