@@ -3,8 +3,6 @@
 
 #include "HardcodedIds.hpp"
 
-#include <iostream>
-
 TEST(Codec, Code) {
 	chilitags::Codec tCodec(10, 16, 10, "1010101010", "10001000000100001");
 	unsigned char tBits[36];

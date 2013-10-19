@@ -17,31 +17,53 @@
 *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
 *******************************************************************************/
 
-#include <cstdlib>
-#include <string>
-#include <iostream>
-#include <opencv2/highgui/highgui.hpp>
-#include <TagDrawer.hpp>
+#ifndef TagDrawer_HPP
+#define TagDrawer_HPP
 
-int main(int argc, char **argv)
-{
-	if (argc <= 1) {
-		std::cout << "Usage: " << argv[0] << " tagID [zoom [margin]]\n";
-		std::cout << " - tagId is the id of the tag to draw, between 0 and 1023,\n";
-		std::cout << " - zoom is a non null integer indicating the length in pixel\n";
-		std::cout << "   of each bit of the tag matrix (default: 1).\n";
-		std::cout << " - margin is n if no white rectangle should be drawn around the tag,\n";
-		std::cout << "   (make sure the black borders of the tag\n";
-		std::cout << "   still contrast with where it is placed),\n";
-		return 1;
+#include <Codec.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+namespace chilitags {
+
+class TagDrawer {
+
+public:
+
+	TagDrawer():
+	mCodec(10, 16, 10, "1010101010", "10001000000100001")
+	{
 	}
 
-	std::string tOutputFilename = std::string(argv[1])+".png";
-	int tTagId = std::atoi(argv[1]);
-	int tZoom = (argc > 2) ? std::atoi(argv[2]) : 1;
-	bool tNoMargin = (argc > 3 && argv[3][0] == 'n');
+	cv::Mat operator()(int pTagId, int pZoom = 1, bool pWithMargin = false) {
+		// Creating the image of the bit matrix
+		cv::Size tDataSize(6,6);
+		unsigned char tDataMatrix[tDataSize.area()];
+		mCodec.getTagEncodedId(pTagId, tDataMatrix);
+		cv::Mat tDataImage(tDataSize, CV_8U, tDataMatrix);
+		tDataImage *= 255;
 
-	cv::imwrite(tOutputFilename, chilitags::TagDrawer()(tTagId, tZoom, !tNoMargin));
+		// Adding the black border arounf the bit matrix
+		cv::Size tBorderSize(2,2);
+		cv::Mat tTagImage(tDataImage.size()+tBorderSize*2, CV_8U, cv::Scalar(0));
+		tDataImage.copyTo(tTagImage(cv::Rect(tBorderSize, tDataImage.size())));
 
-	return 0;
+		// Adding the optionnal white margin
+		cv::Size tMarginSize(0,0);
+		if (pWithMargin) tMarginSize += tBorderSize;
+		cv::Mat tOutlinedImage(tTagImage.size()+tMarginSize*2, CV_8U, cv::Scalar(255));
+		tTagImage.copyTo(tOutlinedImage(cv::Rect(tMarginSize, tTagImage.size())));
+
+		// Resizing to specified zoom
+		cv::Mat tOutputImage(tOutlinedImage.size()*pZoom, CV_8U);
+		cv::resize(tOutlinedImage, tOutputImage, tOutputImage.size(), 0, 0, cv::INTER_NEAREST);
+		return tOutputImage;
+	}
+
+private:
+	Codec mCodec;
+};
+
 }
+
+#endif
