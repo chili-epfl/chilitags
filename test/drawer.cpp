@@ -121,3 +121,5 @@ TEST(Drawer, ZoomWithMargin) {
 		}
 	}
 }
+
+CV_TEST_MAIN(".")

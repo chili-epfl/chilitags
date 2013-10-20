@@ -98,3 +98,5 @@ TEST(Codec, Decode2Error) {
 		}
 	}
 }
+
+CV_TEST_MAIN(".")
