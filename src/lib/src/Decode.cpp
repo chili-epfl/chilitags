@@ -58,11 +58,9 @@ void chilitags::Decode::run()
 		}
 	}
 
-	tag_info_t *tResult = 0;
-	if (mCodec.decode(tMatrix, &tResult)) mOrientation = 0;
-	else if (mCodec.decode(mMatrix90, &tResult)) mOrientation = 1;
-	else if (mCodec.decode(mMatrix180, &tResult)) mOrientation = 2;
-	else if (mCodec.decode(mMatrix270, &tResult)) mOrientation = 3;
-
-	mDecodedTag = tResult ? tResult->id : -1;
+	mDecodedTag = -1;
+	     if (mCodec.decode(tMatrix   , mDecodedTag)) mOrientation = 0;
+	else if (mCodec.decode(mMatrix90 , mDecodedTag)) mOrientation = 1;
+	else if (mCodec.decode(mMatrix180, mDecodedTag)) mOrientation = 2;
+	else if (mCodec.decode(mMatrix270, mDecodedTag)) mOrientation = 3;
 }

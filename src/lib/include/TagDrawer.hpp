@@ -37,10 +37,11 @@ public:
 
 	cv::Mat operator()(int pTagId, int pZoom = 1, bool pWithMargin = false) {
 		// Creating the image of the bit matrix
-		cv::Size tDataSize(6,6);
-		unsigned char tDataMatrix[tDataSize.area()];
+		static const int DATA_SIZE = 6;
+		cv::Size tDataDim(DATA_SIZE,DATA_SIZE);
+		unsigned char tDataMatrix[DATA_SIZE*DATA_SIZE];
 		mCodec.getTagEncodedId(pTagId, tDataMatrix);
-		cv::Mat tDataImage(tDataSize, CV_8U, tDataMatrix);
+		cv::Mat tDataImage(tDataDim, CV_8U, tDataMatrix);
 		tDataImage *= 255;
 
 		// Adding the black border arounf the bit matrix
