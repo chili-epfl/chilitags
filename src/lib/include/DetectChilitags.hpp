@@ -20,40 +20,33 @@
 #ifndef DetectChilitags_HPP
 #define DetectChilitags_HPP
 
-class Pipeable;
 #include "Registrar.hpp"
-#include <vector>
+namespace cv {class Mat;}
+#include <memory>
 
 namespace chilitags {
 
-// The class that takes care of all the detection of Chilitags.
+/** The class that takes care of the detection of Chilitags. */
 class DetectChilitags
 {
 
 public:
 
-// DetectChilitags needs a pointer to the input image in which to detect
-// Chilitags.
-// The result of the detection will be stored into pRegistrar.
-// See Chilitag and Registrar on why changing the default value of pRegistrar.
-DetectChilitags(
-        const cv::Mat *pInputImage,
-        Registrar &pRegistrar = Registrar::GetDefault());
-virtual ~DetectChilitags();
+/**
+ * The result of the detection will be stored into pRegistrar.
+ * See Chilitag and Registrar on why changing the default value of pRegistrar.
+ */
+DetectChilitags(Registrar &pRegistrar = Registrar::GetDefault());
 
-// This method needs to be called everytime the input image is updated.
-void update();
+/** This method needs to be called everytime the input image is updated. */
+void operator()(const cv::Mat pInputImage);
 
-protected:
-
-Pipeable *mPipeline;
-std::vector<Pipeable *> mPipeables;
-
-Registrar &mRegistrar;
+~DetectChilitags();
 
 private:
-DetectChilitags(const DetectChilitags&);
-DetectChilitags& operator=(const DetectChilitags&);
+class Impl;
+std::unique_ptr<Impl> mImpl;
+
 };
 
 

@@ -20,7 +20,6 @@
 #ifndef FindQuads_H
 #define FindQuads_H
 
-#include "Pipeable.hpp"
 #include <Quad.hpp>
 
 #ifdef EXPERIMENTAL_LSD
@@ -29,20 +28,16 @@
 
 namespace chilitags {
 
-class FindQuads : public Pipeable
+class FindQuads
 {
 public:
-FindQuads(const cv::Mat *pBinaryImage);
-~FindQuads();
+FindQuads();
 
-const std::vector<Quad> *Quads() const {
-	return &mQuads;
-}
+void operator()(const cv::Mat pBinaryImage);
+
+const std::vector<Quad> &Quads() const { return mQuads; }
 
 protected:
-virtual void run();
-
-const cv::Mat *mBinaryImage;
 
 #ifndef EXPERIMENTAL_LSD
 static const int scScaledCopiesCount = 3;
@@ -53,9 +48,6 @@ cv::Ptr<cv::LineSegmentDetector> lsd;
 
 std::vector<Quad> mQuads;
 
-private:
-FindQuads(const FindQuads&);
-FindQuads& operator=(const FindQuads&);
 };
 
 }

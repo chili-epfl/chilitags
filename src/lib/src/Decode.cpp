@@ -23,11 +23,9 @@ namespace {
 const int scDataSize = 6;
 }
 
-chilitags::Decode::Decode(
-        const unsigned char *const *pMatrix,
-        Codec &pCodec) :
-	mMatrix(pMatrix),
-	mMatrix90(new unsigned char[scDataSize*scDataSize]),
+chilitags::Decode::Decode(Codec &pCodec) :
+	mMatrix   (new unsigned char[scDataSize*scDataSize]),
+	mMatrix90 (new unsigned char[scDataSize*scDataSize]),
 	mMatrix180(new unsigned char[scDataSize*scDataSize]),
 	mMatrix270(new unsigned char[scDataSize*scDataSize]),
 	mCodec(pCodec),
@@ -38,20 +36,21 @@ chilitags::Decode::Decode(
 
 chilitags::Decode::~Decode()
 {
+	delete[] mMatrix;
 	delete[] mMatrix270;
 	delete[] mMatrix180;
 	delete[] mMatrix90;
 }
 
 
-void chilitags::Decode::run()
+void chilitags::Decode::operator()(const std::vector<unsigned char> &pBits)
 {
-	const unsigned char *tMatrix = *mMatrix;
 	for (int i = 0; i < scDataSize; ++i)
 	{
 		for (int j = 0; j < scDataSize; ++j)
 		{
-			unsigned char tBit = tMatrix[i*scDataSize + j];
+			unsigned char tBit = pBits[i*scDataSize + j];
+			mMatrix   [              i *scDataSize +               j ] = tBit;
 			mMatrix90 [(scDataSize-1-j)*scDataSize +               i ] = tBit;
 			mMatrix180[(scDataSize-1-i)*scDataSize + (scDataSize-1-j)] = tBit;
 			mMatrix270[              j *scDataSize + (scDataSize-1-i)] = tBit;
@@ -59,7 +58,7 @@ void chilitags::Decode::run()
 	}
 
 	mDecodedTag = -1;
-	     if (mCodec.decode(tMatrix   , mDecodedTag)) mOrientation = 0;
+	     if (mCodec.decode(mMatrix   , mDecodedTag)) mOrientation = 0;
 	else if (mCodec.decode(mMatrix90 , mDecodedTag)) mOrientation = 1;
 	else if (mCodec.decode(mMatrix180, mDecodedTag)) mOrientation = 2;
 	else if (mCodec.decode(mMatrix270, mDecodedTag)) mOrientation = 3;

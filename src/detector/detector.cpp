@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 	// All it needs is a pointer to a OpenCv Image, i.e. a cv::Mat *
 	// and a call to its update() method every time the image is updated.
 	cv::Mat tInputImage;
-	chilitags::DetectChilitags tDetectChilitags(&tInputImage);
+	chilitags::DetectChilitags tDetectChilitags;
 
 	// Main loop, exiting when 'q is pressed'
 	for (; 'q' != (char) cv::waitKey(1); ) {
@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
 
 		// Detect tags on the current image.
 	    int64 tStartCount = cv::getTickCount();
-		tDetectChilitags.update();
+		tDetectChilitags(tInputImage);
         std::cout << "Time to update markers: " << ((double)cv::getTickCount() - tStartCount)/cv::getTickFrequency() << "ms" << std::endl;
 
 		// The color (magenta) that will be used for all information

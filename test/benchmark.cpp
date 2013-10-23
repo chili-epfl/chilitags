@@ -57,23 +57,21 @@ TEST(Integration, Snapshots) {
     // to get the data from the root of the test data path
     cvtest::TS::ptr()->init("");
 
-    cv::Mat tImage;
-
     vector<double> runs_duration;
 
-    chilitags::DetectChilitags tDetectChilitags(&tImage);
+    chilitags::DetectChilitags tDetectChilitags;
     // Tags need to be registered before detection
     // (Chilitag's constructor takes care of that)
     for (int i = 0; i<1024; ++i) Chilitag tTag(i);
 
     for (const auto & tTestCase : tTestMatrix) {
         string tPath = string(cvtest::TS::ptr()->get_data_path())+tTestCase.first;
-        tImage = cv::imread(tPath);
+        cv::Mat tImage = cv::imread(tPath);
 
         if(tImage.data) {
             for (int i = 0 ; i < ITERATIONS ; i++) {
                 int64 tStartCount = cv::getTickCount();
-                tDetectChilitags.update();
+                tDetectChilitags(tImage);
                 runs_duration.push_back(((double)cv::getTickCount() - tStartCount)*1000/cv::getTickFrequency());
             }
         }

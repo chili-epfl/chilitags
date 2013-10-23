@@ -23,22 +23,15 @@
 chilitags::DetectEdges::DetectEdges(
         const int pLowThreshold,
         const int pHighThreshold,
-        const int pApertureSize,
-        const cv::Mat *pInputImage
-        ) :
+        const int pApertureSize) :
 	mLowThreshold(pLowThreshold),
 	mHighThreshold(pHighThreshold),
 	mApertureSize(pApertureSize),
-	mInputImage(pInputImage),
 	mOutputImage()
 {
 }
 
-chilitags::DetectEdges::~DetectEdges()
+void chilitags::DetectEdges::operator()(const cv::Mat pInputImage)
 {
-}
-
-void chilitags::DetectEdges::run()
-{
-	cv::Canny(*mInputImage, mOutputImage,mLowThreshold,mHighThreshold,mApertureSize);
+	cv::Canny(pInputImage, mOutputImage, mLowThreshold, mHighThreshold, mApertureSize);
 }

@@ -16,18 +16,18 @@
 
 TEST(Integration, Minimal) {
 
-	// Tag needs to be > 20 px wide;
-	int tZoom = 3;
+	chilitags::DetectChilitags tDetectChilitags;
 
 	// Tags need to be registered before detection
 	// (Chilitag's constructor takes care of that)
 	chilitags::Chilitag tDetectedTag(0);
 
 	chilitags::TagDrawer tDrawer;
+	// Tag needs to be > 20 px wide;
+	int tZoom = 3;
 	cv::Mat tImage = tDrawer(tDetectedTag.GetMarkerId(), tZoom, true);
 
-	chilitags::DetectChilitags tDetectChilitags(&tImage);
-	tDetectChilitags.update();
+	tDetectChilitags(tImage);
 
 	ASSERT_TRUE(tDetectedTag.isPresent());
 
@@ -55,8 +55,7 @@ TEST(Integration, Snapshots) {
 	// to get the data from the root of the test data path
 	cvtest::TS::ptr()->init("");
 
-	cv::Mat tImage;
-	chilitags::DetectChilitags tDetectChilitags(&tImage);
+	chilitags::DetectChilitags tDetectChilitags;
 
 	// Tags need to be registered before detection
 	// (Chilitag's constructor takes care of that)
@@ -64,18 +63,25 @@ TEST(Integration, Snapshots) {
 
 	int tNewFalseNegatives = 0;
 	int tNewTruePositives = 0;
+	int tFalseNegatives = 0;
+	int tTotal = 0;
 
 	for (const auto & tTestCase : TestMetadata::all) {
 		std::string tPath = std::string(cvtest::TS::ptr()->get_data_path())+tTestCase.filename;
-		tImage = cv::imread(tPath);
+		cv::Mat tImage = cv::imread(tPath);
 
 		if(tImage.data) {
-			tDetectChilitags.update();
+			tDetectChilitags(tImage);
 
 			for (int i = 0; i<1024; ++i) {
 				// No persistence
 				chilitags::Chilitag tTag(i, 0);
 				if (tTestCase.isExpected(i)) {
+					// We could just add the size of the list of expected tags,
+					// but this way we double check that we try them all.
+					++tTotal;
+					if (!tTag.isPresent()) ++tFalseNegatives;
+
 					if (!tTag.isPresent() && !tTestCase.isKnownToMiss(i)) {
 						ADD_FAILURE() << "New false negative\n"
 							<< "    File: " << tTestCase.filename << "\n"
@@ -105,6 +111,7 @@ TEST(Integration, Snapshots) {
 		}
 	}
 
+	std::cout << tFalseNegatives << "/" << tTotal << " tags were not detected.\n";
 	if (tNewTruePositives > 0) {
 		std::cout
 			<< "You "<< (tNewFalseNegatives>0?"partially":"")

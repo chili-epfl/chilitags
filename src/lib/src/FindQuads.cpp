@@ -57,9 +57,7 @@ void drawContour(cv::Mat &pImage, std::vector<cv::Point> &pContour, cv::Scalar p
 
 }
 
-chilitags::FindQuads::FindQuads(
-        const cv::Mat *pBinaryImage) :
-	mBinaryImage(pBinaryImage),
+chilitags::FindQuads::FindQuads() :
 	mQuads()
 {
 #ifdef DEBUG_FindQuads
@@ -67,22 +65,17 @@ chilitags::FindQuads::FindQuads(
 #endif
 }
 
-chilitags::FindQuads::~FindQuads()
-{
-}
-
-void chilitags::FindQuads::run()
+void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
 {
 	//TODO function too long, split it
 
 	mQuads.clear();
-	const cv::Mat tBinaryImage = *mBinaryImage;
 #ifdef DEBUG_FindQuads
 	cv::RNG tRNG( 0xFFFFFFFF );
 	cv::Mat tDebugImage = cv::Mat::zeros(cv::Size(2*tBinaryImage.cols, tBinaryImage.rows), CV_8UC3);
 #endif
 
-	mScaledCopies[0] = tBinaryImage;
+	mScaledCopies[0] = pBinaryImage;
 	for (int i = 1; i < scScaledCopiesCount; ++i) {
 		cv::pyrDown(mScaledCopies[i-1], mScaledCopies[i]);
 	}

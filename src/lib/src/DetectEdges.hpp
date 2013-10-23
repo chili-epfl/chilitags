@@ -20,40 +20,27 @@
 #ifndef DetectEdges_HPP
 #define DetectEdges_HPP
 
-#include "Pipeable.hpp"
 #include <opencv2/core/core.hpp>
 
 namespace chilitags {
 
-class DetectEdges : public Pipeable
+class DetectEdges 
 {
 public:
 
-DetectEdges(
-        const int pLowThreshold,
-        const int pHighThreshold,
-        const int pApertureSize,
-        const cv::Mat *pInputImage);
+DetectEdges( const int pLowThreshold, const int pHighThreshold, const int pApertureSize);
 
-virtual ~DetectEdges();
+void operator()(const cv::Mat pInputImage);
 
-const cv::Mat *GetOutputImage() const {
-	return &mOutputImage;
-}
+cv::Mat Image() const { return mOutputImage; }
 
 protected:
 
 const int mLowThreshold;
 const int mHighThreshold;
 const int mApertureSize;
-const cv::Mat *mInputImage;
 cv::Mat mOutputImage;
 
-void run();
-
-private:
-DetectEdges(const DetectEdges&);
-DetectEdges &operator=(const DetectEdges&);
 };
 
 

@@ -19,34 +19,19 @@
 
 #include "Register.hpp"
 
-chilitags::Register::Register(
-        const int *pDecodedTag,
-        const Quad *pCorners,
-        const int *pRotation,
-        Registrar &pRegistrar) :
-	mDecodedTag(pDecodedTag),
-	mCorners(pCorners),
-	mRotation(pRotation),
+chilitags::Register::Register(Registrar &pRegistrar) :
 	mRegistrar(pRegistrar)
 {
 }
 
-chilitags::Register::~Register()
+void chilitags::Register::operator()(int pDecodedTag, Quad pCorners, int pRotation)
 {
-}
-
-
-void chilitags::Register::run()
-{
-	int tDecodedTag = *mDecodedTag;
-	if (tDecodedTag>-1)
+	if (pDecodedTag>-1)
 	{
-		int tRotation = *mRotation;
-		const Quad tCorners = *mCorners;
-		cv::Point2f tOrientedCorners[4];
+		cv::Point2f tOrientedCorners[Quad::scNPoints];
 		for (size_t i = 0; i < Quad::scNPoints; ++i) {
-			tOrientedCorners[i] = tCorners[(i+tRotation)%4];
+			tOrientedCorners[i] = pCorners[(i+pRotation) % Quad::scNPoints];
 		}
-		mRegistrar.set(tDecodedTag, tOrientedCorners);
+		mRegistrar.set(pDecodedTag, tOrientedCorners);
 	}
 }
