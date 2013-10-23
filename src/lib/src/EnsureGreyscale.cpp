@@ -20,25 +20,15 @@
 #include "EnsureGreyscale.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
 
-chilitags::EnsureGreyscale::EnsureGreyscale(
-        const cv::Mat *pInputImage) :
-	mInputImage(pInputImage),
-	mOutputImage()
-{
-}
+chilitags::EnsureGreyscale::EnsureGreyscale():mOutputImage(){}
 
-chilitags::EnsureGreyscale::~EnsureGreyscale()
+void chilitags::EnsureGreyscale::operator()(const cv::Mat pInputImage)
 {
-}
-
-void chilitags::EnsureGreyscale::run()
-{
-	const cv::Mat tInputImage = *mInputImage;
-	if (tInputImage.channels() != 1) {
+	if (pInputImage.channels() != 1) {
 		// assuming BGR
-		cv::cvtColor(tInputImage, mOutputImage, cv::COLOR_BGR2GRAY);
+		cv::cvtColor(pInputImage, mOutputImage, cv::COLOR_BGR2GRAY);
 	} else {
-		// Shallow copy should be OK, since we only give access to a const Mat
-		mOutputImage = tInputImage;
+		// Shallow copy
+		mOutputImage = pInputImage;
 	}
 }

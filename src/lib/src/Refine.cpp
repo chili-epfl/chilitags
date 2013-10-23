@@ -19,7 +19,7 @@
 
 #include "Refine.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
-#include <iostream>
+
 //#define DEBUG_Refine
 #ifdef DEBUG_Refine
 #include <stdio.h>
@@ -27,34 +27,25 @@
 #include <opencv2/highgui/highgui.hpp>
 #endif
 
-chilitags::Refine::Refine(
-        const cv::Mat *pInputImage,
-        const std::vector<Quad>* quads):
-	mInputImage(pInputImage),
-	mQuads(*quads),
-	mRefinedCorners(4)
+chilitags::Refine::Refine() :
+	mRefinedQuads()
 {
 #ifdef DEBUG_Refine
 	cv::namedWindow("Refine");
 #endif
 }
 
-chilitags::Refine::~Refine()
-{
-}
-
-void chilitags::Refine::run()
+void chilitags::Refine::operator()(const cv::Mat pInputImage, const std::vector<Quad> &pQuads)
 {
     mRefinedQuads.clear();
 
-	for (const auto& quad : mQuads)
+	for (const auto& quad : pQuads)
 	{
-		const cv::Mat tInputImage = *mInputImage;
-		mRefinedCorners = quad.toVector();
+		auto tCorners = quad.toVector();
 
 		// Taking a ROI around the raw corners with some margin
 		static const float scGrowthRatio = 2.0f/10.0f;
-		cv::Rect tRoi = cv::boundingRect(mRefinedCorners);
+		cv::Rect tRoi = cv::boundingRect(tCorners);
 		int tXGrowth = (int)(scGrowthRatio*tRoi.width);
 		int tYGrowth = (int)(scGrowthRatio*tRoi.height);
 		tRoi.x -= tXGrowth;
@@ -69,18 +60,18 @@ void chilitags::Refine::run()
 		tRoi.y = std::max(tRoi.y, 0);
 		tRoi.width -= tRoi.x - tPreviousRoiX;
 		tRoi.height -= tRoi.y - tPreviousRoiY;
-		tRoi.width = cv::min(tRoi.x+tRoi.width, tInputImage.cols)-tRoi.x;
-		tRoi.height = cv::min(tRoi.y+tRoi.height, tInputImage.rows)-tRoi.y;
+		tRoi.width = cv::min(tRoi.x+tRoi.width, pInputImage.cols)-tRoi.x;
+		tRoi.height = cv::min(tRoi.y+tRoi.height, pInputImage.rows)-tRoi.y;
 
 		cv::Point2f tRoiOffset = tRoi.tl();
-		mRefinedCorners[0] -= tRoiOffset;
-		mRefinedCorners[1] -= tRoiOffset;
-		mRefinedCorners[2] -= tRoiOffset;
-		mRefinedCorners[3] -= tRoiOffset;
+		tCorners[0] -= tRoiOffset;
+		tCorners[1] -= tRoiOffset;
+		tCorners[2] -= tRoiOffset;
+		tCorners[3] -= tRoiOffset;
 
 		static const double scProximityRatio = 1.5/10.0;
 		double tAverageSideLength =
-			cv::arcLength(mRefinedCorners, true)
+			cv::arcLength(tCorners, true)
 			/ (double) Quad::scNPoints;
 		double tCornerNeighbourhood = scProximityRatio*tAverageSideLength;
 		
@@ -88,16 +79,16 @@ void chilitags::Refine::run()
  		tCornerNeighbourhood = cv::min(tCornerNeighbourhood, ((double) tRoi.width-5)/2);
  		tCornerNeighbourhood = cv::min(tCornerNeighbourhood, ((double) tRoi.height-5)/2);
 		
-		cv::cornerSubPix(tInputImage(tRoi), mRefinedCorners,
+		cv::cornerSubPix(pInputImage(tRoi), tCorners,
 			cv::Size(tCornerNeighbourhood, tCornerNeighbourhood),
 			cv::Size(-1, -1), cv::TermCriteria(
 				cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS,
 				5, 0.01));
 
-		mRefinedCorners[0] += tRoiOffset;
-		mRefinedCorners[1] += tRoiOffset;
-		mRefinedCorners[2] += tRoiOffset;
-		mRefinedCorners[3] += tRoiOffset;
+		tCorners[0] += tRoiOffset;
+		tCorners[1] += tRoiOffset;
+		tCorners[2] += tRoiOffset;
+		tCorners[3] += tRoiOffset;
 
 #ifdef DEBUG_Refine
 		cv::Mat tDebugImage = tInputImage(tRoi).clone();
@@ -106,16 +97,16 @@ void chilitags::Refine::run()
 			cv::circle(tDebugImage, quad[i]-tRoiOffset,
 				3, cv::Scalar::all(128), 2);
 			cv::line(tDebugImage,
-				mRefinedCorners[i]-tRoiOffset, mRefinedCorners[i]-tRoiOffset,
+				tCorners[i]-tRoiOffset, tCorners[i]-tRoiOffset,
 				cv::Scalar::all(255), 5);
-			printf("%1.1f  %1.1f        ", mRefinedCorners[i].x, mRefinedCorners[i].y);
+			printf("%1.1f  %1.1f        ", tCorners[i].x, tCorners[i].y);
 		}
 		printf("\n");
 		cv::imshow("Refine", tDebugImage);
 		cv::waitKey(0);
 #endif
 
-	    mRefinedQuads.push_back(Quad(mRefinedCorners));
+	    mRefinedQuads.push_back(Quad(tCorners));
 	}
 
 }

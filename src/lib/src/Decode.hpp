@@ -20,34 +20,29 @@
 #ifndef Decode_HPP
 #define Decode_HPP
 
-#include "Pipeable.hpp"
 #include <Codec.hpp>
+#include <vector>
 
 namespace chilitags {
 
-class Decode : public Pipeable
+class Decode
 {
 public:
-Decode(
-        const unsigned char *const *pMatrix,
-        Codec &pCodec);
+Decode(Codec &pCodec);
 
-//-1 if no valid tag has been decoded
-const int *GetDecodedTag() const {
-	return &mDecodedTag;
-}
+void operator()(const std::vector<unsigned char> &pBits);
 
-//undefined if no valid tag has been decoded
-const int *GetOrientation() const {
-	return &mOrientation;
-}
+/** -1 if no valid tag has been decoded */
+int TagId() const {return mDecodedTag;}
+
+/** undefined if no valid tag has been decoded */
+int Orientation() const {return mOrientation;}
 
 virtual ~Decode();
 
 protected:
-void run();
 
-const unsigned char *const *mMatrix;
+unsigned char *mMatrix;
 unsigned char *mMatrix90;
 unsigned char *mMatrix180;
 unsigned char *mMatrix270;
@@ -60,8 +55,8 @@ int mOrientation;
 private:
 Decode(const Decode&);
 Decode& operator=(const Decode&);
-};
 
+};
 
 }
 

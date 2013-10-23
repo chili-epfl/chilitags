@@ -20,34 +20,22 @@
 #ifndef Register_HPP
 #define Register_HPP
 
-#include "Pipeable.hpp"
 #include <Registrar.hpp>
 #include <Quad.hpp>
 
 namespace chilitags {
 
-class Register : public Pipeable
+class Register
 {
 public:
-Register(
-        const int *pDecodedTag,
-        const Quad *pCorners,
-        const int *pRotation,
-        Registrar &pRegistrar);
+Register(Registrar &pRegistrar); 
 
-virtual ~Register();
+void operator ()(int pDecodedTag, Quad pCorners, int pRotation);
 
 protected:
-void run();
 
-const int *mDecodedTag;
-const Quad *mCorners;
-const int *mRotation;
 Registrar &mRegistrar;
 
-private:
-Register(const Register&);
-Register& operator=(const Register&);
 };
 
 

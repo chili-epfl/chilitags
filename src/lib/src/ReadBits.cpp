@@ -26,19 +26,14 @@
 #include <iostream>
 #endif
 
-using namespace std;
-
 namespace {
 static const int scDataSize = 6;
 static const int scTagMargin = 2;
 static const int scTagSize = 2*scTagMargin+scDataSize;
 }
 
-chilitags::ReadBits::ReadBits(const cv::Mat *pInputImage,
-                              const Quad *pCorners) :
-	mCorners(pCorners),
-	mInputImage(*pInputImage),
-	mMatrix(new unsigned char[scDataSize*scDataSize])
+chilitags::ReadBits::ReadBits() :
+	mBits(scDataSize*scDataSize)
 {
     mDstBoundaries = {{0        , 0},
                       {scTagSize, 0},
@@ -61,42 +56,37 @@ chilitags::ReadBits::ReadBits(const cv::Mat *pInputImage,
 #endif
 }
 
-chilitags::ReadBits::~ReadBits()
-{
-	delete[] mMatrix;
-}
 
-
-void chilitags::ReadBits::run()
+void chilitags::ReadBits::operator()(const cv::Mat pInputImage, const Quad &pCorners)
 {
 
-    auto tCorners = mCorners->toVector();
+    auto tCorners = pCorners.toVector();
 
 	auto tRoi = cv::boundingRect(tCorners);
 
 	// Refine can actually provide corners outside the image
 	tRoi.x = cv::max(tRoi.x, 0);
 	tRoi.y = cv::max(tRoi.y, 0);
-	tRoi.width = cv::min(tRoi.width, mInputImage.cols-tRoi.x);
-	tRoi.height = cv::min(tRoi.height, mInputImage.rows-tRoi.y);
+	tRoi.width = cv::min(tRoi.width, pInputImage.cols-tRoi.x);
+	tRoi.height = cv::min(tRoi.height, pInputImage.rows-tRoi.y);
 
     cv::Point2f tOrigin = tRoi.tl();
     for (auto& p : tCorners) p -= tOrigin;
 
 	cv::Matx33f tTransformation = cv::getPerspectiveTransform(mDstBoundaries, tCorners);
 
-    vector<cv::Point2f> tTransformedSamplePoints(mSamplePoints.size());
+    std::vector<cv::Point2f> tTransformedSamplePoints(mSamplePoints.size());
     cv::perspectiveTransform(mSamplePoints, tTransformedSamplePoints, tTransformation);
 
-    cv::Mat tInputRoi = mInputImage(tRoi);
+    cv::Mat tInputRoi = pInputImage(tRoi);
 	cv::Mat tSamples(1, scDataSize*scDataSize, CV_8U);
 	uchar* tSampleData = tSamples.ptr(0);
     for (auto& tTransformedSamplePoint : tTransformedSamplePoints) {
 		*tSampleData++ = tInputRoi.at<uchar>(tTransformedSamplePoint);
     }
 
-	cv::Mat tBinarizedImage(cv::Size(scDataSize*scDataSize, 1), CV_8U, mMatrix);
-    cv::threshold(tSamples, tBinarizedImage, -1, 1, cv::THRESH_BINARY | cv::THRESH_OTSU);
+	//cv::Mat tBinarizedImage(cv::Size(scDataSize*scDataSize, 1), CV_8U, mMatrix);
+    cv::threshold(tSamples, mBits, -1, 1, cv::THRESH_BINARY | cv::THRESH_OTSU);
 
 #ifdef DEBUG_ReadBits
 
@@ -112,11 +102,10 @@ void chilitags::ReadBits::run()
 
 #define ZOOM_FACTOR 10
 
-    //cv::Mat debugImage = mBinarize.mInputImage.clone();
-    cv::Mat debugImage = mInputImage.clone();
+    cv::Mat debugImage = pInputImage.clone();
 
     cv::Mat marker;
-    cv::resize(mInputImage(boundingRect(mCorners->toVector())), marker, cv::Size(0,0), ZOOM_FACTOR, ZOOM_FACTOR, cv::INTER_NEAREST);
+    cv::resize(pInputImage(boundingRect(mCorners->toVector())), marker, cv::Size(0,0), ZOOM_FACTOR, ZOOM_FACTOR, cv::INTER_NEAREST);
     cv::cvtColor(marker, marker, cv::COLOR_GRAY2BGR);
 
     for (int i = 0; i < scDataSize; ++i)

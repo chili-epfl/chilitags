@@ -140,9 +140,7 @@ void mergePoints(vector<Vec4f>& lines, vector<Vec2f>& points, vector<Vec2i>& seg
 }
 
 
-chilitags::FindQuads::FindQuads(
-        const cv::Mat *pBinaryImage) :
-    mBinaryImage(pBinaryImage),
+chilitags::FindQuads::FindQuads() :
     mQuads(),
     lsd(createLineSegmentDetector(LSD_REFINE_NONE))
     //lsd(createLineSegmentDetector(LSD_REFINE_ADV))
@@ -152,19 +150,14 @@ chilitags::FindQuads::FindQuads(
 #endif
 }
 
-chilitags::FindQuads::~FindQuads()
-{
-}
-
-void chilitags::FindQuads::run()
+void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
 {
     //TODO function too long, split it
 
     mQuads.clear();
-    const cv::Mat tBinaryImage = *mBinaryImage;
 
     vector<Vec4f> lines;
-    lsd->detect(tBinaryImage, lines);
+    lsd->detect(pBinaryImage, lines);
 
 #ifdef DEBUG_FindQuads
     // These constants will be given to OpenCv for drawing with
@@ -173,7 +166,7 @@ void chilitags::FindQuads::run()
     static const float scPrecision = 1<<scShift;
     const static cv::Scalar scColor(255, 0, 255);
 
-    Mat tDebugImage(tBinaryImage);
+    Mat tDebugImage(pBinaryImage);
 
     cout << "Found " << lines.size() << " lines (" << 2*lines.size() << " points)" << endl;
 #endif

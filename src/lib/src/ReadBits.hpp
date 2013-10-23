@@ -20,41 +20,26 @@
 #ifndef ReadBits_HPP
 #define ReadBits_HPP
 
-#include "Pipeable.hpp"
 #include <Quad.hpp>
 
 namespace chilitags {
 
-class ReadBits : public Pipeable
+class ReadBits
 {
 public:
-ReadBits(const cv::Mat *pInputImage,
-         const Quad *pCorners);
-const unsigned char *const *GetBits() const {
-	return &mMatrix;
-}
+ReadBits();
 
-virtual ~ReadBits();
+void operator()(cv::Mat pInputImage, const Quad &pCorners);
+
+const std::vector<unsigned char> &Bits() const { return mBits; }
 
 protected:
-void run();
-
-const cv::Mat& mInputImage;
 
 std::vector<cv::Point2f> mDstBoundaries;
 std::vector<cv::Point2f> mSamplePoints;
 
-const Quad *mCorners;
+std::vector<uchar> mBits;
 
-const cv::Size mSize;
-
-
-
-unsigned char *mMatrix;
-
-private:
-ReadBits(const ReadBits&);
-ReadBits& operator=(const ReadBits&);
 };
 
 

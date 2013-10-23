@@ -17,52 +17,43 @@
 *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
 *******************************************************************************/
 
-#ifndef Pipeable_HPP
-#define Pipeable_HPP
+#ifndef FindQuads_H
+#define FindQuads_H
 
-// Chilitags is structured into "Pipeables".
-// For short, Pipeables are classes with a run() method that does not take
-// any parameters. They are also linked list nodes, with a public start()
-// method that iteratively call the instance's run() and the following's.
-// The Pipeables typically get their input in the form of a reference
-// passed to their constructor, and manage their own output.
-class Pipeable
+#include <Quad.hpp>
+
+#ifdef EXPERIMENTAL_LSD
+#include <opencv2/imgproc/imgproc.hpp> // LineSegmentDetector
+#endif
+
+namespace chilitags {
+
+class FindQuads
 {
 public:
-Pipeable() : mNext(0){
-}
+FindQuads();
 
-virtual ~Pipeable(){
-}
+void operator()(const cv::Mat pBinaryImage);
 
-Pipeable(const Pipeable& pPipeable) : mNext(pPipeable.mNext){
-}
+const std::vector<Quad> &Quads() const { return mQuads; }
 
-Pipeable &operator=(const Pipeable& pPipeable) {
-	mNext = pPipeable.mNext; return *this;
-}
+<<<<<<< HEAD
+const cv::Mat *mBinaryImage;
 
-Pipeable &operator|(Pipeable &pNext){
-	mNext = &pNext; return *mNext;
-}
-
-void start() {
-	for (
-	        Pipeable *tCurrent = this;
-	        tCurrent != 0;
-	        tCurrent = tCurrent->mNext)
-	{
-		tCurrent->run();
-	}
-};
-void stop() {
-	mNext = 0;
-}
-
+#ifndef EXPERIMENTAL_LSD
+=======
 protected:
-virtual void run() = 0;
-Pipeable *mNext;
+>>>>>>> Removed Pipeable and implementation from interface
+static const int scScaledCopiesCount = 3;
+cv::Mat mScaledCopies[scScaledCopiesCount];
+#else
+cv::Ptr<cv::LineSegmentDetector> lsd;
+#endif
+
+std::vector<Quad> mQuads;
+
 };
 
+}
 
 #endif

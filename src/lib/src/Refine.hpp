@@ -20,34 +20,26 @@
 #ifndef Refine_HPP
 #define Refine_HPP
 
-#include "Pipeable.hpp"
 #include <Registrar.hpp>
 #include <Quad.hpp>
 
 namespace chilitags {
 
-class Refine : public Pipeable
+class Refine
 {
 public:
 
-Refine(
-        const cv::Mat *pInputImage,
-        const std::vector<Quad> *quads);
+Refine();
 
-virtual ~Refine();
+void operator()(const cv::Mat pInputImage, const std::vector<Quad> &pQuads);
 
-const std::vector<Quad> *GetRefinedQuads() const {
-	return &mRefinedQuads;
+const std::vector<Quad> &Quads() const {
+	return mRefinedQuads;
 }
 
 protected:
-void run();
 
-const cv::Mat *mInputImage;
-
-const std::vector<Quad>& mQuads;
 std::vector<Quad> mRefinedQuads;
-std::vector<cv::Point2f> mRefinedCorners;
 
 private:
 Refine(const Refine& pRefine);
