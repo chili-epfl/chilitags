@@ -31,7 +31,7 @@ class TagDrawer {
 public:
 
 	TagDrawer():
-	mCodec(10, 16, 10, "1010101010", "10001000000100001")
+	mCodec()
 	{
 	}
 

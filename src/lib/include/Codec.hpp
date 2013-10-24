@@ -29,7 +29,15 @@ namespace chilitags {
 // Society Conference on. IEEE, 2005. p. 590-596.
 class Codec {
 public:
-Codec(int pBitsId, int pBitsCrc, int pBitsFec, const char *pXorMask, const char *pCrcPoly);
+
+/** The default values will code and decode chilitags */
+Codec(
+	int pBitsId = 10,
+	int pBitsCrc = 16,
+	int pBitsFec = 10,
+	const char *pXorMask = "1010101010",
+	const char *pCrcPoly = "10001000000100001");
+
 virtual ~Codec();
 
 // The main method of the class, decoding a bit matrix

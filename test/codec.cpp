@@ -4,7 +4,7 @@
 #include "HardcodedIds.hpp"
 
 TEST(Codec, Code) {
-	chilitags::Codec tCodec(10, 16, 10, "1010101010", "10001000000100001");
+	chilitags::Codec tCodec;
 
 	HardcodedIds tHardcodedIds;
 
@@ -18,7 +18,7 @@ TEST(Codec, Code) {
 }
 
 TEST(Codec, DecodeNoError) {
-	chilitags::Codec tCodec(10, 16, 10, "1010101010", "10001000000100001");
+	chilitags::Codec tCodec;
 
 	HardcodedIds tHardcodedIds;
 
@@ -36,7 +36,7 @@ TEST(Codec, DecodeNoError) {
 }
 
 TEST(Codec, Decode1Error) {
-	chilitags::Codec tCodec(10, 16, 10, "1010101010", "10001000000100001");
+	chilitags::Codec tCodec;
 
 	HardcodedIds tHardcodedIds;
 
@@ -60,7 +60,7 @@ TEST(Codec, Decode1Error) {
 }
 
 TEST(Codec, Decode2Errors) {
-	chilitags::Codec tCodec(10, 16, 10, "1010101010", "10001000000100001");
+	chilitags::Codec tCodec;
 
 	HardcodedIds tHardcodedIds;
 
