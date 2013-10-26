@@ -177,8 +177,26 @@ marker detection in their C++ application. A [TUIO server for chilitags](https:/
 allows the use of chilitags with other, independent applications. 
 
 Despite the efforts done to extract this release from "research code",
-Chilitags can easily be improved on the software engineering level.  Chilitags
-have been extensively used in the past years, but no proper tests have been
-developed.  Documentation have been created only for this release, and can
+Chilitags can easily be improved on the software engineering level.
+Documentation have been created only for this release, and can
 probably be augmented. Contributions are very welcome.
 
+Chilitags have been extensively used in the past years, but proper tests are a
+more recent addition. To run automated testes, you need to activate them in the
+CMake configuration (option `WITH_TESTS`). The test data is in a [separate
+repository](https://github.com/chili-epfl/chilitags-testdata). The easiest is
+to clone it in a directory at the same level as your local copy of Chilitags, or
+you will also need to update the path in the `CMakeLists.txt`. Then you can run
+the test suite using CMake's test target.
+
+Example on Unix
+```
+git clone git@github.com:chili-epfl/chilitags
+git clone git@github.com:chili-epfl/chilitags-testdata.git
+cd chilitags
+mkdir build
+cd build
+cmake ..
+make
+make test
+```
