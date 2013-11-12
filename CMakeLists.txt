@@ -9,15 +9,6 @@ set(CPACK_PACKAGE_VERSION_PATCH "0")
 find_package( OpenCV REQUIRED core imgproc calib3d highgui ts )
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 
-if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
-    add_definitions(-DOPENCV3)
-endif()
-
-add_subdirectory(src/lib)
-
-# documentation generation
-include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
-
 ##########################################
 ##           Options                   ###
 ##########################################
@@ -28,6 +19,22 @@ option (WITH_CREATOR "provides the marker generation tool" ON)
 option (WITH_SAMPLES "compile misc demos" OFF)
 option (WITH_TESTS "build tests" OFF)
 set(TEST_DATA "../../../chilitags-testdata/" CACHE PATH "specify the root directory of the test data (absolute, or relative to the execution directory of the tests)")
+option(EXPERIMENTAL_LSD "Detects quad with the LineSegmentDetector algorithm (requires OpenCV3)" OFF)
+
+if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
+    add_definitions(-DOPENCV3)
+else()
+    set(EXPERIMENTAL_LSD OFF)
+endif()
+
+if(EXPERIMENTAL_LSD)
+    add_definitions(-DEXPERIMENTAL_LSD)
+endif()
+
+add_subdirectory(src/lib)
+
+# documentation generation
+include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
 
 if (WITH_DETECTOR)
 

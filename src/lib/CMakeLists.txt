@@ -1,8 +1,20 @@
 file(
-	GLOB_RECURSE
+ 	GLOB_RECURSE
 	chilitags_source
-	src/*
+ 	src/*
 )
+
+if (EXPERIMENTAL_LSD)
+    list(REMOVE_ITEM
+		chilitags_source
+		${CMAKE_CURRENT_SOURCE_DIR}/src/FindQuads.cpp
+	)
+else ()
+    list(REMOVE_ITEM
+		chilitags_source
+		${CMAKE_CURRENT_SOURCE_DIR}/src/FindQuadsWithLSD.cpp
+	)
+endif()
 
 file(
 	GLOB_RECURSE

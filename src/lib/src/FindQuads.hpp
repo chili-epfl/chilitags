@@ -23,6 +23,10 @@
 #include "Pipeable.hpp"
 #include <Quad.hpp>
 
+#ifdef EXPERIMENTAL_LSD
+#include <opencv2/imgproc/imgproc.hpp> // LineSegmentDetector
+#endif
+
 namespace chilitags {
 
 class FindQuads : public Pipeable
@@ -39,8 +43,13 @@ protected:
 virtual void run();
 
 const cv::Mat *mBinaryImage;
+
+#ifndef EXPERIMENTAL_LSD
 static const int scScaledCopiesCount = 3;
 cv::Mat mScaledCopies[scScaledCopiesCount];
+#else
+cv::Ptr<cv::LineSegmentDetector> lsd;
+#endif
 
 std::vector<Quad> mQuads;
 
