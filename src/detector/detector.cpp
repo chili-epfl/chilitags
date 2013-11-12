@@ -73,7 +73,9 @@ int main(int argc, char* argv[])
 		tCapture.read(tInputImage);
 
 		// Detect tags on the current image.
+	    int64 tStartCount = cv::getTickCount();
 		tDetectChilitags.update();
+        std::cout << "Time to update markers: " << ((double)cv::getTickCount() - tStartCount)/cv::getTickFrequency() << "ms" << std::endl;
 
 		// The color (magenta) that will be used for all information
 		// overlaid on the captured image
