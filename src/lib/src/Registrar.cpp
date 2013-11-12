@@ -22,7 +22,7 @@
 chilitags::Registrar *chilitags::Registrar::sDefaultRegistrar = 0;
 
 chilitags::Registrar::Registrar() :
-	mCodec(10, 16, 10, "1010101010", "10001000000100001"),
+	mCodec(),
 	mCorners(new cv::Point2f *[mCodec.getMaxTagsNumber()]),
 	mFrameId(0),
 	mLastDetectedFrame(new int[mCodec.getMaxTagsNumber()])

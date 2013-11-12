@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 
 project(chilitags)
 
@@ -22,6 +22,8 @@ include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
 option (WITH_DETECTOR "provides a test application" ON)
 option (WITH_CREATOR "provides the marker generation tool" ON)
 option (WITH_SAMPLES "compile misc demos" OFF)
+option (WITH_TESTS "build tests" OFF)
+set(TEST_DATA "../../../chilitags-testdata/" CACHE STRING "specify the root directory of the test data (absolute, or relative to the execution directory of the tests)")
 
 if (WITH_DETECTOR)
 
@@ -86,3 +88,7 @@ if (WITH_SAMPLES)
 
 endif()
 
+if (WITH_TESTS)
+	enable_testing()
+	add_subdirectory(test)
+endif()

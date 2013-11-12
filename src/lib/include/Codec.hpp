@@ -22,14 +22,6 @@
 
 namespace chilitags {
 
-struct tag_info_t {
-	int id; // id of the tag
-	int tracking_id;
-	int xor_id; // id after applying XOR mask
-	long crc; // id after computing the crc
-	unsigned char fec[36]; // id after computing the fec, used to draw the tag
-};
-
 // This class translates Chilitags bitmatrices to and from identifiers.
 // This class is an implementation of:
 // FIALA, Mark. ARTag, a fiducial marker system using digital techniques. In :
@@ -37,14 +29,22 @@ struct tag_info_t {
 // Society Conference on. IEEE, 2005. p. 590-596.
 class Codec {
 public:
-Codec(int pBitsId, int pBitsCrc, int pBitsFec, const char *pXorMask, const char *pCrcPoly);
+
+/** The default values will code and decode chilitags */
+Codec(
+	int pBitsId = 10,
+	int pBitsCrc = 16,
+	int pBitsFec = 10,
+	const char *pXorMask = "1010101010",
+	const char *pCrcPoly = "10001000000100001");
+
 virtual ~Codec();
 
 // The main method of the class, decoding a bit matrix
-bool decode(const unsigned char *data, tag_info_t **tag);
+bool decode(const unsigned char *data, int &id);
 
 // The inverse operation, encoding a tag identifier into a matrix.
-int getTagEncodedId(int tagId, unsigned char *data);
+bool getTagEncodedId(int tagId, unsigned char *data);
 
 // The following methods deal with the fact that  internal identifiers are
 // associated to the tag's identifiers.
@@ -64,6 +64,15 @@ int getNTotalTagsTracked() const {
 int addTagToTrackingList(int id);
 
 private:
+
+struct tag_info_t {
+	int id; // id of the tag
+	int tracking_id;
+	int xor_id; // id after applying XOR mask
+	long crc; // id after computing the crc
+	unsigned char fec[36]; // id after computing the fec, used to draw the tag
+};
+
 void encode(tag_info_t *tag);
 int computeCRC(tag_info_t *tag);
 int computeFEC(tag_info_t *tag);
