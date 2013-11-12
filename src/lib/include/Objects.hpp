@@ -48,6 +48,9 @@ public:
     void resetCalibration(cv::InputArray newCameraMatrix,
                           cv::InputArray newDistCoeffs);
 
+    int nbTrackedObjects() const {return _config.objects().size();}
+    int nbTrackedMarkers() const {return _config.nbMarkers();}
+
 private:
     void init(float size);
 

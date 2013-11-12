@@ -51,6 +51,7 @@ public:
 
     const Object* usedBy(int markerId) const;
     const MarkerConfig* marker(int markerId) const;
+    const int nbMarkers() const {return _markers.size();}
 
 private:
     void computeCorners(MarkerConfig& marker) const;
