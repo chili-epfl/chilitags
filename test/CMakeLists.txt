@@ -5,6 +5,7 @@ MACRO(declare_test)
 	file(GLOB ${declare_test_TESTNAME}_source_files ${declare_test_TESTNAME}*.cpp)
 	add_executable(${declare_test_TESTNAME} ${${declare_test_TESTNAME}_source_files})
 
+	include_directories(${CMAKE_SOURCE_DIR}/src/lib/include)
 	target_link_libraries(${declare_test_TESTNAME} chilitags)
 
 	find_package( OpenCV REQUIRED ts ${declare_test_CV_MODULES})
