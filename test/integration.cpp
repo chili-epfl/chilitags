@@ -69,10 +69,13 @@ TEST(Integration, Snapshots) {
 		{"stills/320x240/nao03.png",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
 		{"stills/320x240/nao04.png",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
 		{"stills/320x240/nao05.png",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
+		{"stills/320x240/nao06.png",       {46, 50, 51, 55, 59, 62}},
+		{"stills/320x240/nao07.png",       {46, 50, 51, 55, 59, 62}},
+		{"stills/320x240/nao08.png",       {50, 51, 55, 62}},
 	};
 
 	// The game is to lower these numbers
-	const int tExpectedFalseNegatives = 146;
+	const int tExpectedFalseNegatives = 156;
 	const int tExpectedFalsePositives = 0;
 
 	// Initialise the data path with en empty modulename,
@@ -106,12 +109,7 @@ TEST(Integration, Snapshots) {
 					if (!tTag.isPresent()) {
 						++tActualFalseNegatives;
  						std::cout << i << " ";
-						// Uncomment this to get more details about missed tags
-						//ADD_FAILURE() << "Falsely negative detection\n"
-						//	<< "    File: " << tTestCase.first << "\n"
-						//	<< "     Tag: " << i << "\n";
 					}
-
 					++tExpectedTagIt;
 				}
 				else if (tTag.isPresent()) {
