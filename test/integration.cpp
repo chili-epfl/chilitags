@@ -5,6 +5,8 @@
 #include <DetectChilitags.hpp>
 #include <Chilitag.hpp>
 
+#include <iostream>
+
 TEST(Integration, Minimal) {
 
 	// Tag needs to be > 20 px wide;
@@ -93,6 +95,7 @@ TEST(Integration, Snapshots) {
 		if(tImage.data) {
 			tDetectChilitags.update();
 
+ 			std::cout << "Missing markers for " << tTestCase.first << ": ";
 			// We consider everything false positive,
 			// and remove the expected ones later
 			auto tExpectedTagIt = tTestCase.second.begin();
@@ -102,7 +105,7 @@ TEST(Integration, Snapshots) {
 				if (*tExpectedTagIt == i) {
 					if (!tTag.isPresent()) {
 						++tActualFalseNegatives;
-
+ 						std::cout << i << " ";
 						// Uncomment this to get more details about missed tags
 						//ADD_FAILURE() << "Falsely negative detection\n"
 						//	<< "    File: " << tTestCase.first << "\n"
@@ -118,6 +121,7 @@ TEST(Integration, Snapshots) {
 						<< "     Tag: " << i << "\n";
 				}
 			}
+ 			std::cout << std::endl;
 
 		}
 		else {
