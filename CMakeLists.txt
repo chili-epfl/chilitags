@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 project(chilitags)
 
 set(CPACK_PACKAGE_VERSION_MAJOR "1")
-set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_MINOR "2")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 
 find_package( OpenCV REQUIRED core imgproc calib3d highgui ts )
