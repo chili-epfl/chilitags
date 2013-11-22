@@ -26,7 +26,8 @@ chilitags::Binarize::Binarize(
         const cv::Mat *pInputImage) :
 	mThreshold(pThreshold),
 	mWindowSizePerc(pWindowSizePerc),
-	mInputImage(pInputImage),
+	//mInputImage(pInputImage->operator()(roi->rect())),
+	mInputImage(*pInputImage),
 	mIntegralImage(),
 	mOutputImage()
 {
@@ -35,8 +36,8 @@ chilitags::Binarize::Binarize(
 chilitags::Binarize::~Binarize(){
 }
 
-void chilitags::Binarize::run(){
-	const cv::Mat tInputImage= *mInputImage;
+void chilitags::Binarize::run(const cv::Rect& roi){
+	const cv::Mat tInputImage= mInputImage(roi);
 	int mInputWidth = tInputImage.cols;
 	int mInputHeight = tInputImage.rows;
 	int tHalfSection = int (std::min(mInputWidth,mInputHeight) * mWindowSizePerc /2.0f);

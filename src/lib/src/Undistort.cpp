@@ -31,7 +31,7 @@ const int scDataSize = 6;
 const int scTagSize = scDataSize+2*scTagMargin;
 const float scFar = scTagMargin/(float) scTagSize;
 const float scClose = 1.0f - scFar;
-const int scTagWarpZoom = 16;
+const int scTagWarpZoom = 8;
 }
 
 chilitags::Undistort::Undistort(
@@ -70,7 +70,7 @@ void chilitags::Undistort::run()
 	mSrcBoundaries[3] = tCorners[3]*scClose + tCorners[1]*scFar;
 
 	cv::Matx33f tTransformation = cv::getPerspectiveTransform(mSrcBoundaries, mDstBoundaries);
-	cv::warpPerspective(*mInputImage, mUndistortedTag, tTransformation, mSize);
+	//cv::warpPerspective(*mInputImage, mUndistortedTag, tTransformation, mSize);
 
 #ifdef DEBUG_Undistort
 	cv::imshow("Undistort", mUndistortedTag);

@@ -56,6 +56,22 @@ struct Quad {
 		return tResult;
 	}
 
+    cv::Rect rect() const {
+        float xmin = mCorners[0].x;
+        float ymin = mCorners[0].y;
+        float xmax = mCorners[0].x;
+        float ymax = mCorners[0].y;
+		for (size_t i=1; i<Quad::scNPoints; ++i) {
+            if (mCorners[i].x < xmin) xmin = mCorners[i].x;
+            else if (mCorners[i].x > xmax) xmax = mCorners[i].x;
+
+            if (mCorners[i].y < ymin) ymin = mCorners[i].y;
+            else if (mCorners[i].y > ymax) ymax = mCorners[i].y;
+        }
+	    return cv::Rect(xmin, ymin, xmax-xmin, ymax-ymin);
+	}
+
+
 	// Returns the intersection of the diagonals.
 	cv::Point2f getCenter() const {
 

@@ -46,18 +46,17 @@ chilitags::DetectChilitags::DetectChilitags(
 	mPipeables.push_back(tMap);
 	*tEnsureGreyscale | *tDetectEdges | *tFindQuads | *tMap;
 
-	Undistort *tUndistort = new Undistort(tEnsureGreyscale->GetOutputImage(), tMap->Variable());
-	mPipeables.push_back(tUndistort);
-	ReadBits *tReadBits = new ReadBits(tUndistort->GetOutputImage());
+	ReadBits *tReadBits = new ReadBits(tEnsureGreyscale->GetOutputImage(), tMap->Variable());
 	mPipeables.push_back(tReadBits);
 	Decode *tDecode = new Decode(tReadBits->GetBits(), pRegistrar.GetTranscoder());
 	mPipeables.push_back(tDecode);
 	Register *tRegister = new Register(tDecode->GetDecodedTag(), tMap->Variable(), tDecode->GetOrientation(), pRegistrar);
 	mPipeables.push_back(tRegister);
-	Refine *tRefine = new Refine(tEnsureGreyscale->GetOutputImage(), tDecode->GetDecodedTag(), pRegistrar);
-	mPipeables.push_back(tRefine);
-	*tUndistort | *tReadBits | *tDecode | *tRegister | *tRefine;
-	tMap->Function(tUndistort);
+	//Refine *tRefine = new Refine(tEnsureGreyscale->GetOutputImage(), tDecode->GetDecodedTag(), pRegistrar);
+	//mPipeables.push_back(tRefine);
+	//*tUndistort | *tReadBits | *tDecode | *tRegister | *tRefine;
+	*tReadBits | *tDecode | *tRegister;
+	tMap->Function(tReadBits);
 
 	mPipeline = tEnsureGreyscale;
 }

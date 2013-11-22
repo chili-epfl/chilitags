@@ -22,6 +22,7 @@
 
 #include "Pipeable.hpp"
 #include <opencv2/core/core.hpp>
+#include <Quad.hpp>
 
 namespace chilitags {
 
@@ -42,12 +43,13 @@ const cv::Mat *GetOutputImage() const {
 	return &mOutputImage;
 };
 
+void run(const cv::Rect& roi);
+const cv::Mat& mInputImage;
 protected:
-void run();
+void run(){};
 
 float mThreshold;
 float mWindowSizePerc;
-const cv::Mat *mInputImage;
 cv::Mat mIntegralImage;
 cv::Mat mOutputImage;
 
