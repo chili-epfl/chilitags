@@ -23,7 +23,6 @@
 #include "DetectEdges.hpp"
 #include "FindQuads.hpp"
 #include "Map.hpp"
-#include "Undistort.hpp"
 #include "ReadBits.hpp"
 #include "Decode.hpp"
 #include "Register.hpp"
@@ -46,9 +45,7 @@ chilitags::DetectChilitags::DetectChilitags(
 	mPipeables.push_back(tMap);
 	*tEnsureGreyscale | *tDetectEdges | *tFindQuads | *tMap;
 
-	Undistort *tUndistort = new Undistort(tEnsureGreyscale->GetOutputImage(), tMap->Variable());
-	mPipeables.push_back(tUndistort);
-	ReadBits *tReadBits = new ReadBits(tUndistort->GetOutputImage());
+	ReadBits *tReadBits = new ReadBits(tEnsureGreyscale->GetOutputImage(), tMap->Variable());
 	mPipeables.push_back(tReadBits);
 	Decode *tDecode = new Decode(tReadBits->GetBits(), pRegistrar.GetTranscoder());
 	mPipeables.push_back(tDecode);
@@ -56,8 +53,8 @@ chilitags::DetectChilitags::DetectChilitags(
 	mPipeables.push_back(tRegister);
 	Refine *tRefine = new Refine(tEnsureGreyscale->GetOutputImage(), tDecode->GetDecodedTag(), pRegistrar);
 	mPipeables.push_back(tRefine);
-	*tUndistort | *tReadBits | *tDecode | *tRegister | *tRefine;
-	tMap->Function(tUndistort);
+	*tReadBits | *tDecode | *tRegister | *tRefine;
+	tMap->Function(tReadBits);
 
 	mPipeline = tEnsureGreyscale;
 }
