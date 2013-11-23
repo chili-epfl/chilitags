@@ -18,7 +18,6 @@
 *******************************************************************************/
 
 #include "Refine.hpp"
-#include <Quad.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 //#define DEBUG_Refine
@@ -30,12 +29,10 @@
 
 chilitags::Refine::Refine(
         const cv::Mat *pInputImage,
-        const int *pDecodedTag,
-        Registrar &pRegistrar) :
+        const std::vector<Quad>* quads):
 	mInputImage(pInputImage),
-	mDecodedTag(pDecodedTag),
-	mRefinedCorners(4),
-	mRegistrar(pRegistrar)
+	mQuads(*quads),
+	mRefinedCorners(4)
 {
 #ifdef DEBUG_Refine
 	cv::namedWindow("Refine");
@@ -48,12 +45,12 @@ chilitags::Refine::~Refine()
 
 void chilitags::Refine::run()
 {
-	int tDecodedTag = *mDecodedTag;
-	if (tDecodedTag > -1)
+    mRefinedQuads.clear();
+
+	for (const auto& quad : mQuads)
 	{
 		const cv::Mat tInputImage = *mInputImage;
-		const cv::Point2f *tInputCorners = mRegistrar.getCorners(tDecodedTag);
-		mRefinedCorners.assign(tInputCorners, tInputCorners+4);
+		mRefinedCorners = quad.toVector();
 
 		// Taking a ROI around the raw corners with some margin
 		static const float scGrowthRatio = 2.0f/10.0f;
@@ -91,7 +88,7 @@ void chilitags::Refine::run()
 			cv::Size(tCornerNeighbourhood, tCornerNeighbourhood),
 			cv::Size(-1, -1), cv::TermCriteria(
 				cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS,
-				100, 0.000001));
+				5, 0.01));
 
 		mRefinedCorners[0] += tRoiOffset;
 		mRefinedCorners[1] += tRoiOffset;
@@ -102,7 +99,7 @@ void chilitags::Refine::run()
 		cv::Mat tDebugImage = tInputImage(tRoi).clone();
 		for(int i=0; i<Quad::scNPoints; ++i)
 		{
-			cv::circle(tDebugImage, tInputCorners[i]-tRoiOffset,
+			cv::circle(tDebugImage, quad[i]-tRoiOffset,
 				3, cv::Scalar::all(128), 2);
 			cv::line(tDebugImage,
 				mRefinedCorners[i]-tRoiOffset, mRefinedCorners[i]-tRoiOffset,
@@ -114,7 +111,7 @@ void chilitags::Refine::run()
 		cv::waitKey(0);
 #endif
 
-		mRegistrar.set(tDecodedTag, &mRefinedCorners[0]);
+	    mRefinedQuads.push_back(Quad(mRefinedCorners));
 	}
 
 }

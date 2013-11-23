@@ -22,6 +22,7 @@
 
 #include "Pipeable.hpp"
 #include <Registrar.hpp>
+#include <Quad.hpp>
 
 namespace chilitags {
 
@@ -31,23 +32,22 @@ public:
 
 Refine(
         const cv::Mat *pInputImage,
-        const int *pDecodedTag,
-        Registrar &pRegistrar);
+        const std::vector<Quad> *quads);
+
 virtual ~Refine();
 
-const std::vector<cv::Point2f> *GetRefinedCorners() const {
-	return &mRefinedCorners;
+const std::vector<Quad> *GetRefinedQuads() const {
+	return &mRefinedQuads;
 }
 
 protected:
 void run();
 
 const cv::Mat *mInputImage;
-const int *mDecodedTag;
 
+const std::vector<Quad>& mQuads;
+std::vector<Quad> mRefinedQuads;
 std::vector<cv::Point2f> mRefinedCorners;
-
-Registrar &mRegistrar;
 
 private:
 Refine(const Refine& pRefine);
