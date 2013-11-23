@@ -41,9 +41,11 @@ chilitags::DetectChilitags::DetectChilitags(
 	mPipeables.push_back(tDetectEdges);
 	FindQuads *tFindQuads = new FindQuads(tDetectEdges->GetOutputImage());
 	mPipeables.push_back(tFindQuads);
-	Map<std::vector<Quad> > *tMap = new Map<std::vector<Quad> >(tFindQuads->Quads());
+	Refine *tRefine = new Refine(tEnsureGreyscale->GetOutputImage(), tFindQuads->Quads());
+	mPipeables.push_back(tRefine);
+	Map<std::vector<Quad> > *tMap = new Map<std::vector<Quad> >(tRefine->GetRefinedQuads());
 	mPipeables.push_back(tMap);
-	*tEnsureGreyscale | *tDetectEdges | *tFindQuads | *tMap;
+	*tEnsureGreyscale | *tDetectEdges | *tFindQuads | *tRefine | *tMap;
 
 	ReadBits *tReadBits = new ReadBits(tEnsureGreyscale->GetOutputImage(), tMap->Variable());
 	mPipeables.push_back(tReadBits);
@@ -51,9 +53,7 @@ chilitags::DetectChilitags::DetectChilitags(
 	mPipeables.push_back(tDecode);
 	Register *tRegister = new Register(tDecode->GetDecodedTag(), tMap->Variable(), tDecode->GetOrientation(), pRegistrar);
 	mPipeables.push_back(tRegister);
-	Refine *tRefine = new Refine(tEnsureGreyscale->GetOutputImage(), tDecode->GetDecodedTag(), pRegistrar);
-	mPipeables.push_back(tRefine);
-	*tReadBits | *tDecode | *tRegister | *tRefine;
+	*tReadBits | *tDecode | *tRegister;
 	tMap->Function(tReadBits);
 
 	mPipeline = tEnsureGreyscale;
