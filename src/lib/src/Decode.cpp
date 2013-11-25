@@ -63,4 +63,7 @@ void chilitags::Decode::run()
 	else if (mCodec.decode(mMatrix90 , mDecodedTag)) mOrientation = 1;
 	else if (mCodec.decode(mMatrix180, mDecodedTag)) mOrientation = 2;
 	else if (mCodec.decode(mMatrix270, mDecodedTag)) mOrientation = 3;
+
+    //The dreadful Black Marker!
+	if (mDecodedTag == 682) mDecodedTag = -1;
 }
