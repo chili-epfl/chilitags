@@ -76,8 +76,13 @@ int main(int argc, char* argv[])
         std::cerr << "Unable to initialise video capture." << std::endl;
         return 1;
     }
+#ifdef OPENCV3
+    capture.set(cv::CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
+    capture.set(cv::CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
+#else
     capture.set(CV_CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
     capture.set(CV_CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
+#endif
 
     /*****************************/
     /*             Go!           */
