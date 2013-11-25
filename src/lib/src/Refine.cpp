@@ -19,7 +19,7 @@
 
 #include "Refine.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
-
+#include <iostream>
 //#define DEBUG_Refine
 #ifdef DEBUG_Refine
 #include <stdio.h>
@@ -83,7 +83,11 @@ void chilitags::Refine::run()
 			cv::arcLength(mRefinedCorners, true)
 			/ (double) Quad::scNPoints;
 		double tCornerNeighbourhood = scProximityRatio*tAverageSideLength;
-
+		
+ 		// ensure the cornerSubPixel search window is smaller that the ROI
+ 		tCornerNeighbourhood = cv::min(tCornerNeighbourhood, ((double) tRoi.width-5)/2);
+ 		tCornerNeighbourhood = cv::min(tCornerNeighbourhood, ((double) tRoi.height-5)/2);
+		
 		cv::cornerSubPix(tInputImage(tRoi), mRefinedCorners,
 			cv::Size(tCornerNeighbourhood, tCornerNeighbourhood),
 			cv::Size(-1, -1), cv::TermCriteria(
