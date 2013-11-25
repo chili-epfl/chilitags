@@ -87,7 +87,16 @@ if (WITH_SAMPLES)
     target_link_libraries( objects chilitags )
     target_link_libraries( objects ${OpenCV_LIBS} )
 
+    add_executable(
+        chilitags-detect
+        samples/chilitags-detect.cpp
+    )
+
+    target_link_libraries( chilitags-detect chilitags )
+    target_link_libraries( chilitags-detect ${OpenCV_LIBS} )
+
     install (TARGETS objects RUNTIME DESTINATION bin)
+    install (TARGETS chilitags-detect RUNTIME DESTINATION bin)
 
 endif()
 

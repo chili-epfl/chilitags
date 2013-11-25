@@ -55,12 +55,17 @@ TEST(Integration, Snapshots) {
 
 	// The ids are assumed to be sorted
 	vector< pair<string, vector<int>> > tTestMatrix = {
+		{"stills/1600x1200/thesis01.jpg",  {369,370,371,372,373,374,375,377,378,379,380,381,382,383,384,385,386,394,395,396,397,398,399,400,401,402,405,406,407,408,409}},
+		{"stills/1600x1200/thesis02.jpg",  {588,589,590,591,592,593,594,595,596,597,598,599,1000}},
+		{"stills/1600x1200/thesis03.jpg",  {576,577,588,589,590,591,593,594,595,1023}},
+		{"stills/1600x1200/thesis04.jpg",  {573,574,575,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597,598,599,1022}},
 		{"stills/640x480/severin01.jpg",   {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
 		{"stills/640x480/severin02.jpg",   {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
 		{"stills/640x480/severin03.jpg",   {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
 		{"stills/640x480/severin04.jpg",   {      3,        8,9,10,         14               }},
 		{"stills/640x480/severin05.jpg",   {0,1,    4,5,6,7,          12,13,14,      17,18   }},
 		{"stills/640x480/severin06.jpg",   {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
+		{"stills/640x480/nasty01.jpg",     {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
 		{"stills/640x480/nao01.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
 		{"stills/640x480/nao02.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
 		{"stills/640x480/nao03.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
@@ -80,7 +85,7 @@ TEST(Integration, Snapshots) {
 	};
 
 	// The game is to lower these numbers
-	const int tExpectedFalseNegatives = 156;
+	const int tExpectedFalseNegatives = 167;
 	const int tExpectedFalsePositives = 0;
 
 	// Initialise the data path with en empty modulename,
