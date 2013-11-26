@@ -85,7 +85,11 @@ TEST(Integration, Snapshots) {
 	};
 
 	// The game is to lower these numbers
+#ifdef OPENCV3
 	const int tExpectedFalseNegatives = 167;
+#else
+	const int tExpectedFalseNegatives = 168;
+#endif
 	const int tExpectedFalsePositives = 0;
 
 	// Initialise the data path with en empty modulename,
