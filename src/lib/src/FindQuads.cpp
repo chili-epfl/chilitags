@@ -105,20 +105,19 @@ void chilitags::FindQuads::run()
 
 			if (tPerimeter > Quad::scNPoints*scMinTagSize && tArea > scMinTagSize*scMinTagSize)
 			{
-				std::vector<cv::Point> approxContour;
-				cv::approxPolyDP( *contour, approxContour, tPerimeter*0.02, true);
+				std::vector<cv::Point> tApproxContour;
+				cv::approxPolyDP( *contour, tApproxContour, tPerimeter*0.02, true);
 
-				//TODO: get convex hull
-				//http://stackoverflow.com/questions/10533233/opencv-c-obj-c-advanced-square-detection
+				std::vector<cv::Point> tNormalisedContour;
+				cv::convexHull(tApproxContour, tNormalisedContour, false);
 
-				if (approxContour.size() == (int) Quad::scNPoints
-				    && cv::isContourConvex(approxContour))
+				if (tNormalisedContour.size() == (int) Quad::scNPoints)
 				{
 					Quad tCandidate;
-					tCandidate[0] = tScale*approxContour[0];
-					tCandidate[1] = tScale*approxContour[1];
-					tCandidate[2] = tScale*approxContour[2];
-					tCandidate[3] = tScale*approxContour[3];
+					tCandidate[0] = tScale*tNormalisedContour[0];
+					tCandidate[1] = tScale*tNormalisedContour[1];
+					tCandidate[2] = tScale*tNormalisedContour[2];
+					tCandidate[3] = tScale*tNormalisedContour[3];
 
 					IsSimilarTo tIsSimilarToCandidate(tCandidate);
 
@@ -130,21 +129,21 @@ void chilitags::FindQuads::run()
 					{
 						*tSameQuad = tCandidate;
 #ifdef DEBUG_FindQuads
-						drawContour(tDebugImage, approxContour, cv::Scalar(0,255,255), tOffset);
+						drawContour(tDebugImage, tNormalisedContour, cv::Scalar(0,255,255), tOffset);
 #endif
 					}
 					else
 					{
 						mQuads.push_back(tCandidate);
 #ifdef DEBUG_FindQuads
-						drawContour(tDebugImage, approxContour, cv::Scalar(0,255,0), tOffset);
+						drawContour(tDebugImage, tNormalisedContour, cv::Scalar(0,255,0), tOffset);
 #endif
 					}
 				}
 #ifdef DEBUG_FindQuads
 				else // not quadrilaterals
 				{
-					drawContour(tDebugImage, approxContour, cv::Scalar(0,0,255), tOffset);
+					drawContour(tDebugImage, tNormalisedContour, cv::Scalar(0,0,255), tOffset);
 				}
 #endif
 			}

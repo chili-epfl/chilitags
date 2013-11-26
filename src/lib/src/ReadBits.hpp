@@ -41,7 +41,6 @@ void run();
 
 const cv::Mat& mInputImage;
 
-std::vector<cv::Point2f> mSrcBoundaries;
 std::vector<cv::Point2f> mDstBoundaries;
 std::vector<cv::Point2f> mSamplePoints;
 

@@ -31,9 +31,7 @@ using namespace std;
 namespace {
 static const int scDataSize = 6;
 static const int scTagMargin = 2;
-static const int scTagSize = scDataSize+2*scTagMargin;
-static const float scFar = scTagMargin/(float) scTagSize;
-static const float scClose = 1.0f - scFar;
+static const int scTagSize = 2*scTagMargin+scDataSize;
 }
 
 chilitags::ReadBits::ReadBits(const cv::Mat *pInputImage,
@@ -42,16 +40,16 @@ chilitags::ReadBits::ReadBits(const cv::Mat *pInputImage,
 	mInputImage(*pInputImage),
 	mMatrix(new unsigned char[scDataSize*scDataSize])
 {
-    mDstBoundaries = {{0,0},
-                      {scDataSize, 0},
-                      {scDataSize, scDataSize},
-                      {0, scDataSize}};
+    mDstBoundaries = {{0        , 0},
+                      {scTagSize, 0},
+                      {scTagSize, scTagSize},
+                      {0        , scTagSize}};
 
-    for (int i = 0; i < scDataSize; ++i)
+	for (int y = 0; y < scDataSize; ++y)
     {
-        for (int j = 0; j < scDataSize; ++j)
+		for (int x = 0; x < scDataSize; ++x)
         {
-            cv::Point2f tPosition(i + .5, j + .5);
+            cv::Point2f tPosition(scTagMargin + x + .5, scTagMargin + y + .5);
             mSamplePoints.push_back(tPosition);
         }
     }
@@ -72,46 +70,39 @@ chilitags::ReadBits::~ReadBits()
 void chilitags::ReadBits::run()
 {
 
-    Quad tCorners = *mCorners;
+    auto tCorners = mCorners->toVector();
 
-    mSrcBoundaries.clear();
-    mSrcBoundaries.push_back(tCorners[0]*scClose + tCorners[2]*scFar);
-    mSrcBoundaries.push_back(tCorners[1]*scClose + tCorners[3]*scFar);
-    mSrcBoundaries.push_back(tCorners[2]*scClose + tCorners[0]*scFar);
-    mSrcBoundaries.push_back(tCorners[3]*scClose + tCorners[1]*scFar);
+	auto tRoi = cv::boundingRect(tCorners);
 
-    cv::Mat tBinarizedImage;
-    cv::threshold(mInputImage(boundingRect(mSrcBoundaries)), tBinarizedImage, -1, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+    cv::Point2f tOrigin = tRoi.tl();
+    for (auto& p : tCorners) p -= tOrigin;
 
+	cv::Matx33f tTransformation = cv::getPerspectiveTransform(mDstBoundaries, tCorners);
 
-    cv::Point2f tOrigin = boundingRect(mSrcBoundaries).tl();
-    for (auto& p : mSrcBoundaries) p -= tOrigin;
-
-	cv::Matx33f tTransformation = cv::getPerspectiveTransform(mDstBoundaries, mSrcBoundaries);
-
-
-    vector<cv::Point2f> tTransformedSamplePoints;
-
+    vector<cv::Point2f> tTransformedSamplePoints(mSamplePoints.size());
     cv::perspectiveTransform(mSamplePoints, tTransformedSamplePoints, tTransformation);
+
+    cv::Mat tInputRoi = mInputImage(tRoi);
+	cv::Mat tSamples(1, scDataSize*scDataSize, CV_8U);
+	uchar* tSampleData = tSamples.ptr(0);
+    for (auto& tTransformedSamplePoint : tTransformedSamplePoints) {
+		*tSampleData++ = tInputRoi.at<uchar>(tTransformedSamplePoint);
+    }
+
+	cv::Mat tBinarizedImage(cv::Size(scDataSize*scDataSize, 1), CV_8U, mMatrix);
+    cv::threshold(tSamples, tBinarizedImage, -1, 1, cv::THRESH_BINARY | cv::THRESH_OTSU);
+
+#ifdef DEBUG_ReadBits
 
     for (int i = 0; i < scDataSize; ++i)
     {
         for (int j = 0; j < scDataSize; ++j)
         {
-            auto tPoint = tTransformedSamplePoints[i + j * scDataSize];
-            if (   tPoint.x < 0 || tPoint.x > tBinarizedImage.cols
-                || tPoint.y < 0 || tPoint.y > tBinarizedImage.rows)
-            {
-#ifdef DEBUG_ReadBits
-                cout << "Transformed point out of the image!" << endl;
-#endif
-                continue;
-            }
-            mMatrix[i*scDataSize + j] = (tBinarizedImage.at<uchar>(tPoint) > 128);
+            std::cout << (int) mMatrix[i*scDataSize + j];
         }
+		std::cout << "\n";
     }
-
-#ifdef DEBUG_ReadBits
+	std::cout << std::endl;
 
 #define ZOOM_FACTOR 10
 
@@ -119,33 +110,35 @@ void chilitags::ReadBits::run()
     cv::Mat debugImage = mInputImage.clone();
 
     cv::Mat marker;
-    cv::resize(tBinarizedImage, marker, cv::Size(0,0), ZOOM_FACTOR, ZOOM_FACTOR, cv::INTER_NEAREST);
+    cv::resize(mInputImage(boundingRect(mCorners->toVector())), marker, cv::Size(0,0), ZOOM_FACTOR, ZOOM_FACTOR, cv::INTER_NEAREST);
     cv::cvtColor(marker, marker, cv::COLOR_GRAY2BGR);
 
     for (int i = 0; i < scDataSize; ++i)
     {
         for (int j = 0; j < scDataSize; ++j)
         {
-            cv::Point2f position = tTransformedSamplePoints[i + j * scDataSize];
-            if (mMatrix[i*scDataSize + j]) {
-                cv::circle(marker, position * ZOOM_FACTOR, 3, cv::Scalar(0,128,0));
-                //cv::circle(debugImage, position + tOrigin, 1, cv::Scalar(0,0,0));
-            }
-            else {
-                cv::circle(marker, position * ZOOM_FACTOR, 3, cv::Scalar(255,128,0),2);
-                //cv::circle(debugImage, position + tOrigin, 1, cv::Scalar(255,0,0));
-            }
+            cv::Point2f position = tTransformedSamplePoints[i*scDataSize + j];
+			cv::circle(marker, position * ZOOM_FACTOR, 1,
+				cv::Scalar(0,255,0),2);
+			cv::circle(marker, position * ZOOM_FACTOR, 3,
+				cv::Scalar::all(mMatrix[i*scDataSize + j]*255),2);
         }
     }
-    cv::line(marker, mSrcBoundaries[0]*ZOOM_FACTOR, mSrcBoundaries[1]*ZOOM_FACTOR,cv::Scalar(255,0,255));
-    cv::line(marker, mSrcBoundaries[1]*ZOOM_FACTOR, mSrcBoundaries[2]*ZOOM_FACTOR,cv::Scalar(255,0,255));
-    cv::line(marker, mSrcBoundaries[2]*ZOOM_FACTOR, mSrcBoundaries[3]*ZOOM_FACTOR,cv::Scalar(255,0,255));
-    cv::line(marker, mSrcBoundaries[3]*ZOOM_FACTOR, mSrcBoundaries[0]*ZOOM_FACTOR,cv::Scalar(255,0,255));
 
-    cv::line(debugImage, mSrcBoundaries[0]+tOrigin, mSrcBoundaries[1]+tOrigin,cv::Scalar(255,0,255));
-    cv::line(debugImage, mSrcBoundaries[1]+tOrigin, mSrcBoundaries[2]+tOrigin,cv::Scalar(255,0,255));
-    cv::line(debugImage, mSrcBoundaries[2]+tOrigin, mSrcBoundaries[3]+tOrigin,cv::Scalar(255,0,255));
-    cv::line(debugImage, mSrcBoundaries[3]+tOrigin, mSrcBoundaries[0]+tOrigin,cv::Scalar(255,0,255));
+	cv::circle(marker, tCorners[0] * ZOOM_FACTOR, 3, cv::Scalar(255,0,0),2);
+
+    cv::line(marker, tCorners[0]*ZOOM_FACTOR, tCorners[1]*ZOOM_FACTOR,cv::Scalar(255,0,0));
+    cv::line(marker, tCorners[1]*ZOOM_FACTOR, tCorners[2]*ZOOM_FACTOR,cv::Scalar(255,0,255));
+    cv::line(marker, tCorners[2]*ZOOM_FACTOR, tCorners[3]*ZOOM_FACTOR,cv::Scalar(255,0,255));
+    cv::line(marker, tCorners[3]*ZOOM_FACTOR, tCorners[0]*ZOOM_FACTOR,cv::Scalar(255,0,255));
+
+    cv::line(marker, tCorners[2]*ZOOM_FACTOR, tCorners[0]*ZOOM_FACTOR,cv::Scalar(255,0,255));
+    cv::line(marker, tCorners[3]*ZOOM_FACTOR, tCorners[1]*ZOOM_FACTOR,cv::Scalar(255,0,255));
+
+    cv::line(debugImage, tCorners[0]+tOrigin, tCorners[1]+tOrigin,cv::Scalar(255,0,255));
+    cv::line(debugImage, tCorners[1]+tOrigin, tCorners[2]+tOrigin,cv::Scalar(255,0,255));
+    cv::line(debugImage, tCorners[2]+tOrigin, tCorners[3]+tOrigin,cv::Scalar(255,0,255));
+    cv::line(debugImage, tCorners[3]+tOrigin, tCorners[0]+tOrigin,cv::Scalar(255,0,255));
 
 
 	cv::imshow("ReadBits-full", debugImage);

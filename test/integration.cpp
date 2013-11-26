@@ -35,14 +35,16 @@ TEST(Integration, Minimal) {
 		cv::Point2f(tClose, tClose),
 		cv::Point2f(tFar, tClose),
 		cv::Point2f(tFar, tFar),
-		cv::Point2f(tClose, tFar)};
+		cv::Point2f(tClose, tFar),
+	};
 
 	// A pixel is a 1x1 square around its center
 	cv::add(tExpectedCorners, cv::Scalar::all(-0.5), tExpectedCorners);
 
 	auto tActualCorners = tDetectedTag.getCorners();
 	for (int i: {0,1,2,3}) {
-		ASSERT_GT(0.1, cv::norm(tActualCorners[i] - tExpectedCorners[i]));
+		EXPECT_GT(0.1, cv::norm(tActualCorners[i] - tExpectedCorners[i]))
+			<< "with i=" << i;
 	}
 }
 
@@ -86,9 +88,9 @@ TEST(Integration, Snapshots) {
 
 	// The game is to lower these numbers
 #ifdef OPENCV3
-	const int tExpectedFalseNegatives = 167;
+	const int tExpectedFalseNegatives = 138;
 #else
-	const int tExpectedFalseNegatives = 168;
+	const int tExpectedFalseNegatives = 137;
 #endif
 	const int tExpectedFalsePositives = 0;
 

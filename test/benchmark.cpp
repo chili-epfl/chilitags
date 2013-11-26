@@ -54,7 +54,11 @@ TEST(Integration, Snapshots) {
     };
 
     // The game is to lower these numbers
-    const int tExpectedFalseNegatives = 11;
+#ifdef OPENCV3
+	const int tExpectedFalseNegatives = 3;
+#else
+	const int tExpectedFalseNegatives = 5;
+#endif
     const int tExpectedFalsePositives = 0;
 
     // Initialise the data path with en empty modulename,
@@ -83,7 +87,7 @@ TEST(Integration, Snapshots) {
                 runs_duration.push_back(((double)cv::getTickCount() - tStartCount)*1000/cv::getTickFrequency());
             }
 
-            cout << "Missing markers for " << tTestCase.first << ": ";
+            //cout << "Missing markers for " << tTestCase.first << ": ";
             // We consider everything false positive,
             // and remove the expected ones later
             auto tExpectedTagIt = tTestCase.second.begin();
@@ -93,7 +97,7 @@ TEST(Integration, Snapshots) {
                 if (*tExpectedTagIt == i) {
                     if (!tTag.isPresent()) {
                         ++tActualFalseNegatives;
-                        cout << i << " ";
+                        //cout << i << " ";
                     }
                     ++tExpectedTagIt;
                 }
@@ -104,7 +108,7 @@ TEST(Integration, Snapshots) {
                         << "     Tag: " << i << "\n";
                 }
             }
-            cout << endl;
+            //cout << endl;
 
         }
         else {
