@@ -7,6 +7,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <TagDrawer.hpp>
 
+#include "test-metadata.hpp"
+
 #include <DetectChilitags.hpp>
 #include <Chilitag.hpp>
 
@@ -49,51 +51,6 @@ TEST(Integration, Minimal) {
 }
 
 TEST(Integration, Snapshots) {
-
-	using std::vector;
-	using std::pair;
-	using std::string;
-	using chilitags::Chilitag;
-
-	// The ids are assumed to be sorted
-	vector< pair<string, vector<int>> > tTestMatrix = {
-		{"stills/1600x1200/thesis01.jpg",  {369,370,371,372,373,374,375,377,378,379,380,381,382,383,384,385,386,394,395,396,397,398,399,400,401,402,405,406,407,408,409}},
-		{"stills/1600x1200/thesis02.jpg",  {588,589,590,591,592,593,594,595,596,597,598,599,1000}},
-		{"stills/1600x1200/thesis03.jpg",  {576,577,588,589,590,591,593,594,595,1023}},
-		{"stills/1600x1200/thesis04.jpg",  {573,574,575,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597,598,599,1022}},
-		{"stills/640x480/severin01.jpg",   {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/640x480/severin02.jpg",   {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/640x480/severin03.jpg",   {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/640x480/severin04.jpg",   {      3,        8,9,10,         14               }},
-		{"stills/640x480/severin05.jpg",   {0,1,    4,5,6,7,          12,13,14,      17,18   }},
-		{"stills/640x480/severin06.jpg",   {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/640x480/nasty01.jpg",     {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/640x480/nao01.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/640x480/nao02.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/640x480/nao03.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/640x480/nao04.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/640x480/nao05.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/640x480/nao06.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/640x480/occlusion01.jpg", {  1                                     ,17      }},
-		{"stills/640x480/occlusion02.jpg", {  1                                     ,17      }},
-		{"stills/320x240/nao01.png",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/320x240/nao02.png",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/320x240/nao03.png",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/320x240/nao04.png",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/320x240/nao05.png",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-		{"stills/320x240/nao06.png",       {46, 50, 51, 55, 59, 62}},
-		{"stills/320x240/nao07.png",       {46, 50, 51, 55, 59, 62}},
-		{"stills/320x240/nao08.png",       {50, 51, 55, 62}},
-	};
-
-	// The game is to lower these numbers
-#ifdef OPENCV3
-	const int tExpectedFalseNegatives = 96;
-#else
-	const int tExpectedFalseNegatives = 95;
-#endif
-	const int tExpectedFalsePositives = 0;
-
 	// Initialise the data path with en empty modulename,
 	// to get the data from the root of the test data path
 	cvtest::TS::ptr()->init("");
@@ -103,40 +60,40 @@ TEST(Integration, Snapshots) {
 
 	// Tags need to be registered before detection
 	// (Chilitag's constructor takes care of that)
-	for (int i = 0; i<1024; ++i) Chilitag tTag(i);
+	for (int i = 0; i<1024; ++i) chilitags::Chilitag tTag(i);
 
-	int tActualFalseNegatives = 0;
-	int tActualFalsePositives = 0;
-	for (const auto & tTestCase : tTestMatrix) {
-		string tPath = string(cvtest::TS::ptr()->get_data_path())+tTestCase.first;
+	int tNewFalseNegatives = 0;
+	int tNewTruePositives = 0;
+
+	for (const auto & tTestCase : TestMetadata::all) {
+		std::string tPath = std::string(cvtest::TS::ptr()->get_data_path())+tTestCase.filename;
 		tImage = cv::imread(tPath);
 
 		if(tImage.data) {
 			tDetectChilitags.update();
 
- 			std::cout << "Missing markers for " << tTestCase.first << ": ";
-			// We consider everything false positive,
-			// and remove the expected ones later
-			auto tExpectedTagIt = tTestCase.second.begin();
 			for (int i = 0; i<1024; ++i) {
 				// No persistence
-				Chilitag tTag(i, 0);
-				if (*tExpectedTagIt == i) {
-					if (!tTag.isPresent()) {
-						++tActualFalseNegatives;
- 						std::cout << i << " ";
+				chilitags::Chilitag tTag(i, 0);
+				if (tTestCase.isExpected(i)) {
+					if (!tTag.isPresent() && !tTestCase.isKnownToMiss(i)) {
+						ADD_FAILURE() << "New false negative\n"
+							<< "    File: " << tTestCase.filename << "\n"
+							<< "     Tag: " << i << "\n";
+						++tNewFalseNegatives;
+					} else if (tTag.isPresent() && tTestCase.isKnownToMiss(i)) {
+						std::cout << "New true positive\n"
+							<< "    File: " << tTestCase.filename << "\n"
+							<< "     Tag: " << i << "\n";
+						++tNewTruePositives;
 					}
-					++tExpectedTagIt;
 				}
 				else if (tTag.isPresent()) {
-					++tActualFalsePositives;
 					ADD_FAILURE() << "Falsely positive detection\n"
-						<< "    File: " << tTestCase.first << "\n"
+						<< "    File: " << tTestCase.filename << "\n"
 						<< "     Tag: " << i << "\n";
 				}
 			}
- 			std::cout << std::endl;
-
 		}
 		else {
 			ADD_FAILURE()
@@ -148,11 +105,14 @@ TEST(Integration, Snapshots) {
 		}
 	}
 
-	EXPECT_LE(tExpectedFalseNegatives, tActualFalseNegatives)
-		<< "It looks like you actually improved the detection here\n"
-		<< "Please review and update this test case to doube check\n";
-	EXPECT_EQ(tExpectedFalseNegatives, tActualFalseNegatives);
-	EXPECT_EQ(tExpectedFalsePositives, tActualFalsePositives);
+	if (tNewTruePositives > 0) {
+		std::cout
+			<< "You "<< (tNewFalseNegatives>0?"partially":"")
+			<< "improved the detection:\n"
+			<< tNewFalseNegatives << " new false negatives (bad) and "
+			<< tNewTruePositives  << " new true positives (good)\n"
+			<< "Please review, and if necessary, update the test case.\n";
+	}
 }
 
 CV_TEST_MAIN(".")
