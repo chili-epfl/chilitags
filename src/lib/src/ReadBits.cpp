@@ -74,6 +74,12 @@ void chilitags::ReadBits::run()
 
 	auto tRoi = cv::boundingRect(tCorners);
 
+	// Refine can actually provide corners outside the image
+	tRoi.x = cv::max(tRoi.x, 0);
+	tRoi.y = cv::max(tRoi.y, 0);
+	tRoi.width = cv::min(tRoi.width, mInputImage.cols-tRoi.x);
+	tRoi.height = cv::min(tRoi.height, mInputImage.rows-tRoi.y);
+
     cv::Point2f tOrigin = tRoi.tl();
     for (auto& p : tCorners) p -= tOrigin;
 

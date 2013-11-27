@@ -88,9 +88,9 @@ TEST(Integration, Snapshots) {
 
 	// The game is to lower these numbers
 #ifdef OPENCV3
-	const int tExpectedFalseNegatives = 138;
+	const int tExpectedFalseNegatives = 96;
 #else
-	const int tExpectedFalseNegatives = 137;
+	const int tExpectedFalseNegatives = 95;
 #endif
 	const int tExpectedFalsePositives = 0;
 

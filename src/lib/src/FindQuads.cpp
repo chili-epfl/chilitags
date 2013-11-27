@@ -27,7 +27,7 @@
 
 namespace {
 const int scMatrixSize = 10;
-const int scMinTagSize = 2*scMatrixSize;
+const int scMinTagSize = 1.2*scMatrixSize;
 
 struct IsSimilarTo{
 	IsSimilarTo(chilitags::Quad pQuad):mQuad(pQuad){}
