@@ -21,7 +21,8 @@
 #define Chilitag_HPP
 
 #include "Registrar.hpp"
-#include "Quad.hpp"
+#include <vector>
+#include <opencv2/core/core.hpp>
 
 namespace chilitags {
 
@@ -59,7 +60,7 @@ bool isPresent() const;
 // getCorners()[0], getCorners()[1], getCorners()[2], and getCorners()[3] are
 // respectively the top-left, top-right, bottom-right and bottom-left corners of
 // the tag, w.r.t. to the nominal orientation of the matrix.
-Quad getCorners() const;
+std::vector<cv::Point2f> getCorners() const;
 
 // Returns the number of udates since the tag was last detected, i.e. 0 if the
 // tag has been detected in the latest update, etc. This is used to make the tag

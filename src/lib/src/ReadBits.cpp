@@ -57,7 +57,7 @@ chilitags::ReadBits::ReadBits() :
 }
 
 
-void chilitags::ReadBits::operator()(const cv::Mat pInputImage, const Quad &pCorners)
+void chilitags::ReadBits::operator()(const cv::Mat pInputImage, const std::vector<cv::Point2f> &pCorners)
 {
     auto tCorners = pCorners;
 

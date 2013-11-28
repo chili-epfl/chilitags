@@ -65,7 +65,7 @@ void operator()(const cv::Mat pInputImage) {
 	mRefine(mEnsureGreyscale.Image(), mFindQuads.Quads());
 
 	mRegistrar.reset();
-	for (const Quad & tQuad : mRefine.Quads()) {
+	for (const auto & tQuad : mRefine.Quads()) {
 		mReadBits(mEnsureGreyscale.Image(), tQuad);
 		mDecode(mReadBits.Bits());
 		mRegister(mDecode.TagId(), tQuad, mDecode.Orientation());

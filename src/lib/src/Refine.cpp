@@ -35,7 +35,7 @@ chilitags::Refine::Refine() :
 #endif
 }
 
-void chilitags::Refine::operator()(const cv::Mat pInputImage, const std::vector<Quad> &pQuads)
+void chilitags::Refine::operator()(const cv::Mat pInputImage, const std::vector<std::vector<cv::Point2f>> &pQuads)
 {
     mRefinedQuads.clear();
 
@@ -90,7 +90,7 @@ void chilitags::Refine::operator()(const cv::Mat pInputImage, const std::vector<
 
 #ifdef DEBUG_Refine
 		cv::Mat tDebugImage = tInputImage(tRoi).clone();
-		for(int i=0; i<Quad::scNPoints; ++i)
+		for(int i=0; i<4; ++i)
 		{
 			cv::circle(tDebugImage, tCorners[i]-tRoiOffset,
 				3, cv::Scalar::all(128), 2);
@@ -104,7 +104,7 @@ void chilitags::Refine::operator()(const cv::Mat pInputImage, const std::vector<
 		cv::waitKey(0);
 #endif
 
-	    mRefinedQuads.push_back(Quad(tCorners));
+	    mRefinedQuads.push_back(tCorners);
 	}
 
 }

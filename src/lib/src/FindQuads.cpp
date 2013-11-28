@@ -31,8 +31,8 @@ const int scMatrixSize = 10;
 const int scMinTagSize = 1.2*scMatrixSize;
 
 struct IsSimilarTo{
-	IsSimilarTo(chilitags::Quad pQuad):mQuad(pQuad){}
-	bool operator()(const chilitags::Quad &pQuad) {
+	IsSimilarTo(std::vector<cv::Point2f> pQuad):mQuad(pQuad){}
+	bool operator()(const std::vector<cv::Point2f> &pQuad) {
 		// TODO make it function of the perimeter
 		static const int scEpsilon = 4*1;
 		// TODO no seriously, do something
@@ -41,7 +41,7 @@ struct IsSimilarTo{
 	}
 
 	private:
-	chilitags::Quad mQuad;
+	std::vector<cv::Point2f> mQuad;
 };
 
 #ifdef DEBUG_FindQuads
@@ -107,7 +107,7 @@ void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
 
 				if (tNormalisedContour.size() == 4)
 				{
-					Quad tCandidate = {
+					std::vector<cv::Point2f> tCandidate = {
 						tScale*tNormalisedContour[0],
 						tScale*tNormalisedContour[1],
 						tScale*tNormalisedContour[2],
@@ -116,7 +116,7 @@ void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
 
 					IsSimilarTo tIsSimilarToCandidate(tCandidate);
 
-					std::vector<Quad>::iterator tSameQuad = std::find_if(
+					auto tSameQuad = std::find_if(
 						mQuads.begin(),
 						mQuads.end(),
 						tIsSimilarToCandidate);

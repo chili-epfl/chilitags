@@ -20,7 +20,8 @@
 #ifndef FindQuads_H
 #define FindQuads_H
 
-#include <Quad.hpp>
+#include <vector>
+#include <opencv2/core/core.hpp>
 
 #ifdef EXPERIMENTAL_LSD
 #include <opencv2/imgproc/imgproc.hpp> // LineSegmentDetector
@@ -35,7 +36,7 @@ FindQuads();
 
 void operator()(const cv::Mat pBinaryImage);
 
-const std::vector<Quad> &Quads() const { return mQuads; }
+const std::vector<std::vector<cv::Point2f>> &Quads() const { return mQuads; }
 
 protected:
 
@@ -46,7 +47,7 @@ cv::Mat mScaledCopies[scScaledCopiesCount];
 cv::Ptr<cv::LineSegmentDetector> lsd;
 #endif
 
-std::vector<Quad> mQuads;
+std::vector<std::vector<cv::Point2f>> mQuads;
 
 };
 
