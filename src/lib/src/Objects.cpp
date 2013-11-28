@@ -98,7 +98,7 @@ map<string, Matx44d> Objects::all() const
 
             computeTransformation(name, 
                                   defaultMarkerCorners,
-                                  tag.getCorners().toVector(),
+                                  tag.getCorners(),
                                   objects);
         }
     }
@@ -123,7 +123,7 @@ map<string, Matx44d> Objects::all() const
                 computeTransformation(
                                     string("marker_") + to_string(tag.GetMarkerId()), 
                                     localcorners,
-                                    tag.getCorners().toVector(),
+                                    tag.getCorners(),
                                     objects);
             }
 
@@ -132,7 +132,7 @@ map<string, Matx44d> Objects::all() const
             corners.insert(corners.end(),newCorners.cbegin(),newCorners.cend());
 
             // then, add the image points where the tag is seen
-            auto newPoints(tag.getCorners().toVector());
+            auto newPoints(tag.getCorners());
             imagePoints.insert(imagePoints.end(),newPoints.cbegin(),newPoints.cend());
 
         }

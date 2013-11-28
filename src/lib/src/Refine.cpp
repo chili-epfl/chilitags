@@ -39,9 +39,9 @@ void chilitags::Refine::operator()(const cv::Mat pInputImage, const std::vector<
 {
     mRefinedQuads.clear();
 
-	for (const auto& quad : pQuads)
+	for (const auto& tQuad : pQuads)
 	{
-		auto tCorners = quad.toVector();
+		auto tCorners = tQuad;
 
 		// Taking a ROI around the raw corners with some margin
 		static const float scGrowthRatio = 2.0f/10.0f;
@@ -70,9 +70,7 @@ void chilitags::Refine::operator()(const cv::Mat pInputImage, const std::vector<
 		tCorners[3] -= tRoiOffset;
 
 		static const double scProximityRatio = 1.5/10.0;
-		double tAverageSideLength =
-			cv::arcLength(tCorners, true)
-			/ (double) Quad::scNPoints;
+		double tAverageSideLength = cv::arcLength(tCorners, true) / 4.0;
 		double tCornerNeighbourhood = scProximityRatio*tAverageSideLength;
 		
  		// ensure the cornerSubPixel search window is smaller that the ROI
@@ -94,7 +92,7 @@ void chilitags::Refine::operator()(const cv::Mat pInputImage, const std::vector<
 		cv::Mat tDebugImage = tInputImage(tRoi).clone();
 		for(int i=0; i<Quad::scNPoints; ++i)
 		{
-			cv::circle(tDebugImage, quad[i]-tRoiOffset,
+			cv::circle(tDebugImage, tCorners[i]-tRoiOffset,
 				3, cv::Scalar::all(128), 2);
 			cv::line(tDebugImage,
 				tCorners[i]-tRoiOffset, tCorners[i]-tRoiOffset,

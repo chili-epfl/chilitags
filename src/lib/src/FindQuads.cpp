@@ -34,7 +34,7 @@ struct IsSimilarTo{
 	IsSimilarTo(chilitags::Quad pQuad):mQuad(pQuad){}
 	bool operator()(const chilitags::Quad &pQuad) {
 		// TODO make it function of the perimeter
-		static const int scEpsilon = chilitags::Quad::scNPoints*1;
+		static const int scEpsilon = 4*1;
 		// TODO no seriously, do something
 		float tDistSum = mQuad[0].x+mQuad[0].y+mQuad[1].x+mQuad[1].y+mQuad[2].x+mQuad[2].y+mQuad[3].x+mQuad[3].y-pQuad[0].x-pQuad[0].y-pQuad[1].x-pQuad[1].y-pQuad[2].x-pQuad[2].y-pQuad[3].x-pQuad[3].y;
 		return -scEpsilon < tDistSum && tDistSum < scEpsilon;
@@ -97,7 +97,7 @@ void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
 			double tPerimeter = std::abs(cv::arcLength(*contour, true));
 			double tArea = std::abs(cv::contourArea(*contour));
 
-			if (tPerimeter > Quad::scNPoints*scMinTagSize && tArea > scMinTagSize*scMinTagSize)
+			if (tPerimeter > 4*scMinTagSize && tArea > scMinTagSize*scMinTagSize)
 			{
 				std::vector<cv::Point> tApproxContour;
 				cv::approxPolyDP( *contour, tApproxContour, tPerimeter*0.02, true);
@@ -105,13 +105,14 @@ void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
 				std::vector<cv::Point> tNormalisedContour;
 				cv::convexHull(tApproxContour, tNormalisedContour, false);
 
-				if (tNormalisedContour.size() == (int) Quad::scNPoints)
+				if (tNormalisedContour.size() == 4)
 				{
-					Quad tCandidate;
-					tCandidate[0] = tScale*tNormalisedContour[0];
-					tCandidate[1] = tScale*tNormalisedContour[1];
-					tCandidate[2] = tScale*tNormalisedContour[2];
-					tCandidate[3] = tScale*tNormalisedContour[3];
+					Quad tCandidate = {
+						tScale*tNormalisedContour[0],
+						tScale*tNormalisedContour[1],
+						tScale*tNormalisedContour[2],
+						tScale*tNormalisedContour[3],
+					};
 
 					IsSimilarTo tIsSimilarToCandidate(tCandidate);
 

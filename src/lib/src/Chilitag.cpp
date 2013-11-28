@@ -36,7 +36,13 @@ bool chilitags::Chilitag::isPresent() const
 
 chilitags::Quad chilitags::Chilitag::getCorners() const
 {
-	return Quad(mRegistrar.getCorners(mMarkerId));
+	auto tCorners = mRegistrar.getCorners(mMarkerId);
+	return {
+		tCorners[0],
+		tCorners[1],
+		tCorners[2],
+		tCorners[3],
+	};
 }
 
 int chilitags::Chilitag::GetFramesNumberSinceLastDetected() const {
