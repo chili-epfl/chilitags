@@ -20,8 +20,8 @@
 #ifndef Refine_HPP
 #define Refine_HPP
 
-#include <Registrar.hpp>
-#include <Quad.hpp>
+#include <vector>
+#include <opencv2/core/core.hpp>
 
 namespace chilitags {
 
@@ -31,15 +31,15 @@ public:
 
 Refine();
 
-void operator()(const cv::Mat pInputImage, const std::vector<Quad> &pQuads);
+void operator()(const cv::Mat pInputImage, const std::vector<std::vector<cv::Point2f>> &pQuads);
 
-const std::vector<Quad> &Quads() const {
+const std::vector<std::vector<cv::Point2f>> &Quads() const {
 	return mRefinedQuads;
 }
 
 protected:
 
-std::vector<Quad> mRefinedQuads;
+std::vector<std::vector<cv::Point2f>> mRefinedQuads;
 
 private:
 Refine(const Refine& pRefine);

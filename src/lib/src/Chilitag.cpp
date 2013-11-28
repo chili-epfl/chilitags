@@ -34,7 +34,7 @@ bool chilitags::Chilitag::isPresent() const
 	return tLastDetectedFrame >=0 && (mRegistrar.getFrameId() - tLastDetectedFrame) <= mNFramesToPersist;
 }
 
-chilitags::Quad chilitags::Chilitag::getCorners() const
+std::vector<cv::Point2f> chilitags::Chilitag::getCorners() const
 {
 	auto tCorners = mRegistrar.getCorners(mMarkerId);
 	return {

@@ -21,7 +21,8 @@
 #define Register_HPP
 
 #include <Registrar.hpp>
-#include <Quad.hpp>
+#include <vector>
+#include <opencv2/core/core.hpp>
 
 namespace chilitags {
 
@@ -30,7 +31,7 @@ class Register
 public:
 Register(Registrar &pRegistrar); 
 
-void operator ()(int pDecodedTag, Quad pCorners, int pRotation);
+void operator ()(int pDecodedTag, const std::vector<cv::Point2f> & pCorners, int pRotation);
 
 protected:
 

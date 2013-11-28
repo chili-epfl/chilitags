@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
 				// Second, now that we know that the tag has been updated, the
 				// getCorners() method returns the coordinates of the
 				// quadrilateral containing the tag on the input picture.
-				chilitags::Quad tCorners = tTag.getCorners();
+				std::vector<cv::Point2f> tCorners = tTag.getCorners();
 
 				// We start by drawing this quadrilateral
 				for (size_t i = 0; i < 4; ++i) {

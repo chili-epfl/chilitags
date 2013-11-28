@@ -20,7 +20,8 @@
 #ifndef ReadBits_HPP
 #define ReadBits_HPP
 
-#include <Quad.hpp>
+#include <vector>
+#include <opencv2/core/core.hpp>
 
 namespace chilitags {
 
@@ -29,7 +30,7 @@ class ReadBits
 public:
 ReadBits();
 
-void operator()(cv::Mat pInputImage, const Quad &pCorners);
+void operator()(cv::Mat pInputImage, const std::vector<cv::Point2f> &pCorners);
 
 const std::vector<unsigned char> &Bits() const { return mBits; }
 

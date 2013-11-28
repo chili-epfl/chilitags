@@ -24,7 +24,7 @@ chilitags::Register::Register(Registrar &pRegistrar) :
 {
 }
 
-void chilitags::Register::operator()(int pDecodedTag, Quad pCorners, int pRotation)
+void chilitags::Register::operator()(int pDecodedTag, const std::vector<cv::Point2f> & pCorners, int pRotation)
 {
 	if (pDecodedTag>-1)
 	{
