@@ -7,14 +7,16 @@
 
 #include <opencv2/highgui/highgui.hpp>
 #include <TagDrawer.hpp>
+#include "test-metadata.hpp"
 
 #include <DetectChilitags.hpp>
 #include <Chilitag.hpp>
 
 #include <cmath>
 #include <iostream>
+#include <map>
 
-const static int ITERATIONS = 20;
+const static int ITERATIONS = 1;
 
 using namespace std;
 
@@ -44,35 +46,27 @@ TEST(Integration, Snapshots) {
 
     using chilitags::Chilitag;
 
-    // The ids are assumed to be sorted
-    vector< pair<string, vector<int>> > tTestMatrix = {
-        {"stills/640x480/severin01.jpg",   {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-        {"stills/640x480/severin06.jpg",   {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-        {"stills/640x480/nao03.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-        {"stills/640x480/nao04.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-        {"stills/640x480/nao05.jpg",       {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}},
-    };
-
     // Initialise the data path with en empty modulename,
     // to get the data from the root of the test data path
     cvtest::TS::ptr()->init("");
 
-    vector<double> runs_duration;
+    map<int, vector<double>> runs_duration;
 
     chilitags::DetectChilitags tDetectChilitags;
     // Tags need to be registered before detection
     // (Chilitag's constructor takes care of that)
     for (int i = 0; i<1024; ++i) Chilitag tTag(i);
 
-    for (const auto & tTestCase : tTestMatrix) {
-        string tPath = string(cvtest::TS::ptr()->get_data_path())+tTestCase.first;
+    for (const auto & tTestCase : TestMetadata::all) {
+        string tPath = string(cvtest::TS::ptr()->get_data_path())+tTestCase.filename;
         cv::Mat tImage = cv::imread(tPath);
 
         if(tImage.data) {
             for (int i = 0 ; i < ITERATIONS ; i++) {
                 int64 tStartCount = cv::getTickCount();
                 tDetectChilitags(tImage);
-                runs_duration.push_back(((double)cv::getTickCount() - tStartCount)*1000/cv::getTickFrequency());
+                int64 tEndCount = cv::getTickCount();
+                runs_duration[tImage.rows*tImage.cols].push_back(((double) tEndCount - tStartCount)*1000/cv::getTickFrequency());
             }
         }
         else {
@@ -84,9 +78,17 @@ TEST(Integration, Snapshots) {
                 << "https://github.com/chili-epfl/chilitags-testdata";
         }
     }
-    cout << "Benchmark results, on " << ITERATIONS << " iterations:" << endl;
-    cout << "\t- Time to update markers: " << mean(runs_duration) << "ms" << endl;
-    cout << "\t- Standard deviation: " << sigma(runs_duration) << "ms" << endl;
+    cout << "Processing times (ms) results, on " << ITERATIONS << " iterations:\n";
+    cout << "  n    Pixels   Average        SD\n";
+	cout ;
+	for (const auto & tDurations : runs_duration) {
+		cout
+			<< std::setw(3) << tDurations.second.size()/ITERATIONS
+			<< std::setw(10) << tDurations.first
+			<< std::setw(10) << std::fixed << std::setprecision(1) << mean(tDurations.second)
+			<< std::setw(10) << std::fixed << std::setprecision(1) << sigma(tDurations.second)
+			<< "\n";
+	}
 }
 
 CV_TEST_MAIN(".")

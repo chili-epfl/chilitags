@@ -234,7 +234,7 @@ void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
                                 points[quad[2]]};
         convexHull(rawquad,
                     hull, false);
-        mQuads.push_back(Quad(hull));
+		if (hull.size() == 4) mQuads.push_back(hull);
 
     }
 
