@@ -28,9 +28,9 @@ void chilitags::Register::operator()(int pDecodedTag, Quad pCorners, int pRotati
 {
 	if (pDecodedTag>-1)
 	{
-		cv::Point2f tOrientedCorners[Quad::scNPoints];
-		for (size_t i = 0; i < Quad::scNPoints; ++i) {
-			tOrientedCorners[i] = pCorners[(i+pRotation) % Quad::scNPoints];
+		cv::Point2f tOrientedCorners[4];
+		for (size_t i = 0; i < 4; ++i) {
+			tOrientedCorners[i] = pCorners[(i+pRotation) % 4];
 		}
 		mRegistrar.set(pDecodedTag, tOrientedCorners);
 	}

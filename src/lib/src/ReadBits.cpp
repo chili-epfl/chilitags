@@ -59,8 +59,7 @@ chilitags::ReadBits::ReadBits() :
 
 void chilitags::ReadBits::operator()(const cv::Mat pInputImage, const Quad &pCorners)
 {
-
-    auto tCorners = pCorners.toVector();
+    auto tCorners = pCorners;
 
 	auto tRoi = cv::boundingRect(tCorners);
 

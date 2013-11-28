@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
 				chilitags::Quad tCorners = tTag.getCorners();
 
 				// We start by drawing this quadrilateral
-				for (size_t i = 0; i < chilitags::Quad::scNPoints; ++i) {
+				for (size_t i = 0; i < 4; ++i) {
 					cv::line(
 						tOutputImage,
 						scPrecision*tCorners[i],
@@ -130,12 +130,8 @@ int main(int argc, char* argv[])
 						scColor, 1, CV_AA, scShift);
 				}
 
-				// The quadrilateral is given under the form of a Quad class,
-				// which provide a minimal set of geometrical functionalities,
-				// such as getCenter()
-				cv::Point2f tCenter = tCorners.getCenter();
-
 				// We will print the identifier of the tag at its center
+				cv::Point2f tCenter = 0.5*(tCorners[0] + tCorners[2]);
 				cv::putText(tOutputImage, cv::format("%d", tTagId), tCenter,
 					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 
