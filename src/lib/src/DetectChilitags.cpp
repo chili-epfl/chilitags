@@ -51,13 +51,13 @@ Impl(Registrar &pRegistrar = Registrar::GetDefault()):
 void operator()(const cv::Mat pInputImage) {
 	mEnsureGreyscale(pInputImage);
 	mFindQuads(mEnsureGreyscale.Image());
-	mRefine(mEnsureGreyscale.Image(), mFindQuads.Quads());
 
 	mRegistrar.reset();
-	for (const auto & tQuad : mRefine.Quads()) {
-		mReadBits(mEnsureGreyscale.Image(), tQuad);
+	for (const auto & tQuad : mFindQuads.Quads()) {
+		mRefine(mEnsureGreyscale.Image(), tQuad);
+		mReadBits(mEnsureGreyscale.Image(), mRefine.Quad());
 		mDecode(mReadBits.Bits());
-		mRegister(mDecode.TagId(), tQuad, mDecode.Orientation());
+		mRegister(mDecode.TagId(), mRefine.Quad(), mDecode.Orientation());
 	}
 }
 

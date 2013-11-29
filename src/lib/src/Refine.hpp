@@ -31,15 +31,15 @@ public:
 
 Refine();
 
-void operator()(const cv::Mat pInputImage, const std::vector<std::vector<cv::Point2f>> &pQuads);
+void operator()(const cv::Mat pInputImage, const std::vector<cv::Point2f> &pQuad);
 
-const std::vector<std::vector<cv::Point2f>> &Quads() const {
-	return mRefinedQuads;
+const std::vector<cv::Point2f> &Quad() const {
+	return mRefinedQuad;
 }
 
 protected:
 
-std::vector<std::vector<cv::Point2f>> mRefinedQuads;
+std::vector<cv::Point2f> mRefinedQuad;
 
 private:
 Refine(const Refine& pRefine);
