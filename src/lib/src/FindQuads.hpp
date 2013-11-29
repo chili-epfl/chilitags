@@ -34,13 +34,14 @@ class FindQuads
 public:
 FindQuads();
 
-void operator()(const cv::Mat pBinaryImage);
+void operator()(const cv::Mat pGreyscaleImage);
 
 const std::vector<std::vector<cv::Point2f>> &Quads() const { return mQuads; }
 
 protected:
 
 #ifndef EXPERIMENTAL_LSD
+cv::Mat mBinaryImage;
 static const int scScaledCopiesCount = 3;
 cv::Mat mScaledCopies[scScaledCopiesCount];
 #else

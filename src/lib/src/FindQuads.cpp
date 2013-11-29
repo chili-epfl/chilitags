@@ -65,8 +65,10 @@ chilitags::FindQuads::FindQuads() :
 #endif
 }
 
-void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
+void chilitags::FindQuads::operator()(const cv::Mat pGreyscaleImage)
 {
+	cv::Canny(pGreyscaleImage, mBinaryImage, 100, 200, 3);
+
 	//TODO function too long, split it
 
 	mQuads.clear();
@@ -75,7 +77,7 @@ void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
 	cv::Mat tDebugImage = cv::Mat::zeros(cv::Size(2*tBinaryImage.cols, tBinaryImage.rows), CV_8UC3);
 #endif
 
-	mScaledCopies[0] = pBinaryImage;
+	mScaledCopies[0] = mBinaryImage;
 	for (int i = 1; i < scScaledCopiesCount; ++i) {
 		cv::pyrDown(mScaledCopies[i-1], mScaledCopies[i]);
 	}
