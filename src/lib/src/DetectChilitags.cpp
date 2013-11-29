@@ -20,9 +20,6 @@
 #include <DetectChilitags.hpp>
 
 #include "EnsureGreyscale.hpp"
-#ifndef EXPERIMENTAL_LSD
-#include "DetectEdges.hpp"
-#endif
 #include "FindQuads.hpp"
 #include "ReadBits.hpp"
 #include "Decode.hpp"
@@ -41,9 +38,6 @@ Impl(Registrar &pRegistrar = Registrar::GetDefault()):
 	mRegistrar(pRegistrar),
 
 	mEnsureGreyscale(),
-#ifndef EXPERIMENTAL_LSD
-	mDetectEdges(100, 200, 3),
-#endif
 	mFindQuads(),
 	mRefine(),
 
@@ -56,12 +50,7 @@ Impl(Registrar &pRegistrar = Registrar::GetDefault()):
 
 void operator()(const cv::Mat pInputImage) {
 	mEnsureGreyscale(pInputImage);
-#ifndef EXPERIMENTAL_LSD
-	mDetectEdges(mEnsureGreyscale.Image());
-	mFindQuads(mDetectEdges.Image());
-#else
 	mFindQuads(mEnsureGreyscale.Image());
-#endif
 	mRefine(mEnsureGreyscale.Image(), mFindQuads.Quads());
 
 	mRegistrar.reset();
@@ -77,9 +66,6 @@ protected:
 Registrar &mRegistrar;
 
 EnsureGreyscale mEnsureGreyscale;
-#ifndef EXPERIMENTAL_LSD
-DetectEdges mDetectEdges;
-#endif
 FindQuads mFindQuads;
 
 ReadBits mReadBits;
