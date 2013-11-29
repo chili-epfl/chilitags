@@ -18,18 +18,16 @@ TEST(Integration, Minimal) {
 
 	chilitags::DetectChilitags tDetectChilitags;
 
-	// Tags need to be registered before detection
-	// (Chilitag's constructor takes care of that)
-	chilitags::Chilitag tDetectedTag(0);
+	chilitags::Chilitag tExpectedTag(0);
 
 	chilitags::TagDrawer tDrawer;
-	// Tag needs to be > 20 px wide;
+	// Tag needs to be > 12 px wide;
 	int tZoom = 3;
-	cv::Mat tImage = tDrawer(tDetectedTag.GetMarkerId(), tZoom, true);
+	cv::Mat tImage = tDrawer(tExpectedTag.GetMarkerId(), tZoom, true);
 
 	tDetectChilitags(tImage);
 
-	ASSERT_TRUE(tDetectedTag.isPresent());
+	ASSERT_TRUE(tExpectedTag.isPresent());
 
 	float tClose = tZoom*2.0f;
 	float tFar   = tZoom*12.0f;
@@ -43,7 +41,7 @@ TEST(Integration, Minimal) {
 	// A pixel is a 1x1 square around its center
 	cv::add(tExpectedCorners, cv::Scalar::all(-0.5), tExpectedCorners);
 
-	auto tActualCorners = tDetectedTag.getCorners();
+	auto tActualCorners = tExpectedTag.getCorners();
 	for (int i: {0,1,2,3}) {
 		EXPECT_GT(0.1, cv::norm(tActualCorners[i] - tExpectedCorners[i]))
 			<< "with i=" << i;
@@ -56,10 +54,6 @@ TEST(Integration, Snapshots) {
 	cvtest::TS::ptr()->init("");
 
 	chilitags::DetectChilitags tDetectChilitags;
-
-	// Tags need to be registered before detection
-	// (Chilitag's constructor takes care of that)
-	for (int i = 0; i<1024; ++i) chilitags::Chilitag tTag(i);
 
 	int tNewFalseNegatives = 0;
 	int tNewTruePositives = 0;

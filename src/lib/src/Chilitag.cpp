@@ -24,7 +24,6 @@ chilitags::Chilitag::Chilitag(int pMarkerId, int pNFramesToPersist, Registrar &p
 	mNFramesToPersist(pNFramesToPersist),
 	mRegistrar(pRegistrar)
 {
-	mRegistrar.registerChilitag(mMarkerId);
 }
 
 

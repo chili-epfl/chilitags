@@ -46,28 +46,16 @@ bool decode(const unsigned char *data, int &id);
 // The inverse operation, encoding a tag identifier into a matrix.
 bool getTagEncodedId(int tagId, unsigned char *data);
 
-// The following methods deal with the fact that  internal identifiers are
-// associated to the tag's identifiers.
-int getTrackingId(int pId) const {
-	return m_tagIdToTrackingIdTable[pId];
-}
-int getTagId(int pTrackingId) const {
-	return m_trackedTagsTable[pTrackingId].id;
-}
 int getMaxTagsNumber() const {
 	return m_maxTagsNumber;
 }
-int getNTotalTagsTracked() const {
-	return m_nTotalTagsTracked;
-}
-
-int addTagToTrackingList(int id);
 
 private:
 
+void addTagToTrackingList(int id);
+
 struct tag_info_t {
 	int id; // id of the tag
-	int tracking_id;
 	int xor_id; // id after applying XOR mask
 	long crc; // id after computing the crc
 	unsigned char fec[36]; // id after computing the fec, used to draw the tag
@@ -95,14 +83,8 @@ int m_maxTagsNumber;
 // table of tracked tags (index is trackingId), unused slots point to NULL
 tag_info_t *m_trackedTagsTable;
 
-// conversion table from tag id to tracking id (-1 if not tracked)
-int *m_tagIdToTrackingIdTable;
-
 int m_bitsBeforePuncturing;
 int m_bitsAfterPuncturing;
-
-// total number of currently tracked tags
-int m_nTotalTagsTracked;
 
 // puncturing matrix
 unsigned char *m_puncturing;

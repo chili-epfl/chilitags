@@ -36,12 +36,13 @@ TEST(Codec, DecodeNoError) {
 		for (int j = 0; j<36; ++j) {
 			tBits[j] = tHardcodedIds.id[i][j];
 		}
-		tCodec.addTagToTrackingList(i);
 
 		int tDecodedId;
+		
 		ASSERT_TRUE(tCodec.decode(tBits, tDecodedId));
 		ASSERT_EQ(i, tDecodedId);
 	}
+	std::cout << "\n";
 }
 
 TEST(Codec, Decode1Error) {
@@ -54,7 +55,6 @@ TEST(Codec, Decode1Error) {
 		for (int j = 0; j<36; ++j) {
 			tBits[j] = tHardcodedIds.id[i][j];
 		}
-		tCodec.addTagToTrackingList(i);
 
 		for (int error1 = 0; error1<36; ++error1) {
 			tBits[error1] = 1-tBits[error1];
@@ -78,7 +78,6 @@ TEST(Codec, Decode2Errors) {
 		for (int j = 0; j<36; ++j) {
 			tBits[j] = tHardcodedIds.id[i][j];
 		}
-		tCodec.addTagToTrackingList(i);
 
 		for (int error1 = 0; error1<36; ++error1) {
 			tBits[error1] = 1-tBits[error1];
