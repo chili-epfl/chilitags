@@ -42,10 +42,6 @@ static Registrar &GetDefault()
 Registrar();
 virtual ~Registrar();
 
-// Tells the registrar that we will use a given tag (the Chilitag class takes
-// care of that).
-void registerChilitag(int pId);
-
 // An accessor to the Codec translating the bit matrix to identifier.
 Codec & GetTranscoder() {
 	return mCodec;
@@ -61,24 +57,24 @@ int getFrameId() const {
 void reset();
 
 // Allows to individually set the information of newly detected tags.
-void set(int pId, const cv::Point2f *pCorners);
+void set(int pId, const std::vector<cv::Point2f> &pCorners);
 
 // Accessor to the corners of a tag. See Chilitag::getCorners()
-const cv::Point2f *getCorners(int pId) const {
-	return mCorners[mCodec.getTrackingId(pId)];
+const std::vector<cv::Point2f> &getCorners(int pId) const {
+	return mCorners[pId];
 }
 
 // Accessor to the corners of a tag. See
 // Chilitag::GetFramesNumberSinceLastDetected()
 int getLastDetectedFrame(int pId) const {
-	return mLastDetectedFrame[mCodec.getTrackingId(pId)];
+	return mLastDetectedFrame[pId];
 }
 
 
 protected:
 static Registrar *sDefaultRegistrar;
 Codec mCodec;
-cv::Point2f **mCorners;
+std::vector<cv::Point2f> *mCorners;
 int mFrameId;
 int *mLastDetectedFrame;
 

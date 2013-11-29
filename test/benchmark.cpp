@@ -10,7 +10,6 @@
 #include "test-metadata.hpp"
 
 #include <DetectChilitags.hpp>
-#include <Chilitag.hpp>
 
 #include <cmath>
 #include <iostream>
@@ -44,8 +43,6 @@ double sigma(const vector<double>& vals)
 
 TEST(Integration, Snapshots) {
 
-    using chilitags::Chilitag;
-
     // Initialise the data path with en empty modulename,
     // to get the data from the root of the test data path
     cvtest::TS::ptr()->init("");
@@ -53,9 +50,6 @@ TEST(Integration, Snapshots) {
     map<int, vector<double>> runs_duration;
 
     chilitags::DetectChilitags tDetectChilitags;
-    // Tags need to be registered before detection
-    // (Chilitag's constructor takes care of that)
-    for (int i = 0; i<1024; ++i) Chilitag tTag(i);
 
     for (const auto & tTestCase : TestMetadata::all) {
         string tPath = string(cvtest::TS::ptr()->get_data_path())+tTestCase.filename;

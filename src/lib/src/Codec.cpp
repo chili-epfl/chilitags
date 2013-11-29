@@ -37,10 +37,8 @@ chilitags::Codec::Codec(int pBitsId, int pBitsCrc, int pBitsFec, const char *pXo
 	m_crcPoly(binstr2int(pCrcPoly)),
 	m_maxTagsNumber(1<<m_bitsId),
 	m_trackedTagsTable(new tag_info_t[m_maxTagsNumber]),
-	m_tagIdToTrackingIdTable(new int[m_maxTagsNumber]),
 	m_bitsBeforePuncturing((m_bitsId + m_bitsCrc + 2) * 2),
 	m_bitsAfterPuncturing(m_bitsId + m_bitsCrc + m_bitsFec),
-	m_nTotalTagsTracked(0),
 	m_puncturing(new unsigned char[m_bitsBeforePuncturing]),
 	m_dec_fec_id(new unsigned char[2 * m_bitsId]),
 	m_hamming_dist(new int[m_bitsId + 1]),
@@ -48,10 +46,6 @@ chilitags::Codec::Codec(int pBitsId, int pBitsCrc, int pBitsFec, const char *pXo
 	m_fec_state(new int[m_bitsId + 1]),
 	m_fec_decoded_id(new unsigned char[m_bitsId])
 {
-	for (int i = 0; i < m_maxTagsNumber; i++) {
-		m_tagIdToTrackingIdTable[i] = -1;
-	}
-
 	for (int i = 0; i < m_bitsAfterPuncturing; ++i) {
 		m_puncturing[i] = 1;
 	}
@@ -78,10 +72,12 @@ chilitags::Codec::Codec(int pBitsId, int pBitsCrc, int pBitsFec, const char *pXo
 	m_fec_fsm[3].next_state[0] = 1;
 	m_fec_fsm[3].output[1] = 1;
 	m_fec_fsm[3].next_state[1] = 3;
+	for (int i = 0; i<getMaxTagsNumber(); ++i) {
+		addTagToTrackingList(i);
+	}
 }
 
 chilitags::Codec::~Codec() {
-	delete[] m_tagIdToTrackingIdTable;
 	delete[] m_trackedTagsTable;
 	delete[] m_puncturing;
 	delete[] m_dec_fec_id;
@@ -94,36 +90,20 @@ chilitags::Codec::~Codec() {
 bool chilitags::Codec::getTagEncodedId(int tagId, unsigned char* data) {
 	if (tagId < 0 || tagId >= m_maxTagsNumber)
 		return false;
-	int trackingId = addTagToTrackingList(tagId);
 
-	memcpy(data, m_trackedTagsTable[trackingId].fec, m_bitsAfterPuncturing);
+	memcpy(data, m_trackedTagsTable[tagId].fec, m_bitsAfterPuncturing);
 	return true;
 }
 
 /**
  * Add a tag to the tracking list: first encodes the tag to make decoding much faster.
  */
-int chilitags::Codec::addTagToTrackingList(int id) {
-	// check tag validty
-	if (id < 0 || id >= m_maxTagsNumber)
-		return -1;
-
-	// check if not already tracked
-	if (m_tagIdToTrackingIdTable[id] >= 0) {
-		return m_tagIdToTrackingIdTable[id];
-	}
-
-	int trackId = m_nTotalTagsTracked;
+void chilitags::Codec::addTagToTrackingList(int id) {
 	// allocate memory to store tag structure and initializes it
-	m_trackedTagsTable[trackId].tracking_id = trackId;
-	m_trackedTagsTable[trackId].id = id;
-	// update tags list (mapping id - trackingId)
-	m_tagIdToTrackingIdTable[id] = trackId;
-	// encode the tag, this makes the decoding way faster by short-cutting the process
-	encode(&m_trackedTagsTable[trackId]);
-	m_nTotalTagsTracked++;
+	m_trackedTagsTable[id].id = id;
 
-	return trackId;
+	// encode the tag, this makes the decoding way faster by short-cutting the process
+	encode(&m_trackedTagsTable[id]);
 }
 
 void chilitags::Codec::encode(tag_info_t *tag) {
@@ -250,20 +230,17 @@ bool chilitags::Codec::viterbi(const unsigned char *encoded_id,
 				int potential_id;
 				bin2int(m_fec_decoded_id, &potential_id, m_bitsId);
 				potential_id ^= m_xorMask;
-				int trackingId = m_tagIdToTrackingIdTable[potential_id];
-				if (trackingId >= 0) { // check that tag is actually tracked
-					int errors = m_hamming_dist[index];
-					for (int i = m_bitsId * 2; i < m_bitsAfterPuncturing; i++) {
-						if (m_trackedTagsTable[trackingId].fec[i] != tag_data[i]) {
-							errors++;
-							if (errors > 2)
-								break;
-						}
+				int errors = m_hamming_dist[index];
+				for (int i = m_bitsId * 2; i < m_bitsAfterPuncturing; i++) {
+					if (m_trackedTagsTable[potential_id].fec[i] != tag_data[i]) {
+						errors++;
+						if (errors > 2)
+							break;
 					}
-					if (errors <= 2) { // tag found
-						*tag = &m_trackedTagsTable[trackingId];
-						return true;
-					}
+				}
+				if (errors <= 2) { // tag found
+					*tag = &m_trackedTagsTable[potential_id];
+					return true;
 				}
 			} else {
 				m_fec_state[index]

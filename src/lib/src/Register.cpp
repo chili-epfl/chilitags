@@ -28,7 +28,7 @@ void chilitags::Register::operator()(int pDecodedTag, const std::vector<cv::Poin
 {
 	if (pDecodedTag>-1)
 	{
-		cv::Point2f tOrientedCorners[4];
+		std::vector<cv::Point2f> tOrientedCorners(4);
 		for (size_t i = 0; i < 4; ++i) {
 			tOrientedCorners[i] = pCorners[(i+pRotation) % 4];
 		}

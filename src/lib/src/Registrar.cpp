@@ -23,32 +23,18 @@ chilitags::Registrar *chilitags::Registrar::sDefaultRegistrar = 0;
 
 chilitags::Registrar::Registrar() :
 	mCodec(),
-	mCorners(new cv::Point2f *[mCodec.getMaxTagsNumber()]),
+	mCorners(new std::vector<cv::Point2f>[mCodec.getMaxTagsNumber()]),
 	mFrameId(0),
 	mLastDetectedFrame(new int[mCodec.getMaxTagsNumber()])
 {
+	for (int i=0; i<mCodec.getMaxTagsNumber(); ++i)
+		mLastDetectedFrame[i] = -1;
 }
 
 chilitags::Registrar::~Registrar()
 {
-	int tNTotalTagsTracked = mCodec.getNTotalTagsTracked();
-	for (int i = 0; i < tNTotalTagsTracked; ++i) {
-		delete [] mCorners[i];
-	}
 	delete [] mLastDetectedFrame;
 	delete [] mCorners;
-}
-
-void chilitags::Registrar::registerChilitag(int pId)
-{
-	int tCountBeforeAdding = mCodec.getNTotalTagsTracked();
-	int tTrackingId = mCodec.addTagToTrackingList(pId);
-
-	if (tCountBeforeAdding < mCodec.getNTotalTagsTracked())
-	{
-		mCorners[tTrackingId] = new cv::Point2f[4];
-		mLastDetectedFrame[tTrackingId] = -1;
-	}
 }
 
 void chilitags::Registrar::reset()
@@ -57,11 +43,8 @@ void chilitags::Registrar::reset()
 	mFrameId = (mFrameId<0) ? 0 : mFrameId;
 }
 
-void chilitags::Registrar::set(int pId, const cv::Point2f *pCorners)
+void chilitags::Registrar::set(int pId, const std::vector<cv::Point2f> &pCorners)
 {
-	int tTrackingId = mCodec.getTrackingId(pId);
-	mLastDetectedFrame[tTrackingId] = mFrameId;
-	for (unsigned int i=0; i<4; ++i) {
-		mCorners[tTrackingId][i] = pCorners[i];
-	}
+	mLastDetectedFrame[pId] = mFrameId;
+	mCorners[pId] = pCorners;
 }

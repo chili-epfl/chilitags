@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include <DetectChilitags.hpp>
-#include <Chilitag.hpp>
 #include <Objects.hpp>
 
 #include <opencv2/core/core.hpp> // for cv::Mat
