@@ -23,14 +23,15 @@ namespace {
 const int scDataSize = 6;
 }
 
+const int chilitags::Decode::INVALID_TAG = -1;
+
 chilitags::Decode::Decode() :
 	mMatrix   (new unsigned char[scDataSize*scDataSize]),
 	mMatrix90 (new unsigned char[scDataSize*scDataSize]),
 	mMatrix180(new unsigned char[scDataSize*scDataSize]),
 	mMatrix270(new unsigned char[scDataSize*scDataSize]),
 	mCodec(),
-	mId(-1),
-	mCorners(4)
+	mDecodedTag(std::make_pair(INVALID_TAG, std::vector<cv::Point2f>(4)))
 {
 }
 
@@ -43,7 +44,7 @@ chilitags::Decode::~Decode()
 }
 
 
-void chilitags::Decode::operator()(const std::vector<unsigned char> &pBits, const std::vector<cv::Point2f> &pCorners)
+const std::pair<int, std::vector<cv::Point2f>> &chilitags::Decode::operator()(const std::vector<unsigned char> &pBits, const std::vector<cv::Point2f> &pCorners)
 {
 	for (int i = 0; i < scDataSize; ++i)
 	{
@@ -58,19 +59,22 @@ void chilitags::Decode::operator()(const std::vector<unsigned char> &pBits, cons
 	}
 
 	int tOrientation;
-	mId = -1;
-	     if (mCodec.decode(mMatrix   , mId)) tOrientation = 0;
-	else if (mCodec.decode(mMatrix90 , mId)) tOrientation = 1;
-	else if (mCodec.decode(mMatrix180, mId)) tOrientation = 2;
-	else if (mCodec.decode(mMatrix270, mId)) tOrientation = 3;
+	int &tId = mDecodedTag.first;
+	tId = INVALID_TAG;
+	     if (mCodec.decode(mMatrix   , tId)) tOrientation = 0;
+	else if (mCodec.decode(mMatrix90 , tId)) tOrientation = 1;
+	else if (mCodec.decode(mMatrix180, tId)) tOrientation = 2;
+	else if (mCodec.decode(mMatrix270, tId)) tOrientation = 3;
 
     //The dreadful Black Marker!
-	if (mId == 682) mId = -1;
+	if (tId == 682) tId = INVALID_TAG;
 
-	if (mId>-1)
+	if (tId != INVALID_TAG)
 	{
 		for (size_t i = 0; i < 4; ++i) {
-			mCorners[i] = pCorners[(i+tOrientation) % 4];
+			mDecodedTag.second[i] = pCorners[(i+tOrientation) % 4];
 		}
 	}
+
+	return mDecodedTag;
 }

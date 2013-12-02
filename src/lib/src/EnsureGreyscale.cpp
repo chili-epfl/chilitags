@@ -22,7 +22,7 @@
 
 chilitags::EnsureGreyscale::EnsureGreyscale():mOutputImage(){}
 
-void chilitags::EnsureGreyscale::operator()(const cv::Mat pInputImage)
+const cv::Mat &chilitags::EnsureGreyscale::operator()(const cv::Mat &pInputImage)
 {
 	if (pInputImage.channels() != 1) {
 		// assuming BGR
@@ -31,4 +31,5 @@ void chilitags::EnsureGreyscale::operator()(const cv::Mat pInputImage)
 		// Shallow copy
 		mOutputImage = pInputImage;
 	}
+	return mOutputImage;
 }

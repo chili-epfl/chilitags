@@ -31,19 +31,8 @@ public:
 
 Refine();
 
-void operator()(const cv::Mat pInputImage, const std::vector<cv::Point2f> &pQuad);
+std::vector<cv::Point2f> operator()(const cv::Mat &pInputImage, const std::vector<cv::Point2f> &pQuad);
 
-const std::vector<cv::Point2f> &Quad() const {
-	return mRefinedQuad;
-}
-
-protected:
-
-std::vector<cv::Point2f> mRefinedQuad;
-
-private:
-Refine(const Refine& pRefine);
-Refine& operator=(const Refine& pRefine);
 };
 
 

@@ -36,10 +36,7 @@ public:
 DetectChilitags();
 
 /** This method needs to be called everytime the input image is updated. */
-void operator()(const cv::Mat pInputImage);
-
-/** The result of the detection is accessed here */
-const std::map<int, std::vector<cv::Point2f>> &Tags() const;
+std::map<int, std::vector<cv::Point2f>> operator()(const cv::Mat &pInputImage);
 
 ~DetectChilitags();
 

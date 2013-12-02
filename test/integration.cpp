@@ -15,20 +15,17 @@
 #include <algorithm>
 
 TEST(Integration, Minimal) {
-
-	chilitags::DetectChilitags tDetectChilitags;
-
 	int tExpectedId = 42;
 	chilitags::TagDrawer tDrawer;
 	// Tag needs to be > 12 px wide;
 	int tZoom = 3;
 	cv::Mat tImage = tDrawer(tExpectedId, tZoom, true);
 
-	tDetectChilitags(tImage);
+	auto tTags = chilitags::DetectChilitags()(tImage);
 
-	ASSERT_EQ(1, tDetectChilitags.Tags().size());
+	ASSERT_EQ(1, tTags.size());
 
-	auto tActualId = tDetectChilitags.Tags().cbegin()->first;
+	auto tActualId = tTags.cbegin()->first;
 	EXPECT_EQ(tExpectedId, tActualId);
 
 	float tClose = tZoom*2.0f;
@@ -43,7 +40,7 @@ TEST(Integration, Minimal) {
 	// A pixel is a 1x1 square around its center
 	cv::add(tExpectedCorners, cv::Scalar::all(-0.5), tExpectedCorners);
 
-	auto tActualCorners = tDetectChilitags.Tags().cbegin()->second;
+	auto tActualCorners = tTags.cbegin()->second;
 	for (int i: {0,1,2,3}) {
 		EXPECT_GT(0.1, cv::norm(tActualCorners[i] - tExpectedCorners[i]))
 			<< "with i=" << i;
@@ -82,9 +79,8 @@ TEST(Integration, Snapshots) {
 		cv::Mat tImage = cv::imread(tPath);
 
 		if(tImage.data) {
-			tDetectChilitags(tImage);
-			
-			auto tTags = tDetectChilitags.Tags();
+			auto tTags = tDetectChilitags(tImage);
+
 			std::vector<int> tFoundIds;
 			for (const auto &tTag: tTags) tFoundIds.push_back(tTag.first);
 

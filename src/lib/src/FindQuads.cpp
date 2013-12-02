@@ -58,20 +58,20 @@ void drawContour(cv::Mat &pImage, std::vector<cv::Point> &pContour, cv::Scalar p
 }
 
 chilitags::FindQuads::FindQuads() :
-	mQuads()
+mBinaryImage()
 {
 #ifdef DEBUG_FindQuads
 	cv::namedWindow("FindQuads");
 #endif
 }
 
-void chilitags::FindQuads::operator()(const cv::Mat pGreyscaleImage)
+std::vector<std::vector<cv::Point2f>> chilitags::FindQuads::operator()(const cv::Mat &pGreyscaleImage)
 {
 	cv::Canny(pGreyscaleImage, mBinaryImage, 100, 200, 3);
 
 	//TODO function too long, split it
 
-	mQuads.clear();
+	std::vector<std::vector<cv::Point2f>> tQuads;
 #ifdef DEBUG_FindQuads
 	cv::RNG tRNG( 0xFFFFFFFF );
 	cv::Mat tDebugImage = cv::Mat::zeros(cv::Size(2*tBinaryImage.cols, tBinaryImage.rows), CV_8UC3);
@@ -119,10 +119,10 @@ void chilitags::FindQuads::operator()(const cv::Mat pGreyscaleImage)
 					IsSimilarTo tIsSimilarToCandidate(tCandidate);
 
 					auto tSameQuad = std::find_if(
-						mQuads.begin(),
-						mQuads.end(),
+						tQuads.begin(),
+						tQuads.end(),
 						tIsSimilarToCandidate);
-					if (false && tSameQuad != mQuads.end()) // TODO move to Decode
+					if (false && tSameQuad != tQuads.end()) // TODO move to Decode
 					{
 						*tSameQuad = tCandidate;
 #ifdef DEBUG_FindQuads
@@ -131,7 +131,7 @@ void chilitags::FindQuads::operator()(const cv::Mat pGreyscaleImage)
 					}
 					else
 					{
-						mQuads.push_back(tCandidate);
+						tQuads.push_back(tCandidate);
 #ifdef DEBUG_FindQuads
 						drawContour(tDebugImage, tNormalisedContour, cv::Scalar(0,255,0), tOffset);
 #endif
@@ -160,4 +160,6 @@ void chilitags::FindQuads::operator()(const cv::Mat pGreyscaleImage)
 	cv::imshow("FindQuads", tDebugImage);
 	cv::waitKey(0);
 #endif
+
+	return tQuads;
 }

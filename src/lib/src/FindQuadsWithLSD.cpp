@@ -141,7 +141,6 @@ void mergePoints(vector<Vec4f>& lines, vector<Vec2f>& points, vector<Vec2i>& seg
 
 
 chilitags::FindQuads::FindQuads() :
-    mQuads(),
     lsd(createLineSegmentDetector(LSD_REFINE_NONE))
     //lsd(createLineSegmentDetector(LSD_REFINE_ADV))
 {
@@ -150,11 +149,11 @@ chilitags::FindQuads::FindQuads() :
 #endif
 }
 
-void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
+std::vector<std::vector<cv::Point2f>> chilitags::FindQuads::operator()(const cv::Mat &pBinaryImage)
 {
     //TODO function too long, split it
 
-    mQuads.clear();
+	std::vector<std::vector<cv::Point2f>> tQuads;
 
     vector<Vec4f> lines;
     lsd->detect(pBinaryImage, lines);
@@ -234,7 +233,7 @@ void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
                                 points[quad[2]]};
         convexHull(rawquad,
                     hull, false);
-		if (hull.size() == 4) mQuads.push_back(hull);
+		if (hull.size() == 4) tQuads.push_back(hull);
 
     }
 
@@ -319,5 +318,6 @@ void chilitags::FindQuads::operator()(const cv::Mat pBinaryImage)
         segs_idx.push_back({j,k});
     }
 */
+	return tQuads;
 }
 

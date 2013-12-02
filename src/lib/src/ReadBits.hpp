@@ -30,14 +30,14 @@ class ReadBits
 public:
 ReadBits();
 
-void operator()(cv::Mat pInputImage, const std::vector<cv::Point2f> &pCorners);
-
-const std::vector<unsigned char> &Bits() const { return mBits; }
+const std::vector<unsigned char> &operator()(const cv::Mat &pInputImage, const std::vector<cv::Point2f> &pCorners);
 
 protected:
 
 std::vector<cv::Point2f> mDstBoundaries;
 std::vector<cv::Point2f> mSamplePoints;
+std::vector<cv::Point2f> mTransformedSamplePoints;
+cv::Mat mSamples;
 
 std::vector<uchar> mBits;
 
