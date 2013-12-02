@@ -15,18 +15,12 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    chilitags::DetectChilitags tDetectChilitags;
-
     cv::Mat tImage = cv::imread(argv[1]);
-
     if(tImage.data) {
-        tDetectChilitags(tImage);
-
-		auto tTags = tDetectChilitags.Tags();
-		for (const auto &tTag: tTags) cout << tTag.first << "\n";
+		for (const auto &tTag: chilitags::DetectChilitags()(tImage))
+			cout << tTag.first << "\n";
 
         return 0;
     }
-
     return 1;
 }

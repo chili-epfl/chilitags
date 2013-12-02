@@ -36,32 +36,27 @@ public:
 Impl():
 	mEnsureGreyscale(),
 	mFindQuads(),
+
 	mRefine(),
-
 	mReadBits(),
-	mDecode(),
-
-	mTags()
+	mDecode()
 {
 }
 
 
-void operator()(const cv::Mat pInputImage) {
-	mEnsureGreyscale(pInputImage);
-	mFindQuads(mEnsureGreyscale.Image());
+std::map<int, std::vector<cv::Point2f>> operator()(const cv::Mat &pInputImage){
+	auto tGreyscaleImage = mEnsureGreyscale(pInputImage);
 
-	mTags.clear();
-	for (const auto & tQuad : mFindQuads.Quads()) {
-		mRefine(mEnsureGreyscale.Image(), tQuad);
-		mReadBits(mEnsureGreyscale.Image(), mRefine.Quad());
-		mDecode(mReadBits.Bits(), mRefine.Quad());
-		if (mDecode.IsValidTag()) mTags[mDecode.Id()] = mDecode.Corners();
+	std::map<int, std::vector<cv::Point2f>> tTags;
+
+	for (const auto & tQuad : mFindQuads(tGreyscaleImage)) {
+		auto tRefinedQuad = mRefine(tGreyscaleImage, tQuad);
+		auto &tTag = mDecode(mReadBits(tGreyscaleImage, tRefinedQuad), tRefinedQuad);
+		if (tTag.first != Decode::INVALID_TAG) tTags.insert(tTag);
 	}
-}
 
-const std::map<int, std::vector<cv::Point2f>> &Tags() const {
-	return mTags;
-}
+	return tTags;
+};
 
 protected:
 
@@ -71,9 +66,6 @@ FindQuads mFindQuads;
 ReadBits mReadBits;
 Decode mDecode;
 Refine mRefine;
-
-std::map<int, std::vector<cv::Point2f>> mTags;
-
 };
 
 
@@ -81,15 +73,10 @@ DetectChilitags::DetectChilitags():
 		mImpl(new Impl())
 {}
 
-void DetectChilitags::operator()(const cv::Mat pInputImage) {
-	mImpl->operator()(pInputImage);
-}
-
-const std::map<int, std::vector<cv::Point2f>> &DetectChilitags::Tags() const {
-	return mImpl->Tags();
+std::map<int, std::vector<cv::Point2f>> DetectChilitags::operator()(const cv::Mat &pInputImage){
+	return mImpl->operator()(pInputImage);
 }
 
 DetectChilitags::~DetectChilitags() = default;
 
 }
-

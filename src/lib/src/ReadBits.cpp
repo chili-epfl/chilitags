@@ -33,22 +33,24 @@ static const int scTagSize = 2*scTagMargin+scDataSize;
 }
 
 chilitags::ReadBits::ReadBits() :
-	mBits(scDataSize*scDataSize)
+mDstBoundaries({{0        , 0},
+                {scTagSize, 0},
+                {scTagSize, scTagSize},
+                {0        , scTagSize}}),
+mSamplePoints(),
+mBits(scDataSize*scDataSize),
+mTransformedSamplePoints(scDataSize*scDataSize),
+mSamples(1, scDataSize*scDataSize, CV_8U)
 {
-    mDstBoundaries = {{0        , 0},
-                      {scTagSize, 0},
-                      {scTagSize, scTagSize},
-                      {0        , scTagSize}};
-
 	for (int y = 0; y < scDataSize; ++y)
     {
 		for (int x = 0; x < scDataSize; ++x)
         {
-            cv::Point2f tPosition(scTagMargin + x + .5, scTagMargin + y + .5);
-            mSamplePoints.push_back(tPosition);
+            mSamplePoints.push_back(cv::Point2f(
+				scTagMargin + x + .5,
+				scTagMargin + y + .5));
         }
     }
-
 
 #ifdef DEBUG_ReadBits
 	cv::namedWindow("ReadBits-full");
@@ -57,7 +59,7 @@ chilitags::ReadBits::ReadBits() :
 }
 
 
-void chilitags::ReadBits::operator()(const cv::Mat pInputImage, const std::vector<cv::Point2f> &pCorners)
+const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat &pInputImage, const std::vector<cv::Point2f> &pCorners)
 {
     auto tCorners = pCorners;
 
@@ -74,18 +76,17 @@ void chilitags::ReadBits::operator()(const cv::Mat pInputImage, const std::vecto
 
 	cv::Matx33f tTransformation = cv::getPerspectiveTransform(mDstBoundaries, tCorners);
 
-    std::vector<cv::Point2f> tTransformedSamplePoints(mSamplePoints.size());
-    cv::perspectiveTransform(mSamplePoints, tTransformedSamplePoints, tTransformation);
+    cv::perspectiveTransform(mSamplePoints, mTransformedSamplePoints, tTransformation);
 
     cv::Mat tInputRoi = pInputImage(tRoi);
-	cv::Mat tSamples(1, scDataSize*scDataSize, CV_8U);
-	uchar* tSampleData = tSamples.ptr(0);
-    for (auto& tTransformedSamplePoint : tTransformedSamplePoints) {
+	
+	uchar* tSampleData = mSamples.ptr(0);
+    for (auto& tTransformedSamplePoint : mTransformedSamplePoints) {
 		*tSampleData++ = tInputRoi.at<uchar>(tTransformedSamplePoint);
     }
 
 	//cv::Mat tBinarizedImage(cv::Size(scDataSize*scDataSize, 1), CV_8U, mMatrix);
-    cv::threshold(tSamples, mBits, -1, 1, cv::THRESH_BINARY | cv::THRESH_OTSU);
+    cv::threshold(mSamples, mBits, -1, 1, cv::THRESH_BINARY | cv::THRESH_OTSU);
 
 #ifdef DEBUG_ReadBits
 
@@ -139,4 +140,6 @@ void chilitags::ReadBits::operator()(const cv::Mat pInputImage, const std::vecto
 	cv::imshow("ReadBits-marker", marker);
     cv::waitKey(0);
 #endif
+
+	return mBits;
 }

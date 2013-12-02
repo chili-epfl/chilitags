@@ -29,17 +29,13 @@ namespace chilitags {
 class Decode
 {
 public:
+static const int INVALID_TAG;
+
 Decode();
 
-void operator()(const std::vector<unsigned char> &pBits, const std::vector<cv::Point2f> &pCorners);
-
-bool IsValidTag() {return mId != -1;}
-
-/** To be used only if IsValidTag() returns true */
-int Id() const {return mId;}
-
-/** To be used only if IsValidTag() returns true */
-const std::vector<cv::Point2f> & Corners() const {return mCorners;}
+const std::pair<int, std::vector<cv::Point2f>> &operator()(
+	const std::vector<unsigned char> &pBits,
+	const std::vector<cv::Point2f> &pCorners);
 
 virtual ~Decode();
 
@@ -51,9 +47,7 @@ unsigned char *mMatrix180;
 unsigned char *mMatrix270;
 
 Codec mCodec;
-
-int mId;
-std::vector<cv::Point2f> mCorners;
+std::pair<int, std::vector<cv::Point2f>> mDecodedTag;
 
 private:
 Decode(const Decode&);

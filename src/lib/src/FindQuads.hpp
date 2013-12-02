@@ -34,9 +34,7 @@ class FindQuads
 public:
 FindQuads();
 
-void operator()(const cv::Mat pGreyscaleImage);
-
-const std::vector<std::vector<cv::Point2f>> &Quads() const { return mQuads; }
+std::vector<std::vector<cv::Point2f>> operator()(const cv::Mat &pGreyscaleImage);
 
 protected:
 
@@ -48,7 +46,7 @@ cv::Mat mScaledCopies[scScaledCopiesCount];
 cv::Ptr<cv::LineSegmentDetector> lsd;
 #endif
 
-std::vector<std::vector<cv::Point2f>> mQuads;
+
 
 };
 

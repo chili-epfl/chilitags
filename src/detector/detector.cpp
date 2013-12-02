@@ -81,16 +81,13 @@ int main(int argc, char* argv[])
 		// Capture a new image.
 		tCapture.read(tInputImage);
 
-		// Detect tags on the current image.
+		// Detect tags on the current image (and time the detection);
 	    int64 tStartTime = cv::getTickCount();
-		tDetectChilitags(tInputImage);
-	    int64 tEndTime = cv::getTickCount();
-		double tProcessingTime = ((double) tEndTime - tStartTime)/cv::getTickFrequency();
-
-		// DetectChilitags::Tags() gives access to the result of the detection:
+		std::map<int, std::vector<cv::Point2f>> tTags = tDetectChilitags(tInputImage);
 		// The map associates ids (between 0 and 1023) to four 2D points
 		// corresponding to the corners of the tag in the picture.
-		const std::map<int, std::vector<cv::Point2f>> & tTags = tDetectChilitags.Tags();
+	    int64 tEndTime = cv::getTickCount();
+		double tProcessingTime = ((double) tEndTime - tStartTime)/cv::getTickFrequency();
 
 		// The color (magenta) that will be used for all information
 		// overlaid on the captured image
@@ -104,7 +101,7 @@ int main(int argc, char* argv[])
 		// We dont want to draw directly on the input image, so we clone it
 		cv::Mat tOutputImage = tInputImage.clone();
 
-		for (const std::pair<int, std::vector<cv::Point2f>> & tTag) {
+		for (const std::pair<int, std::vector<cv::Point2f>> & tTag : tTags) {
 
 			int tId = tTag.first;
 			const std::vector<cv::Point2f> &tCorners = tTag.second;
@@ -134,7 +131,7 @@ int main(int argc, char* argv[])
 		cv::putText(tOutputImage,
 			cv::format("%dx%d@%.0f ms (press q to quit)",
 				tOutputImage.cols, tOutputImage.rows,
-				(int) (.5+tProcessingTime*1000.0),
+				(int) (.5+tProcessingTime*1000.0)),
 			cv::Point(32,32),
 			cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 
