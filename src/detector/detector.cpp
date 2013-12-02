@@ -22,8 +22,6 @@
 
 // This header contains the detection part
 #include <DetectChilitags.hpp>
-// This header provides an easy way to use the tag detection information
-#include <Chilitag.hpp>
 
 #ifdef OPENCV3
 #include <opencv2/core/utility.hpp> // getTickCount...
@@ -84,9 +82,15 @@ int main(int argc, char* argv[])
 		tCapture.read(tInputImage);
 
 		// Detect tags on the current image.
-	    int64 tStartCount = cv::getTickCount();
+	    int64 tStartTime = cv::getTickCount();
 		tDetectChilitags(tInputImage);
-        std::cout << "Time to update markers: " << ((double)cv::getTickCount() - tStartCount)/cv::getTickFrequency() << "ms" << std::endl;
+	    int64 tEndTime = cv::getTickCount();
+		double tProcessingTime = ((double) tEndTime - tStartTime)/cv::getTickFrequency();
+
+		// DetectChilitags::Tags() gives access to the result of the detection:
+		// The map associates ids (between 0 and 1023) to four 2D points
+		// corresponding to the corners of the tag in the picture.
+		const std::map<int, std::vector<cv::Point2f>> & tTags = tDetectChilitags.Tags();
 
 		// The color (magenta) that will be used for all information
 		// overlaid on the captured image
@@ -100,85 +104,39 @@ int main(int argc, char* argv[])
 		// We dont want to draw directly on the input image, so we clone it
 		cv::Mat tOutputImage = tInputImage.clone();
 
-		// We iterate over the 1024 possible tags (from #0 to #1023)
-		for (int tTagId = 0; tTagId < 1024; ++tTagId) {
+		for (const std::pair<int, std::vector<cv::Point2f>> & tTag) {
 
-			// The Chilitag class is a convenience handle to acces information
-			// related to a given tag.
-			// The object itself is lightweight, so we can create and delete it
-			// frequently (we don't need to store it as member for example)
-			chilitags::Chilitag tTag(tTagId);
+			int tId = tTag.first;
+			const std::vector<cv::Point2f> &tCorners = tTag.second;
 
-			// Chilitag allows us to easily access the two main pieces of data
-			// First, the isPresent() method tells us whether the related tag
-			// has been detected in the last frame.
-			// This is a first and necessary step to access further information
-			// about the tag, as a "absent" tag will have obsolete information.
-			if (tTag.isPresent()) {
-				
-				// Second, now that we know that the tag has been updated, the
-				// getCorners() method returns the coordinates of the
-				// quadrilateral containing the tag on the input picture.
-				std::vector<cv::Point2f> tCorners = tTag.getCorners();
-
-				// We start by drawing this quadrilateral
-				for (size_t i = 0; i < 4; ++i) {
-					cv::line(
-						tOutputImage,
-						scPrecision*tCorners[i],
-						scPrecision*tCorners[(i+1)%4],
-						scColor, 1, CV_AA, scShift);
-				}
-
-				// We will print the identifier of the tag at its center
-				cv::Point2f tCenter = 0.5*(tCorners[0] + tCorners[2]);
-				cv::putText(tOutputImage, cv::format("%d", tTagId), tCenter,
-					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
-
-				// Other points an be computed from the four corners of the Quad.
-				// Chilitags are oriented. It means that the points 0,1,2,3 of
-				// the Quad coordinates are consistently the top-left, top-right,
-				// bottom-right and bottom-left
-				// (i.e. clockwise, starting from top-left)
-				// Using this, we can compute (an approximation of) the middle of
-				// the top side of the tag...
-				cv::Point2f tTop = 0.5f*(tCorners[0]+tCorners[1]);
-				// and of its right side
-				cv::Point2f tRight = 0.5f*(tCorners[1]+tCorners[2]);
-
-				// We display the length in pixel of these sides
-				cv::putText(tOutputImage,
-					cv::format("The top border is %.2fpx long.",
-						cv::norm(tCorners[0] - tCorners[1])), tTop,
-					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
-
-				cv::putText(tOutputImage,
-					cv::format("The right border is %.2fpx long.",
-						cv::norm(tCorners[1] - tCorners[2])), tRight,
-					cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
-
-				// And we draw a line from the center to the midlle of these sides,
-				// to show the orientation of the tag.
-				cv::line(tOutputImage,
-					scPrecision*tCenter,
-					scPrecision*tTop,
-					scColor, 1, CV_AA, scShift);
-				cv::line(tOutputImage,
-					scPrecision*tCenter,
-					scPrecision*tRight,
+			// We start by drawing the corners
+			for (size_t i = 0; i < 4; ++i) {
+				cv::line(
+					tOutputImage,
+					scPrecision*tCorners[i],
+					scPrecision*tCorners[(i+1)%4],
 					scColor, 1, CV_AA, scShift);
 			}
+
+			// Other points an be computed from the four corners of the Quad.
+			// Chilitags are oriented. It means that the points 0,1,2,3 of
+			// the Quad coordinates are consistently the top-left, top-right,
+			// bottom-right and bottom-left
+			// (i.e. clockwise, starting from top-left)
+			// Using this, we can compute (an approximation of) the center of
+			// tag.
+			cv::Point2f tCenter = 0.5*(tCorners[0] + tCorners[2]);
+			cv::putText(tOutputImage, cv::format("%d", tId), tCenter,
+				cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 		}
 		
-		// Some stats on the current frame (resolution and framerate)
-		int64 tNewTickCount = cv::getTickCount();
+		// Some stats on the current frame (resolution and processing time)
 		cv::putText(tOutputImage,
-			cv::format("%dx%d@%.0f fps (press q to quit)",
+			cv::format("%dx%d@%.0f ms (press q to quit)",
 				tOutputImage.cols, tOutputImage.rows,
-				cv::getTickFrequency() / ((double) (tNewTickCount-tTickCount))),
+				(int) (.5+tProcessingTime*1000.0),
 			cv::Point(32,32),
 			cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
-		tTickCount = tNewTickCount;
 
 		// Finally...
 		cv::imshow("DisplayChilitags", tOutputImage);
