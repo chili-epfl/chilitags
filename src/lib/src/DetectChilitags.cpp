@@ -23,7 +23,6 @@
 #include "FindQuads.hpp"
 #include "ReadBits.hpp"
 #include "Decode.hpp"
-#include "Register.hpp"
 #include "Refine.hpp"
 
 // The class that takes care of all the detection of Chilitags.
@@ -34,16 +33,15 @@ class DetectChilitags::Impl
 
 public:
 
-Impl(Registrar &pRegistrar = Registrar::GetDefault()):
-	mRegistrar(pRegistrar),
-
+Impl():
 	mEnsureGreyscale(),
 	mFindQuads(),
 	mRefine(),
 
 	mReadBits(),
-	mDecode(pRegistrar.GetTranscoder()),
-	mRegister(pRegistrar)
+	mDecode(),
+
+	mTags()
 {
 }
 
@@ -52,35 +50,44 @@ void operator()(const cv::Mat pInputImage) {
 	mEnsureGreyscale(pInputImage);
 	mFindQuads(mEnsureGreyscale.Image());
 
-	mRegistrar.reset();
+	mTags.clear();
 	for (const auto & tQuad : mFindQuads.Quads()) {
 		mRefine(mEnsureGreyscale.Image(), tQuad);
 		mReadBits(mEnsureGreyscale.Image(), mRefine.Quad());
-		mDecode(mReadBits.Bits());
-		mRegister(mDecode.TagId(), mRefine.Quad(), mDecode.Orientation());
+		mDecode(mReadBits.Bits(), mRefine.Quad());
+		if (mDecode.IsValidTag()) mTags[mDecode.Id()] = mDecode.Corners();
 	}
 }
 
-protected:
+const std::map<int, std::vector<cv::Point2f>> &Tags() const {
+	return mTags;
+}
 
-Registrar &mRegistrar;
+protected:
 
 EnsureGreyscale mEnsureGreyscale;
 FindQuads mFindQuads;
 
 ReadBits mReadBits;
 Decode mDecode;
-Register mRegister;
 Refine mRefine;
+
+std::map<int, std::vector<cv::Point2f>> mTags;
 
 };
 
 
-DetectChilitags::DetectChilitags(Registrar &pRegistrar):
-		mImpl(new Impl(pRegistrar))
+DetectChilitags::DetectChilitags():
+		mImpl(new Impl())
 {}
 
-void DetectChilitags::operator()(const cv::Mat pInputImage) { mImpl->operator()(pInputImage); }
+void DetectChilitags::operator()(const cv::Mat pInputImage) {
+	mImpl->operator()(pInputImage);
+}
+
+const std::map<int, std::vector<cv::Point2f>> &DetectChilitags::Tags() const {
+	return mImpl->Tags();
+}
 
 DetectChilitags::~DetectChilitags() = default;
 

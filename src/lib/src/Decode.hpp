@@ -21,6 +21,7 @@
 #define Decode_HPP
 
 #include <Codec.hpp>
+#include <opencv2/core/core.hpp>
 #include <vector>
 
 namespace chilitags {
@@ -28,15 +29,17 @@ namespace chilitags {
 class Decode
 {
 public:
-Decode(Codec &pCodec);
+Decode();
 
-void operator()(const std::vector<unsigned char> &pBits);
+void operator()(const std::vector<unsigned char> &pBits, const std::vector<cv::Point2f> &pCorners);
 
-/** -1 if no valid tag has been decoded */
-int TagId() const {return mDecodedTag;}
+bool IsValidTag() {return mId != -1;}
 
-/** undefined if no valid tag has been decoded */
-int Orientation() const {return mOrientation;}
+/** To be used only if IsValidTag() returns true */
+int Id() const {return mId;}
+
+/** To be used only if IsValidTag() returns true */
+const std::vector<cv::Point2f> & Corners() const {return mCorners;}
 
 virtual ~Decode();
 
@@ -47,10 +50,10 @@ unsigned char *mMatrix90;
 unsigned char *mMatrix180;
 unsigned char *mMatrix270;
 
-Codec &mCodec;
+Codec mCodec;
 
-int mDecodedTag;
-int mOrientation;
+int mId;
+std::vector<cv::Point2f> mCorners;
 
 private:
 Decode(const Decode&);

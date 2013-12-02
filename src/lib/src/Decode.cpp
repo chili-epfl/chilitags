@@ -23,14 +23,14 @@ namespace {
 const int scDataSize = 6;
 }
 
-chilitags::Decode::Decode(Codec &pCodec) :
+chilitags::Decode::Decode() :
 	mMatrix   (new unsigned char[scDataSize*scDataSize]),
 	mMatrix90 (new unsigned char[scDataSize*scDataSize]),
 	mMatrix180(new unsigned char[scDataSize*scDataSize]),
 	mMatrix270(new unsigned char[scDataSize*scDataSize]),
-	mCodec(pCodec),
-	mDecodedTag(-1),
-	mOrientation(-1)
+	mCodec(),
+	mId(-1),
+	mCorners(4)
 {
 }
 
@@ -43,7 +43,7 @@ chilitags::Decode::~Decode()
 }
 
 
-void chilitags::Decode::operator()(const std::vector<unsigned char> &pBits)
+void chilitags::Decode::operator()(const std::vector<unsigned char> &pBits, const std::vector<cv::Point2f> &pCorners)
 {
 	for (int i = 0; i < scDataSize; ++i)
 	{
@@ -57,12 +57,20 @@ void chilitags::Decode::operator()(const std::vector<unsigned char> &pBits)
 		}
 	}
 
-	mDecodedTag = -1;
-	     if (mCodec.decode(mMatrix   , mDecodedTag)) mOrientation = 0;
-	else if (mCodec.decode(mMatrix90 , mDecodedTag)) mOrientation = 1;
-	else if (mCodec.decode(mMatrix180, mDecodedTag)) mOrientation = 2;
-	else if (mCodec.decode(mMatrix270, mDecodedTag)) mOrientation = 3;
+	int tOrientation;
+	mId = -1;
+	     if (mCodec.decode(mMatrix   , mId)) tOrientation = 0;
+	else if (mCodec.decode(mMatrix90 , mId)) tOrientation = 1;
+	else if (mCodec.decode(mMatrix180, mId)) tOrientation = 2;
+	else if (mCodec.decode(mMatrix270, mId)) tOrientation = 3;
 
     //The dreadful Black Marker!
-	if (mDecodedTag == 682) mDecodedTag = -1;
+	if (mId == 682) mId = -1;
+
+	if (mId>-1)
+	{
+		for (size_t i = 0; i < 4; ++i) {
+			mCorners[i] = pCorners[(i+tOrientation) % 4];
+		}
+	}
 }
