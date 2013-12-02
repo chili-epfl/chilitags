@@ -1,5 +1,4 @@
 #include <DetectChilitags.hpp>
-#include <Chilitag.hpp>
 
 #include <opencv2/highgui/highgui.hpp> // imread
 
@@ -23,9 +22,9 @@ int main(int argc, char* argv[])
     if(tImage.data) {
         tDetectChilitags(tImage);
 
-        for (int i = 0; i<1024; ++i) {
-            if (chilitags::Chilitag(i).isPresent()) cout << i << "\n";
-        }
+		auto tTags = tDetectChilitags.Tags();
+		for (const auto &tTag: tTags) cout << tTag.first << "\n";
+
         return 0;
     }
 

@@ -20,8 +20,9 @@
 #ifndef DetectChilitags_HPP
 #define DetectChilitags_HPP
 
-#include "Registrar.hpp"
-namespace cv {class Mat;}
+#include <map>
+#include <vector>
+#include <opencv2/core/core.hpp>
 #include <memory>
 
 namespace chilitags {
@@ -32,14 +33,13 @@ class DetectChilitags
 
 public:
 
-/**
- * The result of the detection will be stored into pRegistrar.
- * See Chilitag and Registrar on why changing the default value of pRegistrar.
- */
-DetectChilitags(Registrar &pRegistrar = Registrar::GetDefault());
+DetectChilitags();
 
 /** This method needs to be called everytime the input image is updated. */
 void operator()(const cv::Mat pInputImage);
+
+/** The result of the detection is accessed here */
+const std::map<int, std::vector<cv::Point2f>> &Tags() const;
 
 ~DetectChilitags();
 
