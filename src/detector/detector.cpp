@@ -23,6 +23,9 @@
 // This header contains the detection part
 #include <DetectChilitags.hpp>
 
+// This one contains a simple filter to avoid a "flickering" detection
+#include <CachingFilter.hpp>
+
 #ifdef OPENCV3
 #include <opencv2/core/utility.hpp> // getTickCount...
 #endif
@@ -75,6 +78,15 @@ int main(int argc, char* argv[])
 	cv::Mat tInputImage;
 	chilitags::DetectChilitags tDetectChilitags;
 
+	// The detection is raw, i.e. if a tag is not detected during one frame,
+	// the tag will "disappear", which can result in flickering
+	// To address this, the CachingFilter "cheats" by keeping tags for n frames
+	// at the same position. When tags disappear for more than 5 frames,
+	// CachingFilter actually removes it.
+	// The default of CachingFilter is to keep tags for n=5 frames.
+	// Here, we set it to 4.
+	chilitags::CachingFilter tFilter(4);
+
 	// Main loop, exiting when 'q is pressed'
 	for (; 'q' != (char) cv::waitKey(1); ) {
 
@@ -82,12 +94,22 @@ int main(int argc, char* argv[])
 		tCapture.read(tInputImage);
 
 		// Detect tags on the current image (and time the detection);
-	    int64 tStartTime = cv::getTickCount();
-		std::map<int, std::vector<cv::Point2f>> tTags = tDetectChilitags(tInputImage);
+		// DetectChilitags and CachingFilter are functors, which means that
+		// they are objects used like function.
+		// Here, we "call" tDetectChilitags with the captured image
+		// and the result is provided to tFilter, which gives us a map
+		// describing the tags.
 		// The map associates ids (between 0 and 1023) to four 2D points
 		// corresponding to the corners of the tag in the picture.
+	    int64 tStartTime = cv::getTickCount();
+		std::map<int, std::vector<cv::Point2f>> tTags = 
+			tFilter(
+				tDetectChilitags(tInputImage));
 	    int64 tEndTime = cv::getTickCount();
-		double tProcessingTime = ((double) tEndTime - tStartTime)/cv::getTickFrequency();
+		double tProcessingTime = 1000.0*((double) tEndTime - tStartTime)/cv::getTickFrequency();
+
+
+		// Now we start using the result of the detection.
 
 		// The color (magenta) that will be used for all information
 		// overlaid on the captured image
@@ -129,9 +151,9 @@ int main(int argc, char* argv[])
 		
 		// Some stats on the current frame (resolution and processing time)
 		cv::putText(tOutputImage,
-			cv::format("%dx%d@%.0f ms (press q to quit)",
+			cv::format("%dx%d %4.0f ms (press q to quit)",
 				tOutputImage.cols, tOutputImage.rows,
-				(int) (.5+tProcessingTime*1000.0)),
+				tProcessingTime),
 			cv::Point(32,32),
 			cv::FONT_HERSHEY_SIMPLEX, 0.5, scColor);
 

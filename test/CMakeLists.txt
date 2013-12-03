@@ -1,4 +1,3 @@
-
 MACRO(declare_test)
     cmake_parse_arguments(declare_test "NEEDS_DATA" "TESTNAME" "CV_MODULES" ${ARGN} )
 
@@ -23,3 +22,4 @@ declare_test(TESTNAME codec)
 declare_test(TESTNAME drawer                )
 declare_test(TESTNAME integration NEEDS_DATA)
 declare_test(TESTNAME benchmark NEEDS_DATA)
+declare_test(TESTNAME CachingFilter)
