@@ -41,7 +41,7 @@ public:
      * their transformation matrices, in the camera
      * frame.
      */
-    std::map<std::string, cv::Matx44d> all() const;
+    std::map<std::string, cv::Matx44d> operator()(const std::map<int, std::vector<cv::Point2f>> &tags) const;
 
     /** Sets new camera calibration values.
      */

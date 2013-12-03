@@ -95,11 +95,9 @@ int main(int argc, char* argv[])
                                30);  //default size
 
     for (; 'q' != (char) cv::waitKey(10); ) {
-
         capture.read(tInputImage);
-        detector(tInputImage);
 
-        for (auto& kv : objects.all()) {
+        for (auto& kv : objects(detector(tInputImage))) {
             cout << kv.first;
             cout << " at " << Mat(kv.second) << endl;
         }

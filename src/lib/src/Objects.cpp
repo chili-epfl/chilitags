@@ -1,6 +1,5 @@
 #include <opencv2/calib3d/calib3d.hpp>
 
-#include "Chilitag.hpp"
 #include "Estimator.hpp"
 #include "Objects.hpp"
 
@@ -55,31 +54,26 @@ void Objects::resetCalibration(cv::InputArray newCameraMatrix,
     distCoeffs = newDistCoeffs.getMat();
 }
 
-map<string, Matx44d> Objects::all() const
+map<string, Matx44d> Objects::operator()(const std::map<int, std::vector<cv::Point2f>> &tags) const
 {
 
     map<string, Matx44d> objects;
 
-    map<const Object*, vector<Chilitag>> tagsPerObject;
-    vector<Chilitag> freeTags;
+    map<const Object*, vector<std::pair<int,std::vector<cv::Point2f>>>> tagsPerObject;
+    vector<std::pair<int,std::vector<cv::Point2f>>> freeTags;
 
     /***********************************************
      *    Find tags and associate them to objects
      *    if necessary.
      **********************************************/
-    for (int i = 0; i < MAX_OBJECTS; ++i)
-    {
-        Chilitag tag(i);
-
-        if (tag.isPresent()) {
-            auto object = _config.usedBy(i);
-            if (object) {
-                tagsPerObject[object].push_back(tag);
-            }
-            else {
-                freeTags.push_back(tag);
-            }
-        }
+	for (const auto &tag: tags) {
+		auto object = _config.usedBy(tag.first);
+		if (object) {
+			tagsPerObject[object].push_back(tag);
+		}
+		else {
+			freeTags.push_back(tag);
+		}
     }
 
 
@@ -94,11 +88,11 @@ map<string, Matx44d> Objects::all() const
     if (!defaultMarkerCorners.empty()) {
         for (auto& tag : freeTags) {
 
-            string name(string("marker_") + to_string(tag.GetMarkerId()));
+            string name(string("marker_") + to_string(tag.first));
 
             computeTransformation(name, 
                                   defaultMarkerCorners,
-                                  tag.getCorners(),
+                                  tag.second,
                                   objects);
         }
     }
@@ -114,16 +108,16 @@ map<string, Matx44d> Objects::all() const
 
         for (auto& tag : kv.second) {
 
-            const MarkerConfig* markerConfig = _config.marker(tag.GetMarkerId());
+            const MarkerConfig* markerConfig = _config.marker(tag.first);
 
             // do we need to publish this marker independently of the object?
             if (markerConfig->keep) {
                 vector<Point3f> localcorners(markerConfig->localcorners.cbegin(),
                                              markerConfig->localcorners.cend());
                 computeTransformation(
-                                    string("marker_") + to_string(tag.GetMarkerId()), 
+                                    string("marker_") + to_string(tag.first), 
                                     localcorners,
-                                    tag.getCorners(),
+                                    tag.second,
                                     objects);
             }
 
@@ -132,8 +126,7 @@ map<string, Matx44d> Objects::all() const
             corners.insert(corners.end(),newCorners.cbegin(),newCorners.cend());
 
             // then, add the image points where the tag is seen
-            auto newPoints(tag.getCorners());
-            imagePoints.insert(imagePoints.end(),newPoints.cbegin(),newPoints.cend());
+            imagePoints.insert(imagePoints.end(),tag.second.cbegin(),tag.second.cend());
 
         }
 
