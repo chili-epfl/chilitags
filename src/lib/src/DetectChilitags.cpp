@@ -37,15 +37,23 @@ chilitags::DetectChilitags::DetectChilitags(
 {
 	EnsureGreyscale *tEnsureGreyscale = new EnsureGreyscale(pInputImage);
 	mPipeables.push_back(tEnsureGreyscale);
+#ifndef EXPERIMENTAL_LSD
 	DetectEdges *tDetectEdges = new DetectEdges(100, 200, 3, tEnsureGreyscale->GetOutputImage());
 	mPipeables.push_back(tDetectEdges);
 	FindQuads *tFindQuads = new FindQuads(tDetectEdges->GetOutputImage());
+#else
+	FindQuads *tFindQuads = new FindQuads(tEnsureGreyscale->GetOutputImage());
+#endif
 	mPipeables.push_back(tFindQuads);
 	Refine *tRefine = new Refine(tEnsureGreyscale->GetOutputImage(), tFindQuads->Quads());
 	mPipeables.push_back(tRefine);
 	Map<std::vector<Quad> > *tMap = new Map<std::vector<Quad> >(tRefine->GetRefinedQuads());
 	mPipeables.push_back(tMap);
+#ifndef EXPERIMENTAL_LSD
 	*tEnsureGreyscale | *tDetectEdges | *tFindQuads | *tRefine | *tMap;
+#else
+	*tEnsureGreyscale | *tFindQuads | *tRefine | *tMap;
+#endif
 
 	ReadBits *tReadBits = new ReadBits(tEnsureGreyscale->GetOutputImage(), tMap->Variable());
 	mPipeables.push_back(tReadBits);

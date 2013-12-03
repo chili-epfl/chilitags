@@ -23,6 +23,7 @@
 //#define DEBUG_FindQuads
 #ifdef DEBUG_FindQuads
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/core_c.h> // CV_AA
 #endif
 
 namespace {
