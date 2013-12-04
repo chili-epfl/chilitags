@@ -14,6 +14,16 @@
 #include <iostream>
 #include <algorithm>
 
+// TODO
+// - perspective transforms
+// - luminosity (saturate-adding constants to the image?) and contrast (saturate-multiplying?)
+// - sensor noiss with salt and pepper
+// - compression artefacts (compress as jpg?)
+// - gaussian blur for bad focus,
+// - motion blur
+// - resolution
+// - pinhole camera distortions
+
 TEST(Integration, Minimal) {
 	int tExpectedId = 42;
 	chilitags::TagDrawer tDrawer;
