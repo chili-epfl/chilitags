@@ -9,20 +9,15 @@
 #include <opencv2/core/core.hpp>
 
 #include "ObjectConfig.hpp"
-#include "Estimator.hpp"
-
 
 namespace chilitags {
-
-static const float DEFAULT_GAIN=0.9;
 
 class Objects {
 
 public:
     Objects(cv::InputArray cameraMatrix, 
             cv::InputArray distCoeffs, 
-            float size,
-            float gain = DEFAULT_GAIN);
+            float size);
 
     /**
      *
@@ -34,8 +29,7 @@ public:
     Objects(cv::InputArray cameraMatrix,
             cv::InputArray distCoeffs,
             const std::string& configuration, 
-            float defaultSize = 0,
-            float gain = DEFAULT_GAIN);
+            float defaultSize = 0);
 
     /** Returns the list of all detected objects with
      * their transformation matrices, in the camera
@@ -62,18 +56,10 @@ private:
                                const std::vector<cv::Point2f>& imagePoints,
                                std::map<std::string, cv::Matx44d>& objects) const;
 
-    cv::Matx44d transformationMatrix(const cv::Mat& tvec, const cv::Mat& rvec) const;
-
-    float gain;
     bool hasObjectConfiguration;
     std::vector<cv::Point3f> defaultMarkerCorners;
 
     ObjectConfig _config;
-    
-    // store, for each tag, an estimator
-    mutable std::unordered_map<std::string, Estimator<cv::Mat>> estimatedTranslations;
-    mutable std::unordered_map<std::string, Estimator<cv::Mat>> estimatedRotations;
-
 };
 
 }
