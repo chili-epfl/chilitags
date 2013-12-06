@@ -83,24 +83,23 @@ const MarkerConfig* ObjectConfig::marker(int markerId) const {
 
 void ObjectConfig::computeCorners(MarkerConfig& marker) const {
 
-    static const float RAD2DEG = 3.141593 / 180.;
-    auto half = marker.size / 2;
+    static const float DEG2RAD = 3.141593f / 180.f;
 
-    marker.localcorners[0] = Point3f(-half,-half,0.);
-    marker.localcorners[1] = Point3f(half,-half,0.);
-    marker.localcorners[2] = Point3f(half,half,0.);
-    marker.localcorners[3] = Point3f(-half,half,0.);
+    marker.localcorners[0] = Point3f(0.f        , 0.f        , 0.f);
+    marker.localcorners[1] = Point3f(marker.size, 0.f        , 0.f);
+    marker.localcorners[2] = Point3f(marker.size, marker.size, 0.f);
+    marker.localcorners[3] = Point3f(0.f        , marker.size, 0.f);
 
 
     // Rotation matrix computation: cf The Matrix and Quaternions FAQ
     // http://www.cs.princeton.edu/~gewang/projects/darth/stuff/quat_faq.html#Q36
     
-    auto A = cos(marker.rotation[0] * RAD2DEG);
-    auto B = sin(marker.rotation[0] * RAD2DEG);
-    auto C = cos(marker.rotation[1] * RAD2DEG);
-    auto D = sin(marker.rotation[1] * RAD2DEG);
-    auto E = cos(marker.rotation[2] * RAD2DEG);
-    auto F = sin(marker.rotation[2] * RAD2DEG);
+    auto A = cos(marker.rotation[0] * DEG2RAD);
+    auto B = sin(marker.rotation[0] * DEG2RAD);
+    auto C = cos(marker.rotation[1] * DEG2RAD);
+    auto D = sin(marker.rotation[1] * DEG2RAD);
+    auto E = cos(marker.rotation[2] * DEG2RAD);
+    auto F = sin(marker.rotation[2] * DEG2RAD);
 
     Matx44f transformation(
             C*E,        -C*F,       D,    marker.translation[0],
