@@ -1,23 +1,17 @@
 #include <opencv2/calib3d/calib3d.hpp>
 
-#include "Estimator.hpp"
 #include "Objects.hpp"
-
-// maximum of objects or tags that can be tracked. Must be =<1024
-#define MAX_OBJECTS 1024
 
 using namespace std;
 using namespace cv;
-using namespace chilitags;
+using chilitags::Objects;
 
 Objects::Objects(InputArray cameraMatrix, 
                  InputArray distCoeffs, 
-                 float size,
-                 float gain):
+                 float size):
                     cameraMatrix(cameraMatrix.getMat()),
                     distCoeffs(distCoeffs.getMat()),
                     _config(""),
-                    gain(gain),
                     hasObjectConfiguration(false)
 {
     init(size);
@@ -26,12 +20,10 @@ Objects::Objects(InputArray cameraMatrix,
 Objects::Objects(InputArray cameraMatrix, 
                  InputArray distCoeffs, 
                  const string& configuration, 
-                 float defaultSize,
-                 float gain):
+                 float defaultSize):
                     cameraMatrix(cameraMatrix.getMat()),
                     distCoeffs(distCoeffs.getMat()),
                     _config(configuration),
-                    gain(gain),
                     hasObjectConfiguration(true)
 {
     init(defaultSize);
@@ -134,9 +126,7 @@ map<string, Matx44d> Objects::operator()(const std::map<int, std::vector<cv::Poi
 
     }
 
-
     return objects;
-
 }
 
 void Objects::computeTransformation(const string& name,
@@ -154,45 +144,13 @@ void Objects::computeTransformation(const string& name,
                 rvec, tvec, false,
                 cv::ITERATIVE);
 
-        // first time we see the object?
-        if (estimatedTranslations.count(name) == 0) {
-            // we 'insert' explicitly a new estimator to be able to
-            // call the Estimator constructor with a specific gain.
-            // Using estimatedTranslations[...] would call the default
-            // constructor, thus preventing setting the gain.
-            estimatedTranslations.insert(pair<string, Estimator<Mat>>(name, Estimator<Mat>(gain)));
-            estimatedRotations.insert(pair<string, Estimator<Mat>>(name, Estimator<Mat>(gain)));
-        }
+		Matx33d rotation;
+		Rodrigues(rvec, rotation);
 
-        estimatedTranslations.at(name) << tvec;
-        estimatedRotations.at(name) << rvec;
-
-        objects[name] = transformationMatrix(estimatedTranslations.at(name)(),
-                                             estimatedRotations.at(name)());
+        objects[name] = {
+			rotation(0,0), rotation(0,1), rotation(0,2), tvec.at<double>(0),
+			rotation(1,0), rotation(1,1), rotation(1,2), tvec.at<double>(1),
+			rotation(2,0), rotation(2,1), rotation(2,2), tvec.at<double>(2),
+			0            , 0            , 0            , 1                 ,
+		};
 }
-
-cv::Matx44d Objects::transformationMatrix(const cv::Mat& tvec, const cv::Mat& rvec) const
-{
-    Matx33d rotation;
-    Rodrigues(rvec, rotation);
-
-    Matx44d trans;
-
-    // how to do that in an OpenCV way??
-    trans(0,0) = rotation(0,0);
-    trans(0,1) = rotation(0,1);
-    trans(0,2) = rotation(0,2);
-    trans(1,0) = rotation(1,0);
-    trans(1,1) = rotation(1,1);
-    trans(1,2) = rotation(1,2);
-    trans(2,0) = rotation(2,0);
-    trans(2,1) = rotation(2,1);
-    trans(2,2) = rotation(2,2);
-    trans(0,3) = tvec.at<double>(0);
-    trans(1,3) = tvec.at<double>(1);
-    trans(2,3) = tvec.at<double>(2);
-    trans(3,3) = 1;
-
-    return trans;
-}
-
