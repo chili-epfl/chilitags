@@ -12,7 +12,33 @@
 #include <DetectChilitags.hpp>
 
 #include <iostream>
+#include <map>
 #include <algorithm>
+
+const static int ITERATIONS = 1;
+
+using namespace std;
+
+double mean(const vector<double>& vals)
+{
+    double sum = 0.;
+    for(auto v : vals) sum += v;
+    return sum/vals.size();
+}
+
+double variance(const vector<double>& vals)
+{
+    double current_mean = mean(vals);
+    double temp = 0;
+    for(auto v : vals)
+        temp += (current_mean-v)*(current_mean-v);
+    return temp/vals.size();
+}
+
+double sigma(const vector<double>& vals)
+{
+    return sqrt(variance(vals));
+}
 
 // TODO
 // - perspective transforms
@@ -84,12 +110,20 @@ TEST(Integration, Snapshots) {
 	int tTotalFalseNegatives = 0;
 	int tTotal = 0;
 
+    map<int, vector<double>> runs_duration;
+
 	for (auto tTestCase : TestMetadata::all) {
 		std::string tPath = std::string(cvtest::TS::ptr()->get_data_path())+tTestCase.filename;
 		cv::Mat tImage = cv::imread(tPath);
 
 		if(tImage.data) {
-			auto tTags = tDetectChilitags(tImage);
+			std::map<int, std::vector<cv::Point2f>> tTags;
+            for (int i = 0 ; i < ITERATIONS ; i++) {
+                int64 tStartCount = cv::getTickCount();
+                tTags = tDetectChilitags(tImage);
+                int64 tEndCount = cv::getTickCount();
+                runs_duration[tImage.rows*tImage.cols].push_back(((double) tEndCount - tStartCount)*1000/cv::getTickFrequency());
+            }
 
 			std::vector<int> tFoundIds;
 			for (const auto &tTag: tTags) tFoundIds.push_back(tTag.first);
@@ -140,6 +174,17 @@ TEST(Integration, Snapshots) {
 				<< "You can download the test data from\n"
 				<< "https://github.com/chili-epfl/chilitags-testdata";
 		}
+	}
+    cout << "Processing times (ms) results, on " << ITERATIONS << " iterations:\n";
+    cout << "  n    Pixels   Average        SD\n";
+	cout ;
+	for (const auto & tDurations : runs_duration) {
+		cout
+			<< std::setw(3) << tDurations.second.size()/ITERATIONS
+			<< std::setw(10) << tDurations.first
+			<< std::setw(10) << std::fixed << std::setprecision(1) << mean(tDurations.second)
+			<< std::setw(10) << std::fixed << std::setprecision(1) << sigma(tDurations.second)
+			<< "\n";
 	}
 
 	std::cout << tTotalFalseNegatives << "/" << tTotal << " tags were not detected.\n";
