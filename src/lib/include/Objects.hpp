@@ -1,14 +1,29 @@
+/*******************************************************************************
+*   Copyright 2013 EPFL                                                        *
+*                                                                              *
+*   This file is part of chilitags.                                            *
+*                                                                              *
+*   Chilitags is free software: you can redistribute it and/or modify          *
+*   it under the terms of the Lesser GNU General Public License as             *
+*   published by the Free Software Foundation, either version 3 of the         *
+*   License, or (at your option) any later version.                            *
+*                                                                              *
+*   Chilitags is distributed in the hope that it will be useful,               *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+*   GNU Lesser General Public License for more details.                        *
+*                                                                              *
+*   You should have received a copy of the GNU Lesser General Public License   *
+*   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
+*******************************************************************************/
 
 #ifndef Objects_HPP
 #define Objects_HPP
 
 #include <string>
 #include <map>
-#include <unordered_map>
-
 #include <opencv2/core/core.hpp>
-
-#include "ObjectConfig.hpp"
+#include <memory>
 
 namespace chilitags {
 
@@ -42,24 +57,11 @@ public:
     void resetCalibration(cv::InputArray newCameraMatrix,
                           cv::InputArray newDistCoeffs);
 
-    int nbTrackedObjects() const {return _config.objects().size();}
-    int nbTrackedMarkers() const {return _config.nbMarkers();}
+	virtual ~Objects();
 
 private:
-    void init(float size);
-
-    cv::Mat cameraMatrix;
-    cv::Mat distCoeffs;
-
-    void computeTransformation(const std::string& name,
-                               const std::vector<cv::Point3f>& corners,
-                               const std::vector<cv::Point2f>& imagePoints,
-                               std::map<std::string, cv::Matx44d>& objects) const;
-
-    bool hasObjectConfiguration;
-    std::vector<cv::Point3f> defaultMarkerCorners;
-
-    ObjectConfig _config;
+	class Impl;
+	std::unique_ptr<Impl> mImpl;
 };
 
 }
