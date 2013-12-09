@@ -25,14 +25,49 @@
 namespace {
 
 struct MarkerConfig {
-	MarkerConfig(int id):id(id),corners(),localcorners(){}
+	MarkerConfig(int id, float size, bool keep,
+		cv::Vec3f translation,
+		cv::Vec3f rotation
+	):
+	id(id),
+	size(size),
+	keep(keep),
+	corners(),
+	localcorners()
+	{
+		localcorners[0] = cv::Point3f(0.f , 0.f , 0.f);
+		localcorners[1] = cv::Point3f(size, 0.f , 0.f);
+		localcorners[2] = cv::Point3f(size, size, 0.f);
+		localcorners[3] = cv::Point3f(0.f , size, 0.f);
+
+
+		// Rotation matrix computation: cf The Matrix and Quaternions FAQ
+		// http://www.cs.princeton.edu/~gewang/projects/darth/stuff/quat_faq.html#Q36
+		
+		static const float DEG2RAD = 3.141593f / 180.f;
+		auto A = cos(rotation[0] * DEG2RAD);
+		auto B = sin(rotation[0] * DEG2RAD);
+		auto C = cos(rotation[1] * DEG2RAD);
+		auto D = sin(rotation[1] * DEG2RAD);
+		auto E = cos(rotation[2] * DEG2RAD);
+		auto F = sin(rotation[2] * DEG2RAD);
+
+		cv::Matx44f transformation(
+				C*E,        -C*F,       D,    translation[0],
+				B*D*E+A*F,  -B*D*F+A*E, -B*C, translation[1],
+				-A*D*E+B*F, A*D*F+B*E,  A*C,  translation[2],
+				0.,         0.,         0.,   1.);
+
+		for (auto i : {0, 1, 2, 3}) {
+			cv::Matx41f corner(localcorners[i].x, localcorners[i].y, 0.f, 1.f);
+			auto tCorner = transformation * corner;
+			corners[i] = cv::Point3f(tCorner(0), tCorner(1), tCorner(2));
+		}
+	}
+
     int id;
-    float size = 0.;
-    std::array<float, 3> translation = {{0., 0., 0.}};
-    // the rotation is specified as a XYZ Euler rotation,
-    // ie, first a rotation around X, then around Y, then around Z
-    std::array<float, 3> rotation = {{0., 0., 0.}};
-    bool keep = false;
+    float size;
+    bool keep;
 
     // this array stores the 3D location of the 
     // 4 corners of the marker *in the parent 
@@ -80,20 +115,20 @@ public:
 			object.name = (*it).name();
 
 			for(auto marker=(*it).begin();marker!=(*it).end();++marker) {
-				MarkerConfig config((*marker)["marker"]);
 
-				config.size = (*marker)["size"];
-				(*marker)["translation"][0] >> config.translation[0];
-				(*marker)["translation"][1] >> config.translation[1];
-				(*marker)["translation"][2] >> config.translation[2];
-				(*marker)["rotation"][0] >> config.rotation[0];
-				(*marker)["rotation"][1] >> config.rotation[1];
-				(*marker)["rotation"][2] >> config.rotation[2];
-				(*marker)["keep"] >> config.keep;
+				bool keep;
+				(*marker)["keep"] >> keep;
+				cv::Vec3f translation;
+				(*marker)["translation"] >> translation;
+				cv::Vec3f rotation;
+				(*marker)["rotation"] >> rotation;
 
-				computeCorners(config);
-
-				object.markers.push_back(config);
+				object.markers.push_back(MarkerConfig(
+					(*marker)["marker"],
+					(*marker)["size"],
+					keep,
+					translation,
+					rotation));
 			}
 
 			_objects.push_back(object);
@@ -129,41 +164,6 @@ public:
 	}
 
 private:
-    void computeCorners(MarkerConfig& marker) const {
-
-		static const float DEG2RAD = 3.141593f / 180.f;
-
-		marker.localcorners[0] = cv::Point3f(0.f        , 0.f        , 0.f);
-		marker.localcorners[1] = cv::Point3f(marker.size, 0.f        , 0.f);
-		marker.localcorners[2] = cv::Point3f(marker.size, marker.size, 0.f);
-		marker.localcorners[3] = cv::Point3f(0.f        , marker.size, 0.f);
-
-
-		// Rotation matrix computation: cf The Matrix and Quaternions FAQ
-		// http://www.cs.princeton.edu/~gewang/projects/darth/stuff/quat_faq.html#Q36
-		
-		auto A = cos(marker.rotation[0] * DEG2RAD);
-		auto B = sin(marker.rotation[0] * DEG2RAD);
-		auto C = cos(marker.rotation[1] * DEG2RAD);
-		auto D = sin(marker.rotation[1] * DEG2RAD);
-		auto E = cos(marker.rotation[2] * DEG2RAD);
-		auto F = sin(marker.rotation[2] * DEG2RAD);
-
-		cv::Matx44f transformation(
-				C*E,        -C*F,       D,    marker.translation[0],
-				B*D*E+A*F,  -B*D*F+A*E, -B*C, marker.translation[1],
-				-A*D*E+B*F, A*D*F+B*E,  A*C,  marker.translation[2],
-				0.,         0.,         0.,   1.);
-
-		for (auto i : {0, 1, 2, 3}) {
-			cv::Matx41f corner(marker.localcorners[i].x,
-						   marker.localcorners[i].y,
-						   marker.localcorners[i].z,
-						   1.0);
-			auto tCorner = transformation * corner;
-			marker.corners[i] = cv::Point3f(tCorner(0), tCorner(1), tCorner(2));
-		}
-	}
 
     std::vector<Object> _objects;
     std::unordered_map<int, const MarkerConfig*> _markers;
