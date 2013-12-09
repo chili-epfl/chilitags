@@ -93,29 +93,31 @@ if (WITH_SAMPLES)
         message(FATAL_ERROR "OpenCV compiled without support for highgui! Can not compile samples.")
     endif()
 
-    set(
-        objects_source_files
-        samples/objects/objects.cpp
-    )
     add_definitions(-std=c++11)
     include_directories(src/lib/include)
+
     add_executable(
         objects
-        ${objects_source_files}
+        samples/objects/objects.cpp
     )
-
     target_link_libraries( objects chilitags )
     target_link_libraries( objects ${OpenCV_LIBS} )
+    install (TARGETS objects RUNTIME DESTINATION bin)
+
+    add_executable(
+        objects-gui
+        samples/objects/objects-gui.cpp
+    )
+    target_link_libraries( objects-gui chilitags )
+    target_link_libraries( objects-gui ${OpenCV_LIBS} )
+    install (TARGETS objects-gui RUNTIME DESTINATION bin)
 
     add_executable(
         chilitags-detect
         samples/chilitags-detect.cpp
     )
-
     target_link_libraries( chilitags-detect chilitags )
     target_link_libraries( chilitags-detect ${OpenCV_LIBS} )
-
-    install (TARGETS objects RUNTIME DESTINATION bin)
     install (TARGETS chilitags-detect RUNTIME DESTINATION bin)
 
 endif()
@@ -125,6 +127,6 @@ if (WITH_TESTS)
         message(FATAL_ERROR "OpenCV compiled without support for ts! Can not compile tests.")
     endif()
 
-    enable_testing()
-    add_subdirectory(test)
+	enable_testing()
+	add_subdirectory(test)
 endif()
