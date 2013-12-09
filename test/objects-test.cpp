@@ -108,7 +108,7 @@ TEST(Objects, Configurations) {
 		+"misc/markers_configuration_sample.yml");
 
 	auto tResult = tObjects(tTags);
-	ASSERT_EQ(2, tResult.size());
+	EXPECT_EQ(2, tResult.size());
 
 	auto tResultIt = tResult.cbegin();
 	std::vector<std::string> tExpectedNames = {"marker_2", "myobject3"};
