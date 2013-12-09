@@ -20,11 +20,14 @@
 #include <opencv2/calib3d/calib3d.hpp>
 
 #include "Objects.hpp"
-#include <unordered_map>
+#include <iostream>
+#include <opencv2/core/utility.hpp>
 
 namespace {
 
 struct MarkerConfig {
+	MarkerConfig(){}
+
 	MarkerConfig(int id, float size, bool keep,
 		cv::Vec3f translation,
 		cv::Vec3f rotation
@@ -32,8 +35,8 @@ struct MarkerConfig {
 	id(id),
 	size(size),
 	keep(keep),
-	corners(),
-	localcorners()
+	corners(4),
+	localcorners(4)
 	{
 		localcorners[0] = cv::Point3f(0.f , 0.f , 0.f);
 		localcorners[1] = cv::Point3f(size, 0.f , 0.f);
@@ -72,105 +75,13 @@ struct MarkerConfig {
     // this array stores the 3D location of the 
     // 4 corners of the marker *in the parent 
     // object frame*. It is automatically computed.
-    std::array<cv::Point3f, 4> corners;
+    std::vector<cv::Point3f> corners;
 
     // this array stores the 3D location of the 
     // 4 corners of the marker *in the marker 
     // own frame*. It is automatically computed.
-    std::array<cv::Point3f, 4> localcorners;
+    std::vector<cv::Point3f> localcorners;
 };
-
-struct Object {
-	Object():name(),markers(){}
-    std::string name;
-    std::vector<MarkerConfig> markers;
-};
-
-/**
- * ObjectConfig reads and stores markers configurations.
- *
- * A marker configuration allows to associate a marker to
- * an object name (ie, alias) with possibly a 6D transformation.
- * It also allows to associate several markers to the same object,
- * for robust detection.
- */
-class ObjectConfig {
-
-public:
-    ObjectConfig(const std::string& filename):
-	_objects(),
-	_markers()
-	{
-
-		if(filename.empty()) return; // nothing to load...
-
-		cv::FileStorage configuration(filename, cv::FileStorage::READ);
-
-		for(auto it=configuration.root().begin();
-				 it!=configuration.root().end();
-				 ++it) {
-
-			Object object;
-
-			object.name = (*it).name();
-
-			for(auto marker=(*it).begin();marker!=(*it).end();++marker) {
-
-				bool keep;
-				(*marker)["keep"] >> keep;
-				cv::Vec3f translation;
-				(*marker)["translation"] >> translation;
-				cv::Vec3f rotation;
-				(*marker)["rotation"] >> rotation;
-
-				object.markers.push_back(MarkerConfig(
-					(*marker)["marker"],
-					(*marker)["size"],
-					keep,
-					translation,
-					rotation));
-			}
-
-			_objects.push_back(object);
-
-			// store the markers pointer only *after* the object is
-			// stored in _objects, else we won't point to the correct
-			// address.
-			for (auto& m : _objects.back().markers) {
-				_markers[m.id] = &m;
-			}
-		}
-
-
-	}
-
-    const Object* usedBy(int markerId) const{
-		for (auto& o : _objects) {
-			for (auto& m : o.markers) {
-				// here, we return a pointer to an element of
-				// a vector<Object> which is dangerous: if 
-				// elements are added to the vector, it may
-				// resize and the pointer would become invalid.
-				// In our case it's however ok since _objects
-				// is only modified at construction.
-				if (m.id == markerId) return &o;
-			}
-		}
-		return nullptr;
-	}
-
-    const MarkerConfig* marker(int markerId) const{
-		return _markers.at(markerId);
-	}
-
-private:
-
-    std::vector<Object> _objects;
-    std::unordered_map<int, const MarkerConfig*> _markers;
-
-};
-
-
 
 }
 
@@ -182,7 +93,6 @@ public:
             float size) :
 	cameraMatrix(cameraMatrix.getMat()),
 	distCoeffs(distCoeffs.getMat()),
-	_config(""),
 	hasObjectConfiguration(false)
 	{
 		init(size);
@@ -197,97 +107,111 @@ public:
      */
     Impl(cv::InputArray cameraMatrix,
             cv::InputArray distCoeffs,
-            const std::string& configuration, 
+            const std::string& filename, 
             float defaultSize = 0) :
 	cameraMatrix(cameraMatrix.getMat()),
 	distCoeffs(distCoeffs.getMat()),
-	_config(configuration),
 	hasObjectConfiguration(true)
 	{
 		init(defaultSize);
+
+
+		cv::FileStorage configuration(filename, cv::FileStorage::READ);
+		if (!configuration.isOpened()) {
+			std::cerr << "Could not open " << filename << std::endl;
+			return;
+		}
+
+		for(auto it=configuration.root().begin();
+				 it!=configuration.root().end();
+				 ++it) {
+
+			std::string tObjectName = (*it).name();
+
+			for(auto marker=(*it).begin();marker!=(*it).end();++marker) {
+
+				int tId;
+				(*marker)["marker"] >> tId;
+				float tSize;
+				(*marker)["size"] >> tSize;
+				bool keep;
+				(*marker)["keep"] >> keep;
+				cv::Vec3f translation;
+				(*marker)["translation"] >> translation;
+				cv::Vec3f rotation;
+				(*marker)["rotation"] >> rotation;
+
+				mId2Configuration[tId] = std::make_pair(
+					tObjectName, 
+					MarkerConfig(tId, tSize, keep, translation, rotation));
+			}
+		}
 	}
 
     /** Returns the list of all detected objects with
      * their transformation matrices, in the camera
      * frame.
      */
-    std::map<std::string, cv::Matx44d> operator()(const std::map<int, std::vector<cv::Point2f>> &tags) const {
+    std::map<std::string, cv::Matx44d> operator()(
+		const std::map<int, std::vector<cv::Point2f>> &tags) const {
 
 		std::map<std::string, cv::Matx44d> objects;
 
-		std::map<const Object*, std::vector<std::pair<int,std::vector<cv::Point2f>>>> tagsPerObject;
-		std::vector<std::pair<int,std::vector<cv::Point2f>>> freeTags;
+		std::map<
+			const std::string, //name of the object
+			std::pair<
+				std::vector<cv::Point3f>,  //points in object
+				std::vector<cv::Point2f>>> //points in frame
+			tObjectToPointMapping;
 
-		/***********************************************
-		 *    Find tags and associate them to objects
-		 *    if necessary.
-		 **********************************************/
+
+		auto tConfigurationIt = mId2Configuration.begin();
+		auto tConfigurationEnd = mId2Configuration.end();
 		for (const auto &tag: tags) {
-			auto object = _config.usedBy(tag.first);
-			if (object) {
-				tagsPerObject[object].push_back(tag);
-			}
-			else {
-				freeTags.push_back(tag);
-			}
-		}
+			int tTagId = tag.first;
+			while (tConfigurationIt != tConfigurationEnd
+				&& tConfigurationIt->first < tTagId)
+				++tConfigurationIt;
 
+			if (tConfigurationIt != tConfigurationEnd) {
+				if (tConfigurationIt->first == tTagId) {
+					const auto &tConfiguration = tConfigurationIt->second;
+					if (tConfiguration.second.keep) {
+						computeTransformation(cv::format("marker_%d", tTagId),
+											  tConfiguration.second.localcorners,
+											  tag.second,
+											  objects);
+					}
+					auto & tPointMapping = tObjectToPointMapping[tConfiguration.first];
+					tPointMapping.first.insert(
+						tPointMapping.first.end(),
+						tConfiguration.second.corners.begin(),
+						tConfiguration.second.corners.end());
+					tPointMapping.second.insert(
+						tPointMapping.second.end(),
+						tag.second.begin(),
+						tag.second.end());
+				} else if (!defaultMarkerCorners.empty()) {//TODO
+					computeTransformation(cv::format("marker_%d", tTagId), 
+										  defaultMarkerCorners,
+										  tag.second,
+										  objects);
+				}
 
-
-		/********************************************
-		 *     Process free tags (ie, not part of an
-		 *     object).
-		 ********************************************/
-
-		// defaultMarkerCorners is empty when the user does not
-		// want to track free tags
-		if (!defaultMarkerCorners.empty()) {
-			for (auto& tag : freeTags) {
-
-				std::string name(std::string("marker_") + std::to_string(tag.first));
-
-				computeTransformation(name, 
+			} else if (!defaultMarkerCorners.empty()) {//TODO
+				computeTransformation(cv::format("marker_%d", tTagId), 
 									  defaultMarkerCorners,
 									  tag.second,
 									  objects);
 			}
 		}
 
-		/********************************************
-		 *     Process objects
-		 ********************************************/
-		for (auto& kv : tagsPerObject) {
-
-			std::string name(kv.first->name);
-			std::vector<cv::Point3f> corners;
-			std::vector<cv::Point2f> imagePoints;
-
-			for (auto& tag : kv.second) {
-
-				const MarkerConfig* markerConfig = _config.marker(tag.first);
-
-				// do we need to publish this marker independently of the object?
-				if (markerConfig->keep) {
-					std::vector<cv::Point3f> localcorners(markerConfig->localcorners.cbegin(),
-												 markerConfig->localcorners.cend());
-					computeTransformation(
-										std::string("marker_") + std::to_string(tag.first), 
-										localcorners,
-										tag.second,
-										objects);
-				}
-
-				// first, add the corners for the tag
-				auto& newCorners = markerConfig->corners;
-				corners.insert(corners.end(),newCorners.cbegin(),newCorners.cend());
-
-				// then, add the image points where the tag is seen
-				imagePoints.insert(imagePoints.end(),tag.second.cbegin(),tag.second.cend());
-
-			}
-
-			computeTransformation(name, corners, imagePoints, objects);
-
+		for (auto& kv : tObjectToPointMapping) {
+			computeTransformation(
+				kv.first,
+				kv.second.first,
+				kv.second.second,
+				objects);
 		}
 
 		return objects;
@@ -313,9 +237,9 @@ private:
 	}
 
 	void computeTransformation(const std::string& name,
-										const std::vector<cv::Point3f>& corners,
-										const std::vector<cv::Point2f>& imagePoints,
-										std::map<std::string, cv::Matx44d>& objects) const
+							   const std::vector<cv::Point3f>& corners,
+							   const std::vector<cv::Point2f>& imagePoints,
+							   std::map<std::string, cv::Matx44d>& objects) const
 	{
 			// Rotation & translation vectors, computed by cv::solvePnP
 			cv::Mat rvec, tvec;
@@ -344,7 +268,7 @@ private:
     bool hasObjectConfiguration;
     std::vector<cv::Point3f> defaultMarkerCorners;
 
-    ObjectConfig _config;
+	std::map<int, std::pair<std::string, MarkerConfig>> mId2Configuration;
 };
 
 chilitags::Objects::Objects(
