@@ -30,21 +30,13 @@ namespace chilitags {
 class Objects {
 
 public:
-    Objects(cv::InputArray cameraMatrix, 
-            cv::InputArray distCoeffs, 
-            float size);
-
     /**
-     *
      * \param defaultSize: default size of markers, to be used for markers 
      * not associated to an object (ie, markers that are not used in the 
-     * configuration file). The special value '0.0' (default value) means that
-     * ONLY the markers used in the configuration file are tracked.
+     * configuration file). Use a negative size to track ONLY the markers
+	 * used in the configuration file.
      */
-    Objects(cv::InputArray cameraMatrix,
-            cv::InputArray distCoeffs,
-            const std::string& configuration, 
-            float defaultSize = 0);
+    Objects(float defaultSize, const std::string& configuration = "");
 
     /** Returns the list of all detected objects with
      * their transformation matrices, in the camera
@@ -54,8 +46,8 @@ public:
 
     /** Sets new camera calibration values.
      */
-    void resetCalibration(cv::InputArray newCameraMatrix,
-                          cv::InputArray newDistCoeffs);
+    void setCalibration(cv::InputArray newCameraMatrix,
+                        cv::InputArray newDistCoeffs);
 
 	virtual ~Objects();
 

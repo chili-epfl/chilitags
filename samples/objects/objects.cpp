@@ -6,7 +6,6 @@
 #include <opencv2/core/core.hpp> // for cv::Mat
 #include <opencv2/highgui/highgui.hpp> // for camera capture
 
-
 using namespace std;
 using namespace cv;
 
@@ -35,13 +34,12 @@ static bool readCameraMatrix(const string& filename,
 
 int main(int argc, char* argv[])
 {
-    /*****************************/
-    /*   Read command-line       */
-    /*****************************/
-    const char* help = "Usage: objects -c <markers configuration (YAML)> -i <camera calibration (YAML)>\n";
+	cout
+		<< "Usage: "<< argv[0]
+		<< " [-c <markers configuration (YAML)>] -i [<camera calibration (YAML)>]\n";
  
-    char* intrinsicsFilename = 0;
-    char* configFilename = 0;
+    const char* intrinsicsFilename = 0;
+    const char* configFilename = "";
 
     for( int i = 1; i < argc; i++ )
     {
@@ -50,58 +48,50 @@ int main(int argc, char* argv[])
         else if( strcmp(argv[i], "-i") == 0 )
             intrinsicsFilename = argv[++i];
     }
-    if (intrinsicsFilename == 0 || configFilename == 0)
-    {
-        puts(help);
-        return 0;
-    }
-
-    int tCameraIndex = 0;
-
-    /*****************************/
-    /* Read camera calibration   */
-    /*****************************/
-    Mat cameraMatrix, distCoeffs;
-    Size calibratedImageSize;
-    readCameraMatrix(intrinsicsFilename, cameraMatrix, distCoeffs, calibratedImageSize );
-
 
     /*****************************/
     /*    Init camera capture    */
     /*****************************/
+    int tCameraIndex = 0;
      cv::VideoCapture capture(tCameraIndex);
     if (!capture.isOpened())
     {
-        std::cerr << "Unable to initialise video capture." << std::endl;
+        cerr << "Unable to initialise video capture.\n";
         return 1;
     }
+
+    /******************************/
+    /* Setting up pose estimation */
+    /******************************/
+    chilitags::Objects objects(30, configFilename);
+
+    if (intrinsicsFilename) {
+		Mat cameraMatrix, distCoeffs;
+		Size calibratedImageSize;
+		readCameraMatrix(intrinsicsFilename, cameraMatrix, distCoeffs, calibratedImageSize );
+		objects.setCalibration(cameraMatrix, distCoeffs);
 #ifdef OPENCV3
-    capture.set(cv::CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
-    capture.set(cv::CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
+		capture.set(cv::CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
+		capture.set(cv::CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
 #else
-    capture.set(CV_CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
-    capture.set(CV_CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
+		capture.set(CV_CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
+		capture.set(CV_CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
 #endif
+	}
 
     /*****************************/
     /*             Go!           */
     /*****************************/
-    cout << "I'm now looking for objects..." << endl;
+    cout << "I'm now looking for objects...\n";
     cv::Mat tInputImage;
     chilitags::DetectChilitags detector;
-
-    chilitags::Objects objects(cameraMatrix, distCoeffs,
-                               configFilename,
-                               30);  //default size
 
     for (; 'q' != (char) cv::waitKey(10); ) {
         capture.read(tInputImage);
 
         for (auto& kv : objects(detector(tInputImage))) {
-            cout << kv.first;
-            cout << " at " << Mat(kv.second) << endl;
+            cout << kv.first << " at " << Mat(kv.second) << "\n";
         }
-
     }
 
     capture.release();
