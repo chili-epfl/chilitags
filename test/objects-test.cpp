@@ -55,14 +55,7 @@ TEST(Objects, FreeTags) {
 		applyTransform(tExpectedTransformation, cv::Point2f(0.f   , tSize )),
 	};
 
-	cv::Matx33f tCamera = {
-		1, 0, 0,
-		0, 1, 0,
-		0, 0, 1,
-	};
-	cv::Mat_<float>tDistortion (5,1);
-	tDistortion << 0.f, 0.f, 0.f, 0.f, 0.f;
-	chilitags::Objects tObjects(tCamera, tDistortion, tSize);
+	chilitags::Objects tObjects(tSize);
 
 	int tTagId = 0;
 	auto tResult = tObjects({{tTagId,tCorners}});
@@ -96,15 +89,8 @@ TEST(Objects, Configurations) {
 		};
 	}
 
-	cv::Matx33f tCamera = {
-		1, 0, 0,
-		0, 1, 0,
-		0, 0, 1,
-	};
-	cv::Mat_<float>tDistortion (5,1);
-	tDistortion << 0.f, 0.f, 0.f, 0.f, 0.f;
-	chilitags::Objects tObjects(tCamera, tDistortion, std::string(
-		cvtest::TS::ptr()->get_data_path())
+	chilitags::Objects tObjects(20,
+		cvtest::TS::ptr()->get_data_path()
 		+"misc/markers_configuration_sample.yml");
 
 	auto tResult = tObjects(tTags);

@@ -29,8 +29,7 @@ struct MarkerConfig {
 	MarkerConfig(){}
 
 	MarkerConfig(int id, float size, bool keep,
-		cv::Vec3f translation,
-		cv::Vec3f rotation
+		cv::Vec3f translation, cv::Vec3f rotation
 	):
 	id(id),
 	size(size),
@@ -55,14 +54,14 @@ struct MarkerConfig {
 		auto E = cos(rotation[2] * DEG2RAD);
 		auto F = sin(rotation[2] * DEG2RAD);
 
-		cv::Matx44f transformation(
+		cv::Matx44d transformation(
 				C*E,        -C*F,       D,    translation[0],
 				B*D*E+A*F,  -B*D*F+A*E, -B*C, translation[1],
 				-A*D*E+B*F, A*D*F+B*E,  A*C,  translation[2],
 				0.,         0.,         0.,   1.);
 
 		for (auto i : {0, 1, 2, 3}) {
-			cv::Matx41f corner(localcorners[i].x, localcorners[i].y, 0.f, 1.f);
+			cv::Matx41d corner(localcorners[i].x, localcorners[i].y, 0.f, 1.f);
 			auto tCorner = transformation * corner;
 			corners[i] = cv::Point3f(tCorner(0), tCorner(1), tCorner(2));
 		}
@@ -88,33 +87,18 @@ struct MarkerConfig {
 class chilitags::Objects::Impl {
 
 public:
-    Impl(cv::InputArray cameraMatrix, 
-            cv::InputArray distCoeffs, 
-            float size) :
-	cameraMatrix(cameraMatrix.getMat()),
-	distCoeffs(distCoeffs.getMat()),
-	hasObjectConfiguration(false)
+    Impl(float pMarkerSize, const std::string& filename) :
+	cameraMatrix(cv::Mat::eye(3, 3, CV_64F)),
+	distCoeffs(cv::Mat::zeros(5, 1, CV_64F))
 	{
-		init(size);
-	}
+		if (pMarkerSize > 0) {
+			defaultMarkerCorners.push_back(cv::Point3f(0., 0., 0.));
+			defaultMarkerCorners.push_back(cv::Point3f(pMarkerSize, 0., 0.));
+			defaultMarkerCorners.push_back(cv::Point3f(pMarkerSize, pMarkerSize, 0.));
+			defaultMarkerCorners.push_back(cv::Point3f(0., pMarkerSize, 0.));
+		}
 
-    /**
-     *
-     * \param defaultSize: default size of markers, to be used for markers 
-     * not associated to an object (ie, markers that are not used in the 
-     * configuration file). The special value '0.0' (default value) means that
-     * ONLY the markers used in the configuration file are tracked.
-     */
-    Impl(cv::InputArray cameraMatrix,
-            cv::InputArray distCoeffs,
-            const std::string& filename, 
-            float defaultSize = 0) :
-	cameraMatrix(cameraMatrix.getMat()),
-	distCoeffs(distCoeffs.getMat()),
-	hasObjectConfiguration(true)
-	{
-		init(defaultSize);
-
+		if (filename.empty()) return;
 
 		cv::FileStorage configuration(filename, cv::FileStorage::READ);
 		if (!configuration.isOpened()) {
@@ -122,36 +106,26 @@ public:
 			return;
 		}
 
-		for(auto it=configuration.root().begin();
-				 it!=configuration.root().end();
-				 ++it) {
-
-			std::string tObjectName = (*it).name();
-
-			for(auto marker=(*it).begin();marker!=(*it).end();++marker) {
-
+		for(const auto &tObjectConfig : configuration.root()) {
+			for(const auto &tMarkerConfig : tObjectConfig) {
 				int tId;
-				(*marker)["marker"] >> tId;
+				tMarkerConfig["marker"] >> tId;
 				float tSize;
-				(*marker)["size"] >> tSize;
+				tMarkerConfig["size"] >> tSize;
 				bool keep;
-				(*marker)["keep"] >> keep;
+				tMarkerConfig["keep"] >> keep;
 				cv::Vec3f translation;
-				(*marker)["translation"] >> translation;
+				tMarkerConfig["translation"] >> translation;
 				cv::Vec3f rotation;
-				(*marker)["rotation"] >> rotation;
+				tMarkerConfig["rotation"] >> rotation;
 
 				mId2Configuration[tId] = std::make_pair(
-					tObjectName, 
+					tObjectConfig.name(), 
 					MarkerConfig(tId, tSize, keep, translation, rotation));
 			}
 		}
 	}
 
-    /** Returns the list of all detected objects with
-     * their transformation matrices, in the camera
-     * frame.
-     */
     std::map<std::string, cv::Matx44d> operator()(
 		const std::map<int, std::vector<cv::Point2f>> &tags) const {
 
@@ -191,14 +165,15 @@ public:
 						tPointMapping.second.end(),
 						tag.second.begin(),
 						tag.second.end());
-				} else if (!defaultMarkerCorners.empty()) {//TODO
+				} else if (!defaultMarkerCorners.empty()) {
+					//i.e. we also want tags not in the config file
 					computeTransformation(cv::format("marker_%d", tTagId), 
 										  defaultMarkerCorners,
 										  tag.second,
 										  objects);
 				}
 
-			} else if (!defaultMarkerCorners.empty()) {//TODO
+			} else if (!defaultMarkerCorners.empty()) {
 				computeTransformation(cv::format("marker_%d", tTagId), 
 									  defaultMarkerCorners,
 									  tag.second,
@@ -219,23 +194,13 @@ public:
 
     /** Sets new camera calibration values.
      */
-    void resetCalibration(cv::InputArray newCameraMatrix,
+    void setCalibration(cv::InputArray newCameraMatrix,
                           cv::InputArray newDistCoeffs){
 		cameraMatrix = newCameraMatrix.getMat();
 		distCoeffs = newDistCoeffs.getMat();
 	}
 
 private:
-    void init(float size)
-	{
-		if (size > 0) {
-			defaultMarkerCorners.push_back(cv::Point3f(0.,0.,0.));
-			defaultMarkerCorners.push_back(cv::Point3f(size,0.,0.));
-			defaultMarkerCorners.push_back(cv::Point3f(size,size,0.));
-			defaultMarkerCorners.push_back(cv::Point3f(0.,size,0.));
-		}
-	}
-
 	void computeTransformation(const std::string& name,
 							   const std::vector<cv::Point3f>& corners,
 							   const std::vector<cv::Point2f>& imagePoints,
@@ -265,33 +230,27 @@ private:
 
     cv::Mat cameraMatrix;
     cv::Mat distCoeffs;
-    bool hasObjectConfiguration;
     std::vector<cv::Point3f> defaultMarkerCorners;
 
+	// associates a tag id with an object name and the configuration of the tag
+	// in this object
 	std::map<int, std::pair<std::string, MarkerConfig>> mId2Configuration;
 };
 
 chilitags::Objects::Objects(
-	cv::InputArray cameraMatrix, 
-	cv::InputArray distCoeffs, 
-	float size):
-mImpl(new chilitags::Objects::Impl(cameraMatrix, distCoeffs, size)){}
-
-chilitags::Objects::Objects(cv::InputArray cameraMatrix,
-	cv::InputArray distCoeffs,
-	const std::string& configuration, 
-	float defaultSize):
-mImpl(new chilitags::Objects::Impl(
-		cameraMatrix, distCoeffs, configuration, defaultSize)){}
+	float defaultSize,
+	const std::string& configuration):
+mImpl(new chilitags::Objects::Impl(defaultSize, configuration)){}
 
 std::map<std::string, cv::Matx44d> chilitags::Objects::operator()(
 	const std::map<int, std::vector<cv::Point2f>> &tags) const {
 	return mImpl->operator()(tags);
 }
 
-void chilitags::Objects::resetCalibration(cv::InputArray newCameraMatrix,
-                               cv::InputArray newDistCoeffs) {
-	mImpl->resetCalibration(newCameraMatrix, newDistCoeffs);
+void chilitags::Objects::setCalibration(
+	cv::InputArray newCameraMatrix,
+	cv::InputArray newDistCoeffs) {
+	mImpl->setCalibration(newCameraMatrix, newDistCoeffs);
 }
 
 chilitags::Objects::~Objects() = default;

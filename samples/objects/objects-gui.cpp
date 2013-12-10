@@ -7,7 +7,6 @@
 #include <opencv2/core/core_c.h> // CV_AA
 #include <opencv2/highgui/highgui.hpp> // for camera capture
 
-
 using namespace std;
 using namespace cv;
 
@@ -36,13 +35,12 @@ static bool readCameraMatrix(const string& filename,
 
 int main(int argc, char* argv[])
 {
-    /*****************************/
-    /*   Read command-line       */
-    /*****************************/
-    const char* help = "Usage: objects-gui -c <markers configuration (YAML)> -i <camera calibration (YAML)>\n";
+	cout
+		<< "Usage: "<< argv[0]
+		<< " [-c <markers configuration (YAML)>] -i [<camera calibration (YAML)>]\n";
  
-    char* intrinsicsFilename = 0;
-    char* configFilename = 0;
+    const char* intrinsicsFilename = 0;
+    const char* configFilename = "";
 
     for( int i = 1; i < argc; i++ )
     {
@@ -51,84 +49,82 @@ int main(int argc, char* argv[])
         else if( strcmp(argv[i], "-i") == 0 )
             intrinsicsFilename = argv[++i];
     }
-    if (intrinsicsFilename == 0 || configFilename == 0)
-    {
-        puts(help);
-        return 0;
-    }
-
-    int tCameraIndex = 0;
-
-    /*****************************/
-    /* Read camera calibration   */
-    /*****************************/
-    Mat cameraMatrix, distCoeffs;
-    Size calibratedImageSize;
-    readCameraMatrix(intrinsicsFilename, cameraMatrix, distCoeffs, calibratedImageSize );
-
 
     /*****************************/
     /*    Init camera capture    */
     /*****************************/
-     cv::VideoCapture capture(tCameraIndex);
+    int tCameraIndex = 0;
+    cv::VideoCapture capture(tCameraIndex);
     if (!capture.isOpened())
     {
-        std::cerr << "Unable to initialise video capture." << std::endl;
+        cerr << "Unable to initialise video capture.\n";
         return 1;
     }
+
+    /******************************/
+    /* Setting up pose estimation */
+    /******************************/
+	static const float DEFAULT_SIZE = 20.f;
+    chilitags::Objects objects(DEFAULT_SIZE, configFilename);
+
+	Mat cameraMatrix;
+	Mat distCoeffs;
+    if (intrinsicsFilename) {
+		Size calibratedImageSize;
+		readCameraMatrix(intrinsicsFilename, cameraMatrix, distCoeffs, calibratedImageSize );
 #ifdef OPENCV3
-    capture.set(cv::CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
-    capture.set(cv::CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
+		capture.set(cv::CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
+		capture.set(cv::CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
 #else
-    capture.set(CV_CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
-    capture.set(CV_CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
+		capture.set(CV_CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
+		capture.set(CV_CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
 #endif
+	} else {
+		double tFocalLength = 817.;
+		cameraMatrix = (cv::Mat_<double>(3,3) << tFocalLength,0,0, 0,tFocalLength,0, 0,0,1);
+		distCoeffs = cv::Mat::zeros(5, 1, CV_64F);
+	}
+	objects.setCalibration(cameraMatrix, distCoeffs);
+
+	cv::Mat tProjectionMat = cv::Mat::zeros(4,4,CV_64F);
+	cameraMatrix.copyTo(tProjectionMat(cv::Rect(0,0,3,3)));
+	cv::Matx44d tProjection = tProjectionMat;
+	tProjection(3,2) = 1;
 
     /*****************************/
     /*             Go!           */
     /*****************************/
 	cv::namedWindow("Pose Estimation");
 
-	static const float DEFAULT_SIZE = 20.f;
     chilitags::DetectChilitags detector;
-    chilitags::Objects objects(cameraMatrix, distCoeffs,
-                               configFilename,
-                               DEFAULT_SIZE);  //default size
 
     for (; 'q' != (char) cv::waitKey(10); ) {
 		cv::Mat tInputImage;
         capture.read(tInputImage);
-		static const float OUTPUT_SIZE = 1000.f;
-		cv::Mat tOutputImage(cv::Size(OUTPUT_SIZE,OUTPUT_SIZE), CV_8UC3, cv::Scalar(0,0,0));
+		cv::Mat tOutputImage(tInputImage.size(), CV_8UC3, cv::Scalar(0,0,0));
 
         for (auto& kv : objects(detector(tInputImage))) {
 
-			static const cv::Matx44f PROJECTION = {
-				1,0,0,0,
-				0,1,0,0,
-				0,0,1,0,
-				0,0,1,0,
-			};
-			static const cv::Vec4f UNITS[4] {
+			static const cv::Vec4d UNITS[4] {
 				{0.f, 0.f, 0.f, 1.f},
 				{DEFAULT_SIZE, 0.f, 0.f, 1.f},
 				{0.f, DEFAULT_SIZE, 0.f, 1.f},
 				{0.f, 0.f, DEFAULT_SIZE, 1.f},
 			};
 
-			cv::Matx44f tTransformation = kv.second;
+			cv::Matx44d tTransformation = kv.second;
 			cv::Vec4f tReferential[4] = {
-				PROJECTION*tTransformation*UNITS[0],
-				PROJECTION*tTransformation*UNITS[1],
-				PROJECTION*tTransformation*UNITS[2],
-				PROJECTION*tTransformation*UNITS[3],
+				tProjection*tTransformation*UNITS[0],
+				tProjection*tTransformation*UNITS[1],
+				tProjection*tTransformation*UNITS[2],
+				tProjection*tTransformation*UNITS[3],
 			};
 
 			std::vector<cv::Point2f> t2DPoints;
 			for (auto tHomogenousPoint : tReferential)
 				t2DPoints.push_back(cv::Point2f(
-					OUTPUT_SIZE*(.5+tHomogenousPoint[0]/tHomogenousPoint[3]),
-					OUTPUT_SIZE*(.5+tHomogenousPoint[1]/tHomogenousPoint[3])
+					tHomogenousPoint[0]/tHomogenousPoint[3],
+					tHomogenousPoint[1]/tHomogenousPoint[3]
 				));
 
 			static const int SHIFT = 16;
