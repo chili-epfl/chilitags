@@ -28,58 +28,58 @@ namespace {
 struct MarkerConfig {
 	MarkerConfig(){}
 
-	MarkerConfig(int id, float size, bool keep,
-		cv::Vec3f translation, cv::Vec3f rotation
+	MarkerConfig(int pId, float pSize, bool pKeep,
+		cv::Vec3f pTranslation, cv::Vec3f pRotation
 	):
-	id(id),
-	size(size),
-	keep(keep),
-	corners(4),
-	localcorners(4)
+	mId(pId),
+	mSize(pSize),
+	mKeep(pKeep),
+	mCorners(4),
+	mLocalcorners(4)
 	{
-		localcorners[0] = cv::Point3f(0.f , 0.f , 0.f);
-		localcorners[1] = cv::Point3f(size, 0.f , 0.f);
-		localcorners[2] = cv::Point3f(size, size, 0.f);
-		localcorners[3] = cv::Point3f(0.f , size, 0.f);
+		mLocalcorners[0] = cv::Point3f(0.f , 0.f , 0.f);
+		mLocalcorners[1] = cv::Point3f(pSize, 0.f , 0.f);
+		mLocalcorners[2] = cv::Point3f(pSize, pSize, 0.f);
+		mLocalcorners[3] = cv::Point3f(0.f , pSize, 0.f);
 
 
 		// Rotation matrix computation: cf The Matrix and Quaternions FAQ
 		// http://www.cs.princeton.edu/~gewang/projects/darth/stuff/quat_faq.html#Q36
 		
 		static const float DEG2RAD = 3.141593f / 180.f;
-		auto A = cos(rotation[0] * DEG2RAD);
-		auto B = sin(rotation[0] * DEG2RAD);
-		auto C = cos(rotation[1] * DEG2RAD);
-		auto D = sin(rotation[1] * DEG2RAD);
-		auto E = cos(rotation[2] * DEG2RAD);
-		auto F = sin(rotation[2] * DEG2RAD);
+		auto A = cos(pRotation[0] * DEG2RAD);
+		auto B = sin(pRotation[0] * DEG2RAD);
+		auto C = cos(pRotation[1] * DEG2RAD);
+		auto D = sin(pRotation[1] * DEG2RAD);
+		auto E = cos(pRotation[2] * DEG2RAD);
+		auto F = sin(pRotation[2] * DEG2RAD);
 
-		cv::Matx44d transformation(
-				C*E,        -C*F,       D,    translation[0],
-				B*D*E+A*F,  -B*D*F+A*E, -B*C, translation[1],
-				-A*D*E+B*F, A*D*F+B*E,  A*C,  translation[2],
+		cv::Matx44d tTransformation(
+				C*E,        -C*F,       D,    pTranslation[0],
+				B*D*E+A*F,  -B*D*F+A*E, -B*C, pTranslation[1],
+				-A*D*E+B*F, A*D*F+B*E,  A*C,  pTranslation[2],
 				0.,         0.,         0.,   1.);
 
 		for (auto i : {0, 1, 2, 3}) {
-			cv::Matx41d corner(localcorners[i].x, localcorners[i].y, 0.f, 1.f);
-			auto tCorner = transformation * corner;
-			corners[i] = cv::Point3f(tCorner(0), tCorner(1), tCorner(2));
+			auto tCorner = tTransformation *
+				cv::Matx41d(mLocalcorners[i].x, mLocalcorners[i].y, 0.f, 1.f);
+			mCorners[i] = cv::Point3f(tCorner(0), tCorner(1), tCorner(2));
 		}
 	}
 
-    int id;
-    float size;
-    bool keep;
+    int mId;
+    float mSize;
+    bool mKeep;
 
     // this array stores the 3D location of the 
     // 4 corners of the marker *in the parent 
     // object frame*. It is automatically computed.
-    std::vector<cv::Point3f> corners;
+    std::vector<cv::Point3f> mCorners;
 
     // this array stores the 3D location of the 
     // 4 corners of the marker *in the marker 
     // own frame*. It is automatically computed.
-    std::vector<cv::Point3f> localcorners;
+    std::vector<cv::Point3f> mLocalcorners;
 };
 
 }
@@ -87,49 +87,49 @@ struct MarkerConfig {
 class chilitags::Objects::Impl {
 
 public:
-    Impl(float pMarkerSize, const std::string& filename) :
-	cameraMatrix(cv::Mat::eye(3, 3, CV_64F)),
-	distCoeffs(cv::Mat::zeros(5, 1, CV_64F))
+    Impl(float pMarkerSize, const std::string& pFilename) :
+	mCameraMatrix(cv::Mat::eye(3, 3, CV_64F)),
+	mDistCoeffs(cv::Mat::zeros(5, 1, CV_64F))
 	{
 		if (pMarkerSize > 0) {
-			defaultMarkerCorners.push_back(cv::Point3f(0., 0., 0.));
-			defaultMarkerCorners.push_back(cv::Point3f(pMarkerSize, 0., 0.));
-			defaultMarkerCorners.push_back(cv::Point3f(pMarkerSize, pMarkerSize, 0.));
-			defaultMarkerCorners.push_back(cv::Point3f(0., pMarkerSize, 0.));
+			mDefaultMarkerCorners.push_back(cv::Point3f(0., 0., 0.));
+			mDefaultMarkerCorners.push_back(cv::Point3f(pMarkerSize, 0., 0.));
+			mDefaultMarkerCorners.push_back(cv::Point3f(pMarkerSize, pMarkerSize, 0.));
+			mDefaultMarkerCorners.push_back(cv::Point3f(0., pMarkerSize, 0.));
 		}
 
-		if (filename.empty()) return;
+		if (pFilename.empty()) return;
 
-		cv::FileStorage configuration(filename, cv::FileStorage::READ);
-		if (!configuration.isOpened()) {
-			std::cerr << "Could not open " << filename << std::endl;
+		cv::FileStorage tConfiguration(pFilename, cv::FileStorage::READ);
+		if (!tConfiguration.isOpened()) {
+			std::cerr << "Could not open " << pFilename << std::endl;
 			return;
 		}
 
-		for(const auto &tObjectConfig : configuration.root()) {
+		for(const auto &tObjectConfig : tConfiguration.root()) {
 			for(const auto &tMarkerConfig : tObjectConfig) {
 				int tId;
 				tMarkerConfig["marker"] >> tId;
 				float tSize;
 				tMarkerConfig["size"] >> tSize;
-				bool keep;
-				tMarkerConfig["keep"] >> keep;
-				cv::Vec3f translation;
-				tMarkerConfig["translation"] >> translation;
-				cv::Vec3f rotation;
-				tMarkerConfig["rotation"] >> rotation;
+				bool tKeep;
+				tMarkerConfig["keep"] >> tKeep;
+				cv::Vec3f tTranslation;
+				tMarkerConfig["translation"] >> tTranslation;
+				cv::Vec3f tRotation;
+				tMarkerConfig["rotation"] >> tRotation;
 
 				mId2Configuration[tId] = std::make_pair(
 					tObjectConfig.name(), 
-					MarkerConfig(tId, tSize, keep, translation, rotation));
+					MarkerConfig(tId, tSize, tKeep, tTranslation, tRotation));
 			}
 		}
 	}
 
     std::map<std::string, cv::Matx44d> operator()(
-		const std::map<int, std::vector<cv::Point2f>> &tags) const {
+		const std::map<int, std::vector<cv::Point2f>> &pTags) const {
 
-		std::map<std::string, cv::Matx44d> objects;
+		std::map<std::string, cv::Matx44d> tObjects;
 
 		std::map<
 			const std::string, //name of the object
@@ -141,8 +141,8 @@ public:
 
 		auto tConfigurationIt = mId2Configuration.begin();
 		auto tConfigurationEnd = mId2Configuration.end();
-		for (const auto &tag: tags) {
-			int tTagId = tag.first;
+		for (const auto &tTag: pTags) {
+			int tTagId = tTag.first;
 			while (tConfigurationIt != tConfigurationEnd
 				&& tConfigurationIt->first < tTagId)
 				++tConfigurationIt;
@@ -150,87 +150,87 @@ public:
 			if (tConfigurationIt != tConfigurationEnd) {
 				if (tConfigurationIt->first == tTagId) {
 					const auto &tConfiguration = tConfigurationIt->second;
-					if (tConfiguration.second.keep) {
+					if (tConfiguration.second.mKeep) {
 						computeTransformation(cv::format("marker_%d", tTagId),
-											  tConfiguration.second.localcorners,
-											  tag.second,
-											  objects);
+											  tConfiguration.second.mLocalcorners,
+											  tTag.second,
+											  tObjects);
 					}
 					auto & tPointMapping = tObjectToPointMapping[tConfiguration.first];
 					tPointMapping.first.insert(
 						tPointMapping.first.end(),
-						tConfiguration.second.corners.begin(),
-						tConfiguration.second.corners.end());
+						tConfiguration.second.mCorners.begin(),
+						tConfiguration.second.mCorners.end());
 					tPointMapping.second.insert(
 						tPointMapping.second.end(),
-						tag.second.begin(),
-						tag.second.end());
-				} else if (!defaultMarkerCorners.empty()) {
+						tTag.second.begin(),
+						tTag.second.end());
+				} else if (!mDefaultMarkerCorners.empty()) {
 					//i.e. we also want tags not in the config file
 					computeTransformation(cv::format("marker_%d", tTagId), 
-										  defaultMarkerCorners,
-										  tag.second,
-										  objects);
+										  mDefaultMarkerCorners,
+										  tTag.second,
+										  tObjects);
 				}
 
-			} else if (!defaultMarkerCorners.empty()) {
+			} else if (!mDefaultMarkerCorners.empty()) {
 				computeTransformation(cv::format("marker_%d", tTagId), 
-									  defaultMarkerCorners,
-									  tag.second,
-									  objects);
+									  mDefaultMarkerCorners,
+									  tTag.second,
+									  tObjects);
 			}
 		}
 
-		for (auto& kv : tObjectToPointMapping) {
+		for (auto& tObjectToPoints : tObjectToPointMapping) {
 			computeTransformation(
-				kv.first,
-				kv.second.first,
-				kv.second.second,
-				objects);
+				tObjectToPoints.first,
+				tObjectToPoints.second.first,
+				tObjectToPoints.second.second,
+				tObjects);
 		}
 
-		return objects;
+		return tObjects;
 	}
 
     /** Sets new camera calibration values.
      */
-    void setCalibration(cv::InputArray newCameraMatrix,
-                          cv::InputArray newDistCoeffs){
-		cameraMatrix = newCameraMatrix.getMat();
-		distCoeffs = newDistCoeffs.getMat();
+    void setCalibration(cv::InputArray pNewCameraMatrix,
+                        cv::InputArray pNewDistCoeffs){
+		mCameraMatrix = pNewCameraMatrix.getMat();
+		mDistCoeffs = pNewDistCoeffs.getMat();
 	}
 
 private:
-	void computeTransformation(const std::string& name,
-							   const std::vector<cv::Point3f>& corners,
-							   const std::vector<cv::Point2f>& imagePoints,
-							   std::map<std::string, cv::Matx44d>& objects) const
+	void computeTransformation(const std::string& pName,
+							   const std::vector<cv::Point3f>& pCorners,
+							   const std::vector<cv::Point2f>& pImagePoints,
+							   std::map<std::string, cv::Matx44d>& pObjects) const
 	{
 			// Rotation & translation vectors, computed by cv::solvePnP
-			cv::Mat rvec, tvec;
+			cv::Mat tRotation, tTranslation;
 			
 			// Find the 3D pose of our marker
-			cv::solvePnP(corners,
-					imagePoints,
-					cameraMatrix, distCoeffs,
-					rvec, tvec, false,
+			cv::solvePnP(pCorners,
+					pImagePoints,
+					mCameraMatrix, mDistCoeffs,
+					tRotation, tTranslation, false,
 					cv::ITERATIVE);
 
-			cv::Matx33d rotation;
-			cv::Rodrigues(rvec, rotation);
+			cv::Matx33d tRotMat;
+			cv::Rodrigues(tRotation, tRotMat);
 
-			objects[name] = {
-				rotation(0,0), rotation(0,1), rotation(0,2), tvec.at<double>(0),
-				rotation(1,0), rotation(1,1), rotation(1,2), tvec.at<double>(1),
-				rotation(2,0), rotation(2,1), rotation(2,2), tvec.at<double>(2),
-				0            , 0            , 0            , 1                 ,
+			pObjects[pName] = {
+				tRotMat(0,0), tRotMat(0,1), tRotMat(0,2), tTranslation.at<double>(0),
+				tRotMat(1,0), tRotMat(1,1), tRotMat(1,2), tTranslation.at<double>(1),
+				tRotMat(2,0), tRotMat(2,1), tRotMat(2,2), tTranslation.at<double>(2),
+				0           , 0           , 0           , 1                         ,
 			};
 	}
 
 
-    cv::Mat cameraMatrix;
-    cv::Mat distCoeffs;
-    std::vector<cv::Point3f> defaultMarkerCorners;
+    cv::Mat mCameraMatrix;
+    cv::Mat mDistCoeffs;
+    std::vector<cv::Point3f> mDefaultMarkerCorners;
 
 	// associates a tag id with an object name and the configuration of the tag
 	// in this object
@@ -238,19 +238,19 @@ private:
 };
 
 chilitags::Objects::Objects(
-	float defaultSize,
-	const std::string& configuration):
-mImpl(new chilitags::Objects::Impl(defaultSize, configuration)){}
+	float pDefaultSize,
+	const std::string& pConfiguration):
+mImpl(new chilitags::Objects::Impl(pDefaultSize, pConfiguration)){}
 
 std::map<std::string, cv::Matx44d> chilitags::Objects::operator()(
-	const std::map<int, std::vector<cv::Point2f>> &tags) const {
-	return mImpl->operator()(tags);
+	const std::map<int, std::vector<cv::Point2f>> &pTags) const {
+	return mImpl->operator()(pTags);
 }
 
 void chilitags::Objects::setCalibration(
-	cv::InputArray newCameraMatrix,
-	cv::InputArray newDistCoeffs) {
-	mImpl->setCalibration(newCameraMatrix, newDistCoeffs);
+	cv::InputArray pNewCameraMatrix,
+	cv::InputArray pNewDistCoeffs) {
+	mImpl->setCalibration(pNewCameraMatrix, pNewDistCoeffs);
 }
 
 chilitags::Objects::~Objects() = default;

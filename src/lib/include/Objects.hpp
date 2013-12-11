@@ -31,23 +31,34 @@ class Objects {
 
 public:
     /**
-     * \param defaultSize: default size of markers, to be used for markers 
+     * \param pDefaultSize: default size of markers, to be used for markers 
      * not associated to an object (ie, markers that are not used in the 
      * configuration file). Use a negative size to track ONLY the markers
 	 * used in the configuration file.
+	 *
+	 * \param pConfiguration: The filename of the object configuration file,
+	 * specifying rigid clusters of tags. It is empty by default, meaning that
+	 * the pose of all the tags will be estimated independently from each other.
+
+     * The constructor also gives default values to the camera matrix and the
+     * distortion coefficients (respectively: an identity matrix, and a null
+	 * vector).
+     * The calibration parameters can be set with a subsequent call to
+	 * setCalibration().
      */
-    Objects(float defaultSize, const std::string& configuration = "");
+    Objects(float pDefaultSize, const std::string& pConfiguration = "");
 
     /** Returns the list of all detected objects with
      * their transformation matrices, in the camera
      * frame.
      */
-    std::map<std::string, cv::Matx44d> operator()(const std::map<int, std::vector<cv::Point2f>> &tags) const;
+    std::map<std::string, cv::Matx44d> operator()(
+		const std::map<int, std::vector<cv::Point2f>> &pTags) const;
 
     /** Sets new camera calibration values.
      */
-    void setCalibration(cv::InputArray newCameraMatrix,
-                        cv::InputArray newDistCoeffs);
+    void setCalibration(cv::InputArray pNewCameraMatrix,
+                        cv::InputArray pNewDistCoeffs);
 
 	virtual ~Objects();
 
