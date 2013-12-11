@@ -97,20 +97,20 @@ if (WITH_SAMPLES)
     include_directories(src/lib/include)
 
     add_executable(
-        objects
-        samples/objects/objects.cpp
+        estimate3d
+        samples/3destimation/estimate3d.cpp
     )
-    target_link_libraries( objects chilitags )
-    target_link_libraries( objects ${OpenCV_LIBS} )
-    install (TARGETS objects RUNTIME DESTINATION bin)
+    target_link_libraries( estimate3d chilitags )
+    target_link_libraries( estimate3d ${OpenCV_LIBS} )
+    install (TARGETS estimate3d RUNTIME DESTINATION bin)
 
     add_executable(
-        objects-gui
-        samples/objects/objects-gui.cpp
+        estimate3d-gui
+        samples/3destimation/estimate3d-gui.cpp
     )
-    target_link_libraries( objects-gui chilitags )
-    target_link_libraries( objects-gui ${OpenCV_LIBS} )
-    install (TARGETS objects-gui RUNTIME DESTINATION bin)
+    target_link_libraries( estimate3d-gui chilitags )
+    target_link_libraries( estimate3d-gui ${OpenCV_LIBS} )
+    install (TARGETS estimate3d-gui RUNTIME DESTINATION bin)
 
     add_executable(
         chilitags-detect

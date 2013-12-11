@@ -19,7 +19,7 @@
 
 #include <opencv2/calib3d/calib3d.hpp>
 
-#include "Objects.hpp"
+#include "Estimate3dPose.hpp"
 #include <iostream>
 #include <opencv2/core/utility.hpp>
 
@@ -84,7 +84,7 @@ struct MarkerConfig {
 
 }
 
-class chilitags::Objects::Impl {
+class chilitags::Estimate3dPose::Impl {
 
 public:
     Impl(float pMarkerSize, const std::string& pFilename) :
@@ -237,20 +237,20 @@ private:
 	std::map<int, std::pair<std::string, MarkerConfig>> mId2Configuration;
 };
 
-chilitags::Objects::Objects(
+chilitags::Estimate3dPose::Estimate3dPose(
 	float pDefaultSize,
 	const std::string& pConfiguration):
-mImpl(new chilitags::Objects::Impl(pDefaultSize, pConfiguration)){}
+mImpl(new chilitags::Estimate3dPose::Impl(pDefaultSize, pConfiguration)){}
 
-std::map<std::string, cv::Matx44d> chilitags::Objects::operator()(
+std::map<std::string, cv::Matx44d> chilitags::Estimate3dPose::operator()(
 	const std::map<int, std::vector<cv::Point2f>> &pTags) const {
 	return mImpl->operator()(pTags);
 }
 
-void chilitags::Objects::setCalibration(
+void chilitags::Estimate3dPose::setCalibration(
 	cv::InputArray pNewCameraMatrix,
 	cv::InputArray pNewDistCoeffs) {
 	mImpl->setCalibration(pNewCameraMatrix, pNewDistCoeffs);
 }
 
-chilitags::Objects::~Objects() = default;
+chilitags::Estimate3dPose::~Estimate3dPose() = default;

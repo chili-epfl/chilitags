@@ -17,8 +17,8 @@
 *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
 *******************************************************************************/
 
-#ifndef Objects_HPP
-#define Objects_HPP
+#ifndef Estimate3dPose_HPP
+#define Estimate3dPose_HPP
 
 #include <string>
 #include <map>
@@ -27,7 +27,7 @@
 
 namespace chilitags {
 
-class Objects {
+class Estimate3dPose {
 
 public:
     /**
@@ -46,7 +46,7 @@ public:
      * The calibration parameters can be set with a subsequent call to
 	 * setCalibration().
      */
-    Objects(float pDefaultSize, const std::string& pConfiguration = "");
+    Estimate3dPose(float pDefaultSize, const std::string& pConfiguration = "");
 
     /** Returns the list of all detected objects with
      * their transformation matrices, in the camera
@@ -60,7 +60,7 @@ public:
     void setCalibration(cv::InputArray pNewCameraMatrix,
                         cv::InputArray pNewDistCoeffs);
 
-	virtual ~Objects();
+	virtual ~Estimate3dPose();
 
 private:
 	class Impl;
