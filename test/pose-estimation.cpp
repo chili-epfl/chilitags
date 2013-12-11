@@ -6,7 +6,7 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <Objects.hpp>
+#include <Estimate3dPose.hpp>
 
 cv::Matx44f makeTransformation(
 	float rx, float ry, float rz,
@@ -44,7 +44,7 @@ cv::Point2f applyTransform(cv::Matx44f pTransformation, cv::Point2f pPoint) {
 		tTransformedPoint[1]/tTransformedPoint[3]);
 }
 
-TEST(Objects, FreeTags) {
+TEST(Estimate3dPose, FreeTags) {
 	auto tExpectedTransformation = makeTransformation(35,45,65,20,40,60);
 
 	float tSize = 37;
@@ -55,10 +55,10 @@ TEST(Objects, FreeTags) {
 		applyTransform(tExpectedTransformation, cv::Point2f(0.f   , tSize )),
 	};
 
-	chilitags::Objects tObjects(tSize);
+	chilitags::Estimate3dPose tEstimate3dPose(tSize);
 
 	int tTagId = 0;
-	auto tResult = tObjects({{tTagId,tCorners}});
+	auto tResult = tEstimate3dPose({{tTagId,tCorners}});
 	ASSERT_EQ(1, tResult.size());
 
 	std::string tActualID = tResult.cbegin()->first;
@@ -69,7 +69,7 @@ TEST(Objects, FreeTags) {
 		<< "\nActual:\n" << cv::Mat(tActualTransformation);
 }
 
-TEST(Objects, Configurations) {
+TEST(Estimate3dPose, Configurations) {
 	auto tObjectTransformation = makeTransformation(135, 145, 155, 201, 401, 601);
 
 	std::vector<int> tIds = {2, 3};
@@ -89,11 +89,11 @@ TEST(Objects, Configurations) {
 		};
 	}
 
-	chilitags::Objects tObjects(20,
+	chilitags::Estimate3dPose tEstimate3dPose(20,
 		cvtest::TS::ptr()->get_data_path()
 		+"misc/markers_configuration_sample.yml");
 
-	auto tResult = tObjects(tTags);
+	auto tResult = tEstimate3dPose(tTags);
 	EXPECT_EQ(2, tResult.size());
 
 	auto tResultIt = tResult.cbegin();
