@@ -99,5 +99,11 @@ std::vector<cv::Point2f> chilitags::Refine::operator()(const cv::Mat &pInputImag
 	cv::waitKey(0);
 #endif
 
-	return tRefinedQuad;
+	// Sometimes, the corners are refined into a concave quadrilateral
+	// which makes ReadBits crash
+	std::vector<cv::Point2f> tConvexHull;
+	cv::convexHull(tRefinedQuad, tConvexHull, false);
+	if (tConvexHull.size() == 4) return tConvexHull;
+
+	return pQuad;
 }
