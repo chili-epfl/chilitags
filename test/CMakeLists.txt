@@ -4,9 +4,7 @@ MACRO(declare_test)
 	file(GLOB ${declare_test_TESTNAME}_source_files ${declare_test_TESTNAME}*.cpp)
 	add_executable(${declare_test_TESTNAME} ${${declare_test_TESTNAME}_source_files})
 
-	include_directories(${CMAKE_SOURCE_DIR}/src/lib/include)
 	target_link_libraries(${declare_test_TESTNAME} chilitags)
-
 	target_link_libraries(${declare_test_TESTNAME} ${OpenCV_LIBS} )
 
 	add_test(${declare_test_TESTNAME} ${declare_test_TESTNAME})
@@ -23,3 +21,7 @@ declare_test(TESTNAME drawer)
 declare_test(TESTNAME CachingFilter)
 declare_test(TESTNAME detection-performance NEEDS_DATA)
 declare_test(TESTNAME pose-estimation NEEDS_DATA)
+
+add_executable(find-crash find-crash.cpp)
+target_link_libraries(find-crash chilitags)
+target_link_libraries(find-crash ${OpenCV_LIBS} )
