@@ -1,4 +1,3 @@
-
 #ifndef Objects_HPP
 #define Objects_HPP
 
@@ -71,8 +70,8 @@ private:
     ObjectConfig _config;
     
     // store, for each tag, an estimator
-    mutable std::unordered_map<std::string, Estimator<cv::Mat>> estimatedTranslations;
-    mutable std::unordered_map<std::string, Estimator<cv::Mat>> estimatedRotations;
+    mutable std::unordered_map<std::string, Estimator<cv::Mat> > estimatedTranslations;
+    mutable std::unordered_map<std::string, Estimator<cv::Mat> > estimatedRotations;
 
 };
 
