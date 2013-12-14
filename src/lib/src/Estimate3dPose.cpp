@@ -19,9 +19,11 @@
 
 #include <opencv2/calib3d/calib3d.hpp>
 
-#include "Estimate3dPose.hpp"
+#include <Estimate3dPose.hpp>
 #include <iostream>
+#ifdef OPENCV3
 #include <opencv2/core/utility.hpp>
+#endif
 
 namespace {
 
@@ -115,13 +117,15 @@ public:
 				bool tKeep;
 				tMarkerConfig["keep"] >> tKeep;
 				cv::Vec3f tTranslation;
-				tMarkerConfig["translation"] >> tTranslation;
 				cv::Vec3f tRotation;
-				tMarkerConfig["rotation"] >> tRotation;
+				for (int i:{0,1,2}) {
+					tMarkerConfig["translation"][i] >> tTranslation[i];
+					tMarkerConfig["rotation"]   [i] >> tRotation   [i];
+				}
 
 				mId2Configuration[tId] = std::make_pair(
 					tObjectConfig.name(), 
-					MarkerConfig(tId, tSize, tKeep, tTranslation, tRotation));
+					MarkerConfig(tId, tSize, tKeep, cv::Vec3f(tTranslation), cv::Vec3f(tRotation)));
 			}
 		}
 	}
