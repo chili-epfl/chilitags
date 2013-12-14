@@ -14,8 +14,6 @@ MACRO(declare_test)
 	endif()
 endMACRO()
 
-add_definitions(-std=c++11)
-
 declare_test(TESTNAME codec)
 declare_test(TESTNAME drawer)
 declare_test(TESTNAME CachingFilter)

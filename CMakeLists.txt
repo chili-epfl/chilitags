@@ -6,19 +6,18 @@ set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "3")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 
-find_package( OpenCV REQUIRED core imgproc calib3d highgui ts )
+add_definitions(-std=c++11)
+find_package(OpenCV REQUIRED core imgproc calib3d highgui ts)
+include_directories(${OpenCV_INCLUDE_DIRS})
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 
 ##########################################
 ##           Options                   ###
 ##########################################
 
-
-option (WITH_DETECTOR "provides a test application" ON)
-option (WITH_CREATOR "provides the marker generation tool" ON)
-option (WITH_SAMPLES "compile misc demos" OFF)
-option (WITH_TESTS "build tests" OFF)
-set(TEST_DATA "../../../chilitags-testdata/" CACHE PATH "specify the root directory of the test data (absolute, or relative to the execution directory of the tests)")
+option(WITH_TOOLS       "provides the marker generation tool" ON)
+option(WITH_SAMPLES     "compile misc demos" OFF)
+option(WITH_TESTS       "build tests" OFF)
 option(EXPERIMENTAL_LSD "Detects quad with the LineSegmentDetector algorithm (requires OpenCV3)" OFF)
 
 if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
@@ -27,89 +26,30 @@ else()
     set(EXPERIMENTAL_LSD OFF)
 endif()
 
-if(EXPERIMENTAL_LSD)
+if (EXPERIMENTAL_LSD)
     add_definitions(-DEXPERIMENTAL_LSD)
 endif()
 
-add_subdirectory(src/lib)
+include_directories(include)
+add_subdirectory(src)
 
 # documentation generation
 include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
 
-if (WITH_DETECTOR)
-
-    file(
-        GLOB_RECURSE
-        detector_source_files
-        src/detector/*
-    )
-    include_directories(${OpenCV_INCLUDE_DIRS})
-    include_directories(src/lib/include)
-    add_executable(
-        chilitags-detector
-        ${detector_source_files}
-    )
-
-    target_link_libraries( chilitags-detector chilitags )
-    target_link_libraries( chilitags-detector ${OpenCV_LIBS} )
-
-    install (TARGETS chilitags-detector RUNTIME DESTINATION bin)
-
-
-endif()
-
-if (WITH_CREATOR)
-
-    file(
-        GLOB_RECURSE
-        creator_source_files
-        src/creator/*
-    )
-    include_directories(${OpenCV_INCLUDE_DIRS})
-    add_executable(
-        chilitags-creator
-        ${creator_source_files}
-    )
-
-    target_link_libraries( chilitags-creator chilitags )
-    target_link_libraries( chilitags-creator ${OpenCV_LIBS} )
-
-    install (TARGETS chilitags-creator RUNTIME DESTINATION bin)
-
+if (WITH_TOOLS)
+	add_subdirectory(tools)
 endif()
 
 if (WITH_SAMPLES)
-
-    add_definitions(-std=c++11)
-    include_directories(src/lib/include)
-
-    add_executable(
-        estimate3d
-        samples/3destimation/estimate3d.cpp
-    )
-    target_link_libraries( estimate3d chilitags )
-    target_link_libraries( estimate3d ${OpenCV_LIBS} )
-    install (TARGETS estimate3d RUNTIME DESTINATION bin)
-
-    add_executable(
-        estimate3d-gui
-        samples/3destimation/estimate3d-gui.cpp
-    )
-    target_link_libraries( estimate3d-gui chilitags )
-    target_link_libraries( estimate3d-gui ${OpenCV_LIBS} )
-    install (TARGETS estimate3d-gui RUNTIME DESTINATION bin)
-
-    add_executable(
-        chilitags-detect
-        samples/chilitags-detect.cpp
-    )
-    target_link_libraries( chilitags-detect chilitags )
-    target_link_libraries( chilitags-detect ${OpenCV_LIBS} )
-    install (TARGETS chilitags-detect RUNTIME DESTINATION bin)
-
+	add_subdirectory(samples)
 endif()
 
 if (WITH_TESTS)
+	set(TEST_DATA
+		"../../../chilitags-testdata/"
+		CACHE
+		PATH
+		"specify the root directory of the test data (absolute, or relative to the execution directory of the tests)")
 	enable_testing()
 	add_subdirectory(test)
 endif()

@@ -1,26 +1,16 @@
-file(
- 	GLOB_RECURSE
-	chilitags_source
- 	src/*
-)
+file(GLOB_RECURSE chilitags_source *.cpp)
 
 if (EXPERIMENTAL_LSD)
     list(REMOVE_ITEM
 		chilitags_source
-		${CMAKE_CURRENT_SOURCE_DIR}/src/FindQuads.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/FindQuads.cpp
 	)
 else ()
     list(REMOVE_ITEM
 		chilitags_source
-		${CMAKE_CURRENT_SOURCE_DIR}/src/FindQuadsWithLSD.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/FindQuadsWithLSD.cpp
 	)
 endif()
-
-file(
-	GLOB_RECURSE
-	chilitags_headers
-	include/*
-)
 
 add_library(
         chilitags
@@ -28,9 +18,6 @@ add_library(
         ${chilitags_source}
 )
 
-add_definitions(-std=c++11)
-
-include_directories(include ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(chilitags ${OpenCV_LIBS})
 
 install (TARGETS chilitags
@@ -38,6 +25,8 @@ install (TARGETS chilitags
 	ARCHIVE DESTINATION lib
 #	PUBLIC_HEADER DESTINATION include/chilitags
 )
+
+file(GLOB_RECURSE chilitags_headers ../include/*)
 
 install(FILES
 	${chilitags_headers}
