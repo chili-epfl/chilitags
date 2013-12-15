@@ -14,6 +14,8 @@ MACRO(declare_test)
 	endif()
 endMACRO()
 
+include_directories(../src)
+
 declare_test(TESTNAME codec)
 declare_test(TESTNAME drawer)
 declare_test(TESTNAME CachingFilter)

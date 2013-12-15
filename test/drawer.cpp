@@ -4,13 +4,13 @@
 #include <opencv2/ts/ts.hpp>
 #endif
 
-#include <TagDrawer.hpp>
+#include <chilitags.hpp>
 
 #include "HardcodedIds.hpp"
 
 TEST(Drawer, Defaults) {
-	chilitags::TagDrawer tDrawer;
-	cv::Mat tImage = tDrawer(0);
+	chilitags::Chilitags tChilitags;
+	cv::Mat tImage = tChilitags.draw(0);
 	ASSERT_EQ(CV_8U, tImage.type());
 	ASSERT_EQ(10,tImage.cols);
 	ASSERT_EQ(10,tImage.rows);
@@ -18,10 +18,10 @@ TEST(Drawer, Defaults) {
 
 TEST(Drawer, DrawCode) {
 	HardcodedIds tHardcodedIds;
-	chilitags::TagDrawer tDrawer;
+	chilitags::Chilitags tChilitags;
 
 	for (int t = 0; t<1024; ++t) {
-		cv::Mat tImage = tDrawer(t);
+		cv::Mat tImage = tChilitags.draw(t);
 		ASSERT_EQ(CV_8U, tImage.type());
 		ASSERT_EQ(10,tImage.cols);
 		ASSERT_EQ(10,tImage.rows);
@@ -49,10 +49,10 @@ TEST(Drawer, DrawCode) {
 
 TEST(Drawer, WithMargin) {
 	HardcodedIds tHardcodedIds;
-	chilitags::TagDrawer tDrawer;
+	chilitags::Chilitags tChilitags;
 
 	for (int t = 0; t<1024; ++t) {
-		cv::Mat tImage = tDrawer(t,1,true);
+		cv::Mat tImage = tChilitags.draw(t,1,true);
 		ASSERT_EQ(CV_8U, tImage.type());
 		ASSERT_EQ(14,tImage.cols);
 		ASSERT_EQ(14,tImage.rows);
@@ -69,11 +69,11 @@ TEST(Drawer, WithMargin) {
 
 TEST(Drawer, Zoom) {
 	HardcodedIds tHardcodedIds;
-	chilitags::TagDrawer tDrawer;
+	chilitags::Chilitags tChilitags;
 
 	int tZoom = 10;
 	for (int t = 0; t<1024; ++t) {
-		cv::Mat tImage = tDrawer(t, tZoom);
+		cv::Mat tImage = tChilitags.draw(t, tZoom);
 		ASSERT_EQ(CV_8U, tImage.type());
 		ASSERT_EQ(100,tImage.cols);
 		ASSERT_EQ(100,tImage.rows);
@@ -105,11 +105,11 @@ TEST(Drawer, Zoom) {
 
 TEST(Drawer, ZoomWithMargin) {
 	HardcodedIds tHardcodedIds;
-	chilitags::TagDrawer tDrawer;
+	chilitags::Chilitags tChilitags;
 
 	int tZoom = 10;
 	for (int t = 0; t<1024; ++t) {
-		cv::Mat tImage = tDrawer(t, tZoom, true);
+		cv::Mat tImage = tChilitags.draw(t, tZoom, true);
 		ASSERT_EQ(CV_8U, tImage.type());
 		ASSERT_EQ(140,tImage.cols);
 		ASSERT_EQ(140,tImage.rows);

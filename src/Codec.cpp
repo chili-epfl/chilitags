@@ -87,7 +87,7 @@ chilitags::Codec::~Codec() {
 	delete[] m_fec_decoded_id;
 }
 
-bool chilitags::Codec::getTagEncodedId(int tagId, unsigned char* data) {
+bool chilitags::Codec::getTagEncodedId(int tagId, unsigned char* data) const {
 	if (tagId < 0 || tagId >= m_maxTagsNumber)
 		return false;
 
@@ -174,7 +174,7 @@ int chilitags::Codec::computeFEC(tag_info_t *tag) {
  * Decode only those 10 bits and then check validity of potential ids by checking the actual
  * encoded values. Greatly reduces the search space by using both backward search and forward testing.
  */
-bool chilitags::Codec::decode(const unsigned char *data, int & id) {
+bool chilitags::Codec::decode(const unsigned char *data, int & id) const {
 	// depuncture: expand data by adding 0 at places where bits were removed because of puncturing
 	// only 20 bits as discussed above
 	int data_index = 0;
@@ -196,7 +196,7 @@ bool chilitags::Codec::decode(const unsigned char *data, int & id) {
 // param encoded_id: first 20 bits of the tag to decode
 
 bool chilitags::Codec::viterbi(const unsigned char *encoded_id,
-                    const unsigned char *tag_data, tag_info_t **tag) {
+                    const unsigned char *tag_data, tag_info_t **tag) const {
 	*tag = NULL;
 	m_hamming_dist[0] = 0;
 	for (int i = 0; i < m_bitsId + 1; i++) {

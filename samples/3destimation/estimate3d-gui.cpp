@@ -1,7 +1,6 @@
 #include <iostream>
 
-#include <DetectChilitags.hpp>
-#include <Estimate3dPose.hpp>
+#include <chilitags.hpp>
 
 #include <opencv2/core/core.hpp> // for cv::Mat
 #include <opencv2/core/core_c.h> // CV_AA
@@ -10,37 +9,14 @@
 using namespace std;
 using namespace cv;
 
-/*******************************************************/
-/*   Helper to parse OpenCV camera calibration files   */
-/*******************************************************/
-static bool readCameraMatrix(const string& filename,
-                             Mat& cameraMatrix, Mat& distCoeffs,
-                             Size& calibratedImageSize )
-{
-    cout << "Reading camera calibration from " << filename << "..." << endl;
-    FileStorage fs(filename, FileStorage::READ);
-    fs["image_width"] >> calibratedImageSize.width;
-    fs["image_height"] >> calibratedImageSize.height;
-    fs["distortion_coefficients"] >> distCoeffs;
-    fs["camera_matrix"] >> cameraMatrix;
-
-    if( distCoeffs.type() != CV_64F )
-        distCoeffs = Mat_<double>(distCoeffs);
-    if( cameraMatrix.type() != CV_64F )
-        cameraMatrix = Mat_<double>(cameraMatrix);
-
-    return true;
-}
-
-
 int main(int argc, char* argv[])
 {
 	cout
 		<< "Usage: "<< argv[0]
-		<< " [-c <markers configuration (YAML)>] -i [<camera calibration (YAML)>]\n";
+		<< " [-c <markers configuration (YAML)>] [-i <camera calibration (YAML)>]\n";
  
     const char* intrinsicsFilename = 0;
-    const char* configFilename = "";
+    const char* configFilename = 0;
 
     for( int i = 1; i < argc; i++ )
     {
@@ -65,13 +41,14 @@ int main(int argc, char* argv[])
     /* Setting up pose estimation */
     /******************************/
 	static const float DEFAULT_SIZE = 20.f;
-    chilitags::Estimate3dPose tEstimate3dPose(DEFAULT_SIZE, configFilename);
+    chilitags::Chilitags3D tChilitags3D;
+	tChilitags3D.setDefaultTagSize(DEFAULT_SIZE);
+	if (configFilename) tChilitags3D.read3DConfiguration(configFilename);
 
 	Mat cameraMatrix;
 	Mat distCoeffs;
     if (intrinsicsFilename) {
-		Size calibratedImageSize;
-		readCameraMatrix(intrinsicsFilename, cameraMatrix, distCoeffs, calibratedImageSize );
+		Size calibratedImageSize = tChilitags3D.readCalibration(intrinsicsFilename);
 #ifdef OPENCV3
 		capture.set(cv::CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
 		capture.set(cv::CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
@@ -83,8 +60,8 @@ int main(int argc, char* argv[])
 		double tFocalLength = 817.;
 		cameraMatrix = (cv::Mat_<double>(3,3) << tFocalLength,0,0, 0,tFocalLength,0, 0,0,1);
 		distCoeffs = cv::Mat::zeros(5, 1, CV_64F);
+		tChilitags3D.setCalibration(cameraMatrix, distCoeffs);
 	}
-	tEstimate3dPose.setCalibration(cameraMatrix, distCoeffs);
 
 	cv::Mat tProjectionMat = cv::Mat::zeros(4,4,CV_64F);
 	cameraMatrix.copyTo(tProjectionMat(cv::Rect(0,0,3,3)));
@@ -96,14 +73,12 @@ int main(int argc, char* argv[])
     /*****************************/
 	cv::namedWindow("Pose Estimation");
 
-    chilitags::DetectChilitags tDetectTags;
-
     for (; 'q' != (char) cv::waitKey(10); ) {
 		cv::Mat tInputImage;
         capture.read(tInputImage);
 		cv::Mat tOutputImage(tInputImage.size(), CV_8UC3, cv::Scalar(0,0,0));
 
-        for (auto& kv : tEstimate3dPose(tDetectTags(tInputImage))) {
+        for (auto& kv : tChilitags3D.findPose(tInputImage)) {
 
 			static const cv::Vec4d UNITS[4] {
 				{0.f, 0.f, 0.f, 1.f},

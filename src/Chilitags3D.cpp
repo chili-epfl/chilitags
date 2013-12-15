@@ -19,8 +19,9 @@
 
 #include <opencv2/calib3d/calib3d.hpp>
 
-#include <Estimate3dPose.hpp>
+#include "chilitags.hpp"
 #include <iostream>
+#include <opencv2/highgui/highgui.hpp> //for FileStorage
 #ifdef OPENCV3
 #include <opencv2/core/utility.hpp>
 #endif
@@ -28,7 +29,13 @@
 namespace {
 
 struct MarkerConfig {
-	MarkerConfig(){}
+	MarkerConfig():
+	mId(-1),
+	mSize(-1.f),
+	mKeep(false),
+	mCorners(4),
+	mLocalcorners(4)
+	{}
 
 	MarkerConfig(int pId, float pSize, bool pKeep,
 		cv::Vec3f pTranslation, cv::Vec3f pRotation
@@ -86,52 +93,26 @@ struct MarkerConfig {
 
 }
 
-class chilitags::Estimate3dPose::Impl {
+class chilitags::Chilitags3D::Impl {
 
 public:
-    Impl(float pMarkerSize, const std::string& pFilename) :
+    Impl() :
+	mChilitags(),
+	mOmitOtherMarkers(false),
 	mCameraMatrix(cv::Mat::eye(3, 3, CV_64F)),
-	mDistCoeffs(cv::Mat::zeros(5, 1, CV_64F))
+	mDistCoeffs(cv::Mat::zeros(5, 1, CV_64F)),
+	mDefaultMarkerCorners(),
+	mId2Configuration()
 	{
-		if (pMarkerSize > 0) {
-			mDefaultMarkerCorners.push_back(cv::Point3f(0., 0., 0.));
-			mDefaultMarkerCorners.push_back(cv::Point3f(pMarkerSize, 0., 0.));
-			mDefaultMarkerCorners.push_back(cv::Point3f(pMarkerSize, pMarkerSize, 0.));
-			mDefaultMarkerCorners.push_back(cv::Point3f(0., pMarkerSize, 0.));
-		}
-
-		if (pFilename.empty()) return;
-
-		cv::FileStorage tConfiguration(pFilename, cv::FileStorage::READ);
-		if (!tConfiguration.isOpened()) {
-			std::cerr << "Could not open " << pFilename << std::endl;
-			return;
-		}
-
-		for(const auto &tObjectConfig : tConfiguration.root()) {
-			for(const auto &tMarkerConfig : tObjectConfig) {
-				int tId;
-				tMarkerConfig["marker"] >> tId;
-				float tSize;
-				tMarkerConfig["size"] >> tSize;
-				bool tKeep;
-				tMarkerConfig["keep"] >> tKeep;
-				cv::Vec3f tTranslation;
-				cv::Vec3f tRotation;
-				for (int i:{0,1,2}) {
-					tMarkerConfig["translation"][i] >> tTranslation[i];
-					tMarkerConfig["rotation"]   [i] >> tRotation   [i];
-				}
-
-				mId2Configuration[tId] = std::make_pair(
-					tObjectConfig.name(), 
-					MarkerConfig(tId, tSize, tKeep, cv::Vec3f(tTranslation), cv::Vec3f(tRotation)));
-			}
-		}
+		setDefaultTagSize(1.f);
+		mChilitags.setPersistence(0);
 	}
 
-    std::map<std::string, cv::Matx44d> operator()(
-		const std::map<int, std::vector<cv::Point2f>> &pTags) const {
+	const Chilitags &getChilitags() const {return mChilitags;}
+	      Chilitags &getChilitags()       {return mChilitags;}
+
+    std::map<std::string, cv::Matx44d> findPose(
+		std::map<int, std::vector<cv::Point2f>> pTags) const {
 
 		std::map<std::string, cv::Matx44d> tObjects;
 
@@ -169,15 +150,14 @@ public:
 						tPointMapping.second.end(),
 						tTag.second.begin(),
 						tTag.second.end());
-				} else if (!mDefaultMarkerCorners.empty()) {
-					//i.e. we also want tags not in the config file
+				} else if (!mOmitOtherMarkers) {
 					computeTransformation(cv::format("marker_%d", tTagId), 
 										  mDefaultMarkerCorners,
 										  tTag.second,
 										  tObjects);
 				}
 
-			} else if (!mDefaultMarkerCorners.empty()) {
+			} else if (!mOmitOtherMarkers) {
 				computeTransformation(cv::format("marker_%d", tTagId), 
 									  mDefaultMarkerCorners,
 									  tTag.second,
@@ -196,12 +176,75 @@ public:
 		return tObjects;
 	}
 
+    std::map<std::string, cv::Matx44d> findPose(
+		const cv::Mat &pInputImage) const {
+		return findPose(mChilitags.find(pInputImage));
+	}
+
+	void setDefaultTagSize(float pDefaultSize){
+		mDefaultMarkerCorners = {
+			cv::Point3f(0., 0., 0.),
+			cv::Point3f(pDefaultSize, 0., 0.),
+			cv::Point3f(pDefaultSize, pDefaultSize, 0.),
+			cv::Point3f(0., pDefaultSize, 0.),
+		};
+	}
+
+	void read3DConfiguration(const std::string &pFilename, bool pOmitOtherMarkers) {
+		mOmitOtherMarkers = pOmitOtherMarkers;
+
+		cv::FileStorage tConfiguration(pFilename, cv::FileStorage::READ);
+		if (!tConfiguration.isOpened()) {
+			std::cerr << "Could not open " << pFilename << std::endl;
+			return;
+		}
+
+		mId2Configuration.clear();
+		for(const auto &tObjectConfig : tConfiguration.root()) {
+			for(const auto &tMarkerConfig : tObjectConfig) {
+				int tId;
+				tMarkerConfig["marker"] >> tId;
+				float tSize;
+				tMarkerConfig["size"] >> tSize;
+				bool tKeep;
+				tMarkerConfig["keep"] >> tKeep;
+				cv::Vec3f tTranslation;
+				cv::Vec3f tRotation;
+				for (int i:{0,1,2}) {
+					tMarkerConfig["translation"][i] >> tTranslation[i];
+					tMarkerConfig["rotation"]   [i] >> tRotation   [i];
+				}
+
+				mId2Configuration[tId] = std::make_pair(
+					tObjectConfig.name(), 
+					MarkerConfig(tId, tSize, tKeep, cv::Vec3f(tTranslation), cv::Vec3f(tRotation)));
+			}
+		}
+	}
+
+
     /** Sets new camera calibration values.
      */
     void setCalibration(cv::InputArray pNewCameraMatrix,
                         cv::InputArray pNewDistCoeffs){
 		mCameraMatrix = pNewCameraMatrix.getMat();
 		mDistCoeffs = pNewDistCoeffs.getMat();
+	}
+
+	cv::Size readCalibration(const std::string &pFilename) {
+		cv::Size tSize;
+		cv::FileStorage fs(pFilename, cv::FileStorage::READ);
+		fs["image_width"]             >> tSize.width;
+		fs["image_height"]            >> tSize.height;
+		fs["distortion_coefficients"] >> mDistCoeffs;
+		fs["camera_matrix"]           >> mCameraMatrix;
+
+		if( mDistCoeffs.type() != CV_64F )
+			mDistCoeffs = cv::Mat_<double>(mDistCoeffs);
+		if( mCameraMatrix.type() != CV_64F )
+			mCameraMatrix = cv::Mat_<double>(mCameraMatrix);
+
+		return tSize;
 	}
 
 private:
@@ -231,6 +274,9 @@ private:
 			};
 	}
 
+	Chilitags mChilitags;
+
+	bool mOmitOtherMarkers;
 
     cv::Mat mCameraMatrix;
     cv::Mat mDistCoeffs;
@@ -241,20 +287,41 @@ private:
 	std::map<int, std::pair<std::string, MarkerConfig>> mId2Configuration;
 };
 
-chilitags::Estimate3dPose::Estimate3dPose(
-	float pDefaultSize,
-	const std::string& pConfiguration):
-mImpl(new chilitags::Estimate3dPose::Impl(pDefaultSize, pConfiguration)){}
+chilitags::Chilitags3D::Chilitags3D():
+mImpl(new chilitags::Chilitags3D::Impl()){}
 
-std::map<std::string, cv::Matx44d> chilitags::Estimate3dPose::operator()(
-	const std::map<int, std::vector<cv::Point2f>> &pTags) const {
-	return mImpl->operator()(pTags);
+const chilitags::Chilitags &chilitags::Chilitags3D::getChilitags() const{
+	return mImpl->getChilitags();
+}
+chilitags::Chilitags &chilitags::Chilitags3D::getChilitags(){
+	return mImpl->getChilitags();
 }
 
-void chilitags::Estimate3dPose::setCalibration(
+std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::findPose(
+	std::map<int, std::vector<cv::Point2f>> pTags) const {
+	return mImpl->findPose(pTags);
+}
+
+std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::findPose(
+	const cv::Mat &pInputImage) const {
+	return mImpl->findPose(pInputImage);
+}
+
+void chilitags::Chilitags3D::setDefaultTagSize(float pDefaultSize){
+	mImpl->setDefaultTagSize(pDefaultSize);
+}
+
+void chilitags::Chilitags3D::read3DConfiguration(const std::string &pFilename, bool pOmitOtherMarkers){
+	mImpl->read3DConfiguration(pFilename, pOmitOtherMarkers);
+}
+
+void chilitags::Chilitags3D::setCalibration(
 	cv::InputArray pNewCameraMatrix,
 	cv::InputArray pNewDistCoeffs) {
 	mImpl->setCalibration(pNewCameraMatrix, pNewDistCoeffs);
 }
+cv::Size chilitags::Chilitags3D::readCalibration(const std::string &pFilename){
+	return mImpl->readCalibration(pFilename);
+}
 
-chilitags::Estimate3dPose::~Estimate3dPose() = default;
+chilitags::Chilitags3D::~Chilitags3D() = default;

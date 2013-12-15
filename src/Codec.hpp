@@ -41,10 +41,10 @@ Codec(
 virtual ~Codec();
 
 // The main method of the class, decoding a bit matrix
-bool decode(const unsigned char *data, int &id);
+bool decode(const unsigned char *data, int &id) const;
 
 // The inverse operation, encoding a tag identifier into a matrix.
-bool getTagEncodedId(int tagId, unsigned char *data);
+bool getTagEncodedId(int tagId, unsigned char *data) const;
 
 int getMaxTagsNumber() const {
 	return m_maxTagsNumber;
@@ -66,7 +66,7 @@ int computeCRC(tag_info_t *tag);
 int computeFEC(tag_info_t *tag);
 
 bool viterbi(const unsigned char *encoded_id,
-             const unsigned char *tag_data, tag_info_t **tag);
+             const unsigned char *tag_data, tag_info_t **tag) const;
 
 static void bin2int(const unsigned char *bin, int *out, int size);
 static unsigned long binstr2int(const char *bin);

@@ -38,9 +38,9 @@ mDstBoundaries({{0        , 0},
                 {scTagSize, scTagSize},
                 {0        , scTagSize}}),
 mSamplePoints(),
-mBits(scDataSize*scDataSize),
 mTransformedSamplePoints(scDataSize*scDataSize),
-mSamples(1, scDataSize*scDataSize, CV_8U)
+mSamples(1, scDataSize*scDataSize, CV_8U),
+mBits(scDataSize*scDataSize)
 {
 	for (int y = 0; y < scDataSize; ++y)
     {

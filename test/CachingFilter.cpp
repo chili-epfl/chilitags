@@ -59,4 +59,14 @@ TEST(CachingFilter, InvalidateFirst) {
 	EXPECT_EQ(1, tFilter({{43,{}}}).size());
 }
 
+TEST(CachingFilter, ChangePersistence) {
+	chilitags::CachingFilter tFilter(2);
+
+	EXPECT_EQ(0, tFilter({}).size());
+	EXPECT_EQ(1, tFilter({{42,{}}}).size());
+	tFilter.setPersistence(1);
+	EXPECT_EQ(1, tFilter({}).size());
+	EXPECT_EQ(0, tFilter({}).size());
+}
+
 CV_TEST_MAIN(".")

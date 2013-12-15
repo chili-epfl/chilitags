@@ -1,10 +1,34 @@
-#ifndef ESTIMATOR_H
-#define ESTIMATOR_H
+/*******************************************************************************
+*   Copyright 2013 EPFL                                                        *
+*                                                                              *
+*   This file is part of chilitags.                                            *
+*                                                                              *
+*   Chilitags is free software: you can redistribute it and/or modify          *
+*   it under the terms of the Lesser GNU General Public License as             *
+*   published by the Free Software Foundation, either version 3 of the         *
+*   License, or (at your option) any later version.                            *
+*                                                                              *
+*   Chilitags is distributed in the hope that it will be useful,               *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+*   GNU Lesser General Public License for more details.                        *
+*                                                                              *
+*   You should have received a copy of the GNU Lesser General Public License   *
+*   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
+*******************************************************************************/
 
-#include <cstddef>
+/** This header contains various utilities to paliate with imperfect detection.
+ */
+
+#ifndef AveragingFilter_HPP
+#define AveragingFilter_HPP
+
+#include <map>
 #include <vector>
+#include <opencv2/core/core.hpp>
+#include <cstddef>
 
-static const size_t MAX_FRAMES_ESTIMATOR=100;
+namespace chilitags{
 
 /** A simple circular buffer, based on a std::vector
  */
@@ -35,11 +59,12 @@ private:
 
 
 template < typename T >
-class Estimator {
+class AveragingFilter {
 
 public:
+	static const size_t MAX_FRAMES_ESTIMATOR=100;
 
-    /** Creates a 'stupid' estimator that returns averaged value over several measurements
+    /** Creates a 'stupid' filter that returns averaged value over several measurements
      *
      * \param gain: allows to adjust how damped the estimation is. High gains
      * lead to more responsive estimation, closer to observation, but less filtered.
@@ -47,7 +72,7 @@ public:
      * introduce delay. Minimum gain (0.0) means that the next estimated value is 
      * the average of the last MAX_FRAMES_ESTIMATOR measurements.
      */
-    Estimator(float gain = .5) : gain(gain),
+    AveragingFilter(float gain = .5) : gain(gain),
                                  length(MAX_FRAMES_ESTIMATOR * (1-gain) + 1),
                                  dirty(true) 
     {
@@ -112,5 +137,6 @@ protected:
     float gain;
 };
 
+}
 
 #endif
