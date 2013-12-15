@@ -6,7 +6,7 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <Estimate3dPose.hpp>
+#include <chilitags.hpp>
 
 cv::Matx44f makeTransformation(
 	float rx, float ry, float rz,
@@ -55,10 +55,11 @@ TEST(Estimate3dPose, FreeTags) {
 		applyTransform(tExpectedTransformation, cv::Point2f(0.f   , tSize )),
 	};
 
-	chilitags::Estimate3dPose tEstimate3dPose(tSize);
+	chilitags::Chilitags3D tChilitags3D;
+	tChilitags3D.setDefaultTagSize(tSize);
 
 	int tTagId = 0;
-	auto tResult = tEstimate3dPose({{tTagId,tCorners}});
+	auto tResult = tChilitags3D.findPose({{tTagId,tCorners}});
 	ASSERT_EQ(1, tResult.size());
 
 	std::string tActualID = tResult.cbegin()->first;
@@ -80,7 +81,7 @@ TEST(Estimate3dPose, Configurations) {
 	};
 
 	std::map<int, std::vector<cv::Point2f>> tTags;
-	for (int i = 0; i<tIds.size(); ++i) {
+	for (std::size_t i = 0; i<tIds.size(); ++i) {
 		tTags[tIds[i]] = {
 			applyTransform(tTagTransformations[i], cv::Point2f(0.f      , 0.f      )),
 			applyTransform(tTagTransformations[i], cv::Point2f(tSizes[i], 0.f      )),
@@ -89,11 +90,13 @@ TEST(Estimate3dPose, Configurations) {
 		};
 	}
 
-	chilitags::Estimate3dPose tEstimate3dPose(20,
+	chilitags::Chilitags3D tChilitags3D;
+	tChilitags3D.setDefaultTagSize(20.f);
+	tChilitags3D.read3DConfiguration(
 		cvtest::TS::ptr()->get_data_path()
 		+"misc/markers_configuration_sample.yml");
 
-	auto tResult = tEstimate3dPose(tTags);
+	auto tResult = tChilitags3D.findPose(tTags);
 	EXPECT_EQ(2, tResult.size());
 
 	auto tResultIt = tResult.cbegin();
@@ -101,7 +104,7 @@ TEST(Estimate3dPose, Configurations) {
 	std::vector<cv::Matx44f> tExpectedTransformations = {
 		tTagTransformations[0],
 		tObjectTransformation};
-	for (int i = 0; i<tExpectedNames.size(); ++i) {
+	for (std::size_t i = 0; i<tExpectedNames.size(); ++i) {
 		EXPECT_EQ(tExpectedNames[i], tResultIt->first);
 
 		cv::Matx44f tActualTransformation = tResultIt->second;

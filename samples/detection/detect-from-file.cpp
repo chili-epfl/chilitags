@@ -1,4 +1,4 @@
-#include <DetectChilitags.hpp>
+#include <chilitags.hpp>
 
 #include <opencv2/highgui/highgui.hpp> // imread
 
@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 
     cv::Mat tImage = cv::imread(argv[1]);
     if(tImage.data) {
-		for (const auto &tTag: chilitags::DetectChilitags()(tImage))
+		for (const auto &tTag: chilitags::Chilitags().find(tImage))
 			cout << tTag.first << "\n";
 
         return 0;

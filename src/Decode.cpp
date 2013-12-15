@@ -58,7 +58,7 @@ const std::pair<int, std::vector<cv::Point2f>> &chilitags::Decode::operator()(co
 		}
 	}
 
-	int tOrientation;
+	int tOrientation = -1;
 	int &tId = mDecodedTag.first;
 	tId = INVALID_TAG;
 	     if (mCodec.decode(mMatrix   , tId)) tOrientation = 0;

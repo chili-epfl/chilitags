@@ -5,11 +5,10 @@
 #endif
 
 #include <opencv2/highgui/highgui.hpp>
-#include <TagDrawer.hpp>
 
 #include "test-metadata.hpp"
 
-#include <DetectChilitags.hpp>
+#include <chilitags.hpp>
 
 #include <iostream>
 #include <map>
@@ -43,7 +42,7 @@ double sigma(const vector<double>& vals)
 // TODO
 // - perspective transforms
 // - luminosity (saturate-adding constants to the image?) and contrast (saturate-multiplying?)
-// - sensor noiss with salt and pepper
+// - sensor noise with salt and pepper
 // - compression artefacts (compress as jpg?)
 // - gaussian blur for bad focus,
 // - motion blur
@@ -52,12 +51,12 @@ double sigma(const vector<double>& vals)
 
 TEST(Integration, Minimal) {
 	int tExpectedId = 42;
-	chilitags::TagDrawer tDrawer;
+	chilitags::Chilitags tChilitags;
 	// Tag needs to be > 12 px wide;
 	int tZoom = 3;
-	cv::Mat tImage = tDrawer(tExpectedId, tZoom, true);
+	cv::Mat tImage = tChilitags.draw(tExpectedId, tZoom, true);
 
-	auto tTags = chilitags::DetectChilitags()(tImage);
+	auto tTags = tChilitags.find(tImage);
 
 	ASSERT_EQ(1, tTags.size());
 
@@ -103,7 +102,9 @@ TEST(Integration, Snapshots) {
 	// to get the data from the root of the test data path
 	cvtest::TS::ptr()->init("");
 
-	chilitags::DetectChilitags tDetectChilitags;
+	chilitags::Chilitags tChilitags;
+	// We do not want any persistence, to measure the taw performances
+	tChilitags.setPersistence(0);
 
 	int tNewFalseNegatives = 0;
 	int tNewTruePositives = 0;
@@ -120,7 +121,7 @@ TEST(Integration, Snapshots) {
 			std::map<int, std::vector<cv::Point2f>> tTags;
             for (int i = 0 ; i < ITERATIONS ; i++) {
                 int64 tStartCount = cv::getTickCount();
-                tTags = tDetectChilitags(tImage);
+                tTags = tChilitags.find(tImage);
                 int64 tEndCount = cv::getTickCount();
                 runs_duration[tImage.rows*tImage.cols].push_back(((double) tEndCount - tStartCount)*1000/cv::getTickFrequency());
             }
@@ -177,7 +178,7 @@ TEST(Integration, Snapshots) {
 	}
     cout << "Processing times (ms) results, on " << ITERATIONS << " iterations:\n";
     cout << "  n    Pixels   Average        SD\n";
-	cout ;
+
 	for (const auto & tDurations : runs_duration) {
 		cout
 			<< std::setw(3) << tDurations.second.size()/ITERATIONS

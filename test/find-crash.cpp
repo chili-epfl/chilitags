@@ -21,7 +21,7 @@
 
 
 // This header contains the detection part
-#include <DetectChilitags.hpp>
+#include <chilitags.hpp>
 
 // OpenCV goodness for I/O
 #include <opencv2/highgui/highgui.hpp>
@@ -57,11 +57,11 @@ int main(int argc, char* argv[])
 #endif
 
 	cv::Mat tInputImage;
-	chilitags::DetectChilitags tDetectChilitags;
+	chilitags::Chilitags tChilitags;
 	for (;;) {
 		tCapture.read(tInputImage);
 		cv::imwrite("lastimage.png", tInputImage);
-		tDetectChilitags(tInputImage);
+		tChilitags.find(tInputImage);
 	}
 	tCapture.release();
 

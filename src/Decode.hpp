@@ -20,7 +20,7 @@
 #ifndef Decode_HPP
 #define Decode_HPP
 
-#include <Codec.hpp>
+#include "Codec.hpp"
 #include <opencv2/core/core.hpp>
 #include <vector>
 
@@ -36,6 +36,8 @@ Decode();
 const std::pair<int, std::vector<cv::Point2f>> &operator()(
 	const std::vector<unsigned char> &pBits,
 	const std::vector<cv::Point2f> &pCorners);
+
+const Codec &getCodec() const {return mCodec;}
 
 virtual ~Decode();
 
