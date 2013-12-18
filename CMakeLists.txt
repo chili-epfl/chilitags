@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(chilitags)
+project(chilitags CXX)
 
 set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "3")
-set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_VERSION_PATCH "1")
 
 find_package( OpenCV REQUIRED core imgproc calib3d highgui ts )
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
