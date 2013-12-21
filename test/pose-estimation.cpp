@@ -8,6 +8,10 @@
 
 #include <chilitags.hpp>
 
+namespace {
+
+cv::Size CAMERA_SIZE(640,480);
+
 cv::Matx44f makeTransformation(
 	float rx, float ry, float rz,
 	float tx, float ty, float tz){
@@ -28,20 +32,34 @@ cv::Matx44f makeTransformation(
 	};
 }
 
-cv::Point2f applyTransform(cv::Matx44f pTransformation, cv::Point2f pPoint) {
-	cv::Vec4f tHomogenousPoint = cv::Vec4f(pPoint.x, pPoint.y, 0.f, 1.f);
+cv::Point2f applyTransform(cv::Matx44d pTransformation, cv::Point2f pPoint) {
+	cv::Vec4d tHomogenousPoint = {pPoint.x, pPoint.y, 0.f, 1.f};
 
-	static const cv::Matx44f tProjectionMatrix = {
-		1,0,0,0,
-		0,1,0,0,
-		0,0,1,0,
-		0,0,1,0,
+	//As assumed by Chilitags3D
+	double FOCAL_LENGTH = 700.;
+
+	static const cv::Matx44d tProjectionMatrix = {
+		FOCAL_LENGTH ,            0 , (double) CAMERA_SIZE.width/2 , 0 , 
+		           0 , FOCAL_LENGTH , (double) CAMERA_SIZE.height/2, 0 , 
+		           0 ,            0 , 1                            , 0 ,
+		           0 ,            0 , 1                            , 0 ,
 	};
-	cv::Vec4f tTransformedPoint = tProjectionMatrix*pTransformation*tHomogenousPoint;
+	cv::Vec4d tTransformedPoint = tProjectionMatrix*pTransformation*tHomogenousPoint;
 
 	return cv::Point2f(
 		tTransformedPoint[0]/tTransformedPoint[3],
 		tTransformedPoint[1]/tTransformedPoint[3]);
+}
+
+}
+
+TEST(Estimate3dPose, 2D) {
+	chilitags::Chilitags3D tChilitags3D(CAMERA_SIZE);
+	auto tTagImage = tChilitags3D.getChilitags().draw(42, 5, true);
+	auto tTags = tChilitags3D.getChilitags().find(tTagImage);
+	EXPECT_EQ(1, tTags.size());
+	auto tObjects = tChilitags3D.findPose(tTags);
+	EXPECT_EQ(1, tObjects.size());
 }
 
 TEST(Estimate3dPose, FreeTags) {
@@ -55,7 +73,7 @@ TEST(Estimate3dPose, FreeTags) {
 		applyTransform(tExpectedTransformation, cv::Point2f(0.f   , tSize )),
 	};
 
-	chilitags::Chilitags3D tChilitags3D;
+	chilitags::Chilitags3D tChilitags3D(CAMERA_SIZE);
 	tChilitags3D.setDefaultTagSize(tSize);
 
 	int tTagId = 0;
@@ -90,7 +108,7 @@ TEST(Estimate3dPose, Configurations) {
 		};
 	}
 
-	chilitags::Chilitags3D tChilitags3D;
+	chilitags::Chilitags3D tChilitags3D(CAMERA_SIZE);
 	tChilitags3D.setDefaultTagSize(20.f);
 	tChilitags3D.read3DConfiguration(
 		cvtest::TS::ptr()->get_data_path()

@@ -130,18 +130,21 @@ public:
 /**
 	Creates a object ready to find the 3D pose of chilitags.
 
-	It creates a Chilitags instance with a persistence of 0, which can be
-	accessed through the getChilitags() accessors.
+	To do so, Chilitags3D assumes an arbitrary, but reasonnable focal length
+	(700), and expects the dimensions of the captured images. In this
+	configuration, the depth estimation makes sense, but it is wrong. In order
+	to correctly estimate the 3D pose, the calibration data needs to be
+	provided. To do so, use the readCalibration() or setCalibration() methods.
 
-	It assumes an ideal camera, but for accuracy, the calibration parameters
-	can be provided via the readCalibration() or setCalibration() methods.
+	Chilitags3D also assumes that the 3D pose of any detected tag is expected,
+	and that every tag is independent from the others. The method
+	read3DConfiguration() can be used to specify which tags are of interest,
+	and how they are arranged on a rigid object.
 
-	It assumes that the 3D pose of any detected tag is expected, and that every
-	tag is independent from the others. read3DConfiguration() can be used to
-	specify which tags are of interest, and how they are arranged on a rigid
-	object.
+	Chilitags3D creates a Chilitags instance (with a persistence of 0), which
+	can be accessed through the getChilitags() accessors.
 */
-Chilitags3D();
+Chilitags3D(cv::Size pCameraSize);
 
 /** Accessor to the underlying (2D) Chilitags detection. */
 const Chilitags &getChilitags() const;
@@ -197,8 +200,7 @@ void setDefaultTagSize(float pDefaultSize);
 	For accurate results, Chilitags3D can be provided the calibration data of
 	the camera detecting the chilitags.
 	\param pNewCameraMatrix the 3x3 camera matrix.
-	\param pNewDistCoeffs a 5-element vector containing the distortion
-	coefficients.
+	\param pNewDistCoeffs a vector containing the distortion coefficients.
  */
 void setCalibration(cv::InputArray pNewCameraMatrix,
 					cv::InputArray pNewDistCoeffs);

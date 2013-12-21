@@ -29,17 +29,27 @@ int main(int argc, char* argv[])
     /*    Init camera capture    */
     /*****************************/
     int tCameraIndex = 0;
-     cv::VideoCapture capture(tCameraIndex);
+    cv::VideoCapture capture(tCameraIndex);
     if (!capture.isOpened())
     {
         cerr << "Unable to initialise video capture.\n";
         return 1;
     }
+	
 
     /******************************/
     /* Setting up pose estimation */
     /******************************/
-    chilitags::Chilitags3D tChilitags3D;
+
+#ifdef OPENCV3
+	double inputWidth  = capture.get(cv::CAP_PROP_FRAME_WIDTH);
+	double inputHeight = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
+#else
+	double inputWidth  = capture.get(CV_CAP_PROP_FRAME_WIDTH);
+	double inputHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+#endif
+
+    chilitags::Chilitags3D tChilitags3D(Size(inputWidth, inputHeight));
 	tChilitags3D.setDefaultTagSize(30.f);
 	tChilitags3D.read3DConfiguration(configFilename);
 
