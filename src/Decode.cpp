@@ -66,7 +66,7 @@ const std::pair<int, std::vector<cv::Point2f>> &chilitags::Decode::operator()(co
 	else if (mCodec.decode(mMatrix180, tId)) tOrientation = 2;
 	else if (mCodec.decode(mMatrix270, tId)) tOrientation = 3;
 
-    //The dreadful Black Marker!
+    //The dreadful Black Tag!
 	if (tId == 682) tId = INVALID_TAG;
 
 	if (tId != INVALID_TAG)

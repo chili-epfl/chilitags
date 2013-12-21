@@ -1,0 +1,47 @@
+%YAML:1.0
+# This file describes how tags are placed on objects.
+#
+# This can also be used to provide tag aliases, or transform the computed
+# origin of a tag.
+#
+# This sample file define 3 objects, and covers the different options
+# available.
+
+# This first object has only one tag (ID 0). 'myobject1' is the name returned
+# by the object detector. The size of the tag is 20x20 (the unit does not
+# matter, but must be consistent with the calibration unit. We recommend to use
+# millimeters).
+# This simple declaration allows to define name aliases for tags. 'tag'
+# and 'size' are the only two mandatory fields.
+myobject1:
+    - tag: 0
+      size: 20
+
+# The second object also has a single tag, but translated and rotated.  The
+# origin of 'myobject2' is will be 10 units *below* the tag, on the object's X
+# axis, and the tag is rotated by 90 degrees along the object's Z axis.
+# Rotations must be specified in degrees as XYZ Euler rotations, ie a rotation
+# on the X axis followed by a rotation on the Y axis, followed by a rotation on
+# the Z axis.
+myobject2:
+    - tag: 1
+      size: 30
+      translation: [10., 0., 0.]
+      rotation: [0., 0., 90.]
+
+# The third object features 3 tags, of various size, and at various positions.
+# Here, the rotation is omitted (defaults to [0.,0.,0.]).
+# If a tag sets the option 'keep' to 'true', the tag 3D position is
+# returned besides the object.
+myobject3:
+    - tag: 2
+      size: 20
+      translation: [-50., -100., 0.0]
+      keep: true
+    - tag: 3
+      size: 30
+      translation: [50., -100., 0.0]
+    - tag: 4
+      size: 30
+      translation: [50., 100., 0.0]
+

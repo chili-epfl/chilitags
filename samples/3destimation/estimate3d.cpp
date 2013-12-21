@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 {
 	cout
 		<< "Usage: "<< argv[0]
-		<< " [-c <markers configuration (YAML)>] -i [<camera calibration (YAML)>]\n";
+		<< " [-c <tag configuration (YAML)>] [-i <camera calibration (YAML)>]\n";
  
     const char* intrinsicsFilename = 0;
     const char* configFilename = "";
@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 
     chilitags::Chilitags3D tChilitags3D(Size(inputWidth, inputHeight));
 	tChilitags3D.setDefaultTagSize(30.f);
-	tChilitags3D.read3DConfiguration(configFilename);
+	tChilitags3D.readTagConfiguration(configFilename);
 
     if (intrinsicsFilename) {
 		Size calibratedImageSize = tChilitags3D.readCalibration(intrinsicsFilename);
@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
     for (; 'q' != (char) cv::waitKey(10); ) {
         capture.read(tInputImage);
 
-        for (auto& kv : tChilitags3D.findPose(tInputImage)) {
+        for (auto& kv : tChilitags3D.estimate(tInputImage)) {
             cout << kv.first << " at " << Mat(kv.second) << "\n";
         }
     }

@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 {
 	cout
 		<< "Usage: "<< argv[0]
-		<< " [-c <markers configuration (YAML)>] [-i <camera calibration (YAML)>]\n";
+		<< " [-c <tag configuration (YAML)>] [-i <camera calibration (YAML)>]\n";
  
     const char* intrinsicsFilename = 0;
     const char* configFilename = 0;
@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
     chilitags::Chilitags3D tChilitags3D(Size(inputWidth, inputHeight));
 	static const float DEFAULT_SIZE = 20.f;
 	tChilitags3D.setDefaultTagSize(DEFAULT_SIZE);
-	if (configFilename) tChilitags3D.read3DConfiguration(configFilename);
+	if (configFilename) tChilitags3D.readTagConfiguration(configFilename);
 
 	Mat cameraMatrix;
 	Mat distCoeffs;
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
         capture.read(tInputImage);
 		cv::Mat tOutputImage(tInputImage.size(), CV_8UC3, cv::Scalar(0,0,0));
 
-        for (auto& kv : tChilitags3D.findPose(tInputImage)) {
+        for (auto& kv : tChilitags3D.estimate(tInputImage)) {
 
 			static const cv::Vec4d UNITS[4] {
 				{0.f, 0.f, 0.f, 1.f},

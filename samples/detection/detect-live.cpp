@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 	// To address this, Chilitags "cheats" by keeping tags for n frames
 	// at the same position. When tags disappear for more than 5 frames,
 	// Chilitags actually removes it.
-	// Here, we cancel this to showing the raw detection results.
+	// Here, we cancel this to show the raw detection results.
 	tChilitags.setPersistence(0);
 
 	cv::namedWindow("DisplayChilitags");
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 		tCapture.read(tInputImage);
 
 		// Start measuring the time needed for the detection
-	    int64 tStartTime = cv::getTickCount();
+		int64 tStartTime = cv::getTickCount();
 
 		// Detect tags on the current image (and time the detection);
 		// The resulting map associates tag ids (between 0 and 1023)

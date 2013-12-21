@@ -28,8 +28,8 @@
 
 namespace {
 
-struct MarkerConfig {
-	MarkerConfig():
+struct TagConfig {
+	TagConfig():
 	mId(-1),
 	mSize(-1.f),
 	mKeep(false),
@@ -37,7 +37,7 @@ struct MarkerConfig {
 	mLocalcorners(4)
 	{}
 
-	MarkerConfig(int pId, float pSize, bool pKeep,
+	TagConfig(int pId, float pSize, bool pKeep,
 		cv::Vec3f pTranslation, cv::Vec3f pRotation
 	):
 	mId(pId),
@@ -81,12 +81,12 @@ struct MarkerConfig {
     bool mKeep;
 
     // this array stores the 3D location of the 
-    // 4 corners of the marker *in the parent 
+    // 4 corners of the tag *in the parent 
     // object frame*. It is automatically computed.
     std::vector<cv::Point3f> mCorners;
 
     // this array stores the 3D location of the 
-    // 4 corners of the marker *in the marker 
+    // 4 corners of the tag *in the tag 
     // own frame*. It is automatically computed.
     std::vector<cv::Point3f> mLocalcorners;
 };
@@ -98,10 +98,10 @@ class chilitags::Chilitags3D::Impl {
 public:
     Impl(cv::Size pCameraSize) :
 	mChilitags(),
-	mOmitOtherMarkers(false),
+	mOmitOtherTags(false),
 	mCameraMatrix(),
 	mDistCoeffs(),
-	mDefaultMarkerCorners(),
+	mDefaultTagCorners(),
 	mId2Configuration()
 	{
 		double tFocalLength = 700.;
@@ -117,7 +117,7 @@ public:
 	const Chilitags &getChilitags() const {return mChilitags;}
 	      Chilitags &getChilitags()       {return mChilitags;}
 
-    std::map<std::string, cv::Matx44d> findPose(
+    std::map<std::string, cv::Matx44d> estimate(
 		std::map<int, std::vector<cv::Point2f>> pTags) const {
 
 		std::map<std::string, cv::Matx44d> tObjects;
@@ -142,7 +142,7 @@ public:
 				if (tConfigurationIt->first == tTagId) {
 					const auto &tConfiguration = tConfigurationIt->second;
 					if (tConfiguration.second.mKeep) {
-						computeTransformation(cv::format("marker_%d", tTagId),
+						computeTransformation(cv::format("tag_%d", tTagId),
 											  tConfiguration.second.mLocalcorners,
 											  tTag.second,
 											  tObjects);
@@ -156,16 +156,16 @@ public:
 						tPointMapping.second.end(),
 						tTag.second.begin(),
 						tTag.second.end());
-				} else if (!mOmitOtherMarkers) {
-					computeTransformation(cv::format("marker_%d", tTagId), 
-										  mDefaultMarkerCorners,
+				} else if (!mOmitOtherTags) {
+					computeTransformation(cv::format("tag_%d", tTagId), 
+										  mDefaultTagCorners,
 										  tTag.second,
 										  tObjects);
 				}
 
-			} else if (!mOmitOtherMarkers) {
-				computeTransformation(cv::format("marker_%d", tTagId), 
-									  mDefaultMarkerCorners,
+			} else if (!mOmitOtherTags) {
+				computeTransformation(cv::format("tag_%d", tTagId), 
+									  mDefaultTagCorners,
 									  tTag.second,
 									  tObjects);
 			}
@@ -182,13 +182,13 @@ public:
 		return tObjects;
 	}
 
-    std::map<std::string, cv::Matx44d> findPose(
+    std::map<std::string, cv::Matx44d> estimate(
 		const cv::Mat &pInputImage) const {
-		return findPose(mChilitags.find(pInputImage));
+		return estimate(mChilitags.find(pInputImage));
 	}
 
 	void setDefaultTagSize(float pDefaultSize){
-		mDefaultMarkerCorners = {
+		mDefaultTagCorners = {
 			cv::Point3f(0., 0., 0.),
 			cv::Point3f(pDefaultSize, 0., 0.),
 			cv::Point3f(pDefaultSize, pDefaultSize, 0.),
@@ -196,8 +196,8 @@ public:
 		};
 	}
 
-	void read3DConfiguration(const std::string &pFilename, bool pOmitOtherMarkers) {
-		mOmitOtherMarkers = pOmitOtherMarkers;
+	void read3DConfiguration(const std::string &pFilename, bool pOmitOtherTags) {
+		mOmitOtherTags = pOmitOtherTags;
 
 		cv::FileStorage tConfiguration(pFilename, cv::FileStorage::READ);
 		if (!tConfiguration.isOpened()) {
@@ -207,23 +207,23 @@ public:
 
 		mId2Configuration.clear();
 		for(const auto &tObjectConfig : tConfiguration.root()) {
-			for(const auto &tMarkerConfig : tObjectConfig) {
+			for(const auto &tTagConfig : tObjectConfig) {
 				int tId;
-				tMarkerConfig["marker"] >> tId;
+				tTagConfig["tag"] >> tId;
 				float tSize;
-				tMarkerConfig["size"] >> tSize;
+				tTagConfig["size"] >> tSize;
 				bool tKeep;
-				tMarkerConfig["keep"] >> tKeep;
+				tTagConfig["keep"] >> tKeep;
 				cv::Vec3f tTranslation;
 				cv::Vec3f tRotation;
 				for (int i:{0,1,2}) {
-					tMarkerConfig["translation"][i] >> tTranslation[i];
-					tMarkerConfig["rotation"]   [i] >> tRotation   [i];
+					tTagConfig["translation"][i] >> tTranslation[i];
+					tTagConfig["rotation"]   [i] >> tRotation   [i];
 				}
 
 				mId2Configuration[tId] = std::make_pair(
 					tObjectConfig.name(), 
-					MarkerConfig(tId, tSize, tKeep, cv::Vec3f(tTranslation), cv::Vec3f(tRotation)));
+					TagConfig(tId, tSize, tKeep, cv::Vec3f(tTranslation), cv::Vec3f(tRotation)));
 			}
 		}
 	}
@@ -262,7 +262,7 @@ private:
 			// Rotation & translation vectors, computed by cv::solvePnP
 			cv::Mat tRotation, tTranslation;
 			
-			// Find the 3D pose of our marker
+			// Find the 3D pose of our tag
 			cv::solvePnP(pCorners,
 					pImagePoints,
 					mCameraMatrix, mDistCoeffs,
@@ -282,15 +282,15 @@ private:
 
 	Chilitags mChilitags;
 
-	bool mOmitOtherMarkers;
+	bool mOmitOtherTags;
 
     cv::Mat mCameraMatrix;
     cv::Mat mDistCoeffs;
-    std::vector<cv::Point3f> mDefaultMarkerCorners;
+    std::vector<cv::Point3f> mDefaultTagCorners;
 
 	// associates a tag id with an object name and the configuration of the tag
 	// in this object
-	std::map<int, std::pair<std::string, MarkerConfig>> mId2Configuration;
+	std::map<int, std::pair<std::string, TagConfig>> mId2Configuration;
 };
 
 chilitags::Chilitags3D::Chilitags3D(cv::Size pCameraSize):
@@ -303,22 +303,22 @@ chilitags::Chilitags &chilitags::Chilitags3D::getChilitags(){
 	return mImpl->getChilitags();
 }
 
-std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::findPose(
+std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::estimate(
 	std::map<int, std::vector<cv::Point2f>> pTags) const {
-	return mImpl->findPose(pTags);
+	return mImpl->estimate(pTags);
 }
 
-std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::findPose(
+std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::estimate(
 	const cv::Mat &pInputImage) const {
-	return mImpl->findPose(pInputImage);
+	return mImpl->estimate(pInputImage);
 }
 
 void chilitags::Chilitags3D::setDefaultTagSize(float pDefaultSize){
 	mImpl->setDefaultTagSize(pDefaultSize);
 }
 
-void chilitags::Chilitags3D::read3DConfiguration(const std::string &pFilename, bool pOmitOtherMarkers){
-	mImpl->read3DConfiguration(pFilename, pOmitOtherMarkers);
+void chilitags::Chilitags3D::readTagConfiguration(const std::string &pFilename, bool pOmitOtherTags){
+	mImpl->read3DConfiguration(pFilename, pOmitOtherTags);
 }
 
 void chilitags::Chilitags3D::setCalibration(
