@@ -40,8 +40,16 @@ int main(int argc, char* argv[])
     /******************************/
     /* Setting up pose estimation */
     /******************************/
+#ifdef OPENCV3
+	double inputWidth  = capture.get(cv::CAP_PROP_FRAME_WIDTH);
+	double inputHeight = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
+#else
+	double inputWidth  = capture.get(CV_CAP_PROP_FRAME_WIDTH);
+	double inputHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+#endif
+
+    chilitags::Chilitags3D tChilitags3D(Size(inputWidth, inputHeight));
 	static const float DEFAULT_SIZE = 20.f;
-    chilitags::Chilitags3D tChilitags3D;
 	tChilitags3D.setDefaultTagSize(DEFAULT_SIZE);
 	if (configFilename) tChilitags3D.read3DConfiguration(configFilename);
 
@@ -56,11 +64,6 @@ int main(int argc, char* argv[])
 		capture.set(CV_CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
 		capture.set(CV_CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
 #endif
-	} else {
-		double tFocalLength = 817.;
-		cameraMatrix = (cv::Mat_<double>(3,3) << tFocalLength,0,0, 0,tFocalLength,0, 0,0,1);
-		distCoeffs = cv::Mat::zeros(5, 1, CV_64F);
-		tChilitags3D.setCalibration(cameraMatrix, distCoeffs);
 	}
 
 	cv::Mat tProjectionMat = cv::Mat::zeros(4,4,CV_64F);

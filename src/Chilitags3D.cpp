@@ -96,14 +96,20 @@ struct MarkerConfig {
 class chilitags::Chilitags3D::Impl {
 
 public:
-    Impl() :
+    Impl(cv::Size pCameraSize) :
 	mChilitags(),
 	mOmitOtherMarkers(false),
-	mCameraMatrix(cv::Mat::eye(3, 3, CV_64F)),
-	mDistCoeffs(cv::Mat::zeros(5, 1, CV_64F)),
+	mCameraMatrix(),
+	mDistCoeffs(),
 	mDefaultMarkerCorners(),
 	mId2Configuration()
 	{
+		double tFocalLength = 700.;
+		mCameraMatrix = (cv::Mat_<double>(3,3) << 
+			tFocalLength,            0,pCameraSize.width /2,
+			           0, tFocalLength,pCameraSize.height/2,
+			           0,            0,1
+		);
 		setDefaultTagSize(1.f);
 		mChilitags.setPersistence(0);
 	}
@@ -287,8 +293,8 @@ private:
 	std::map<int, std::pair<std::string, MarkerConfig>> mId2Configuration;
 };
 
-chilitags::Chilitags3D::Chilitags3D():
-mImpl(new chilitags::Chilitags3D::Impl()){}
+chilitags::Chilitags3D::Chilitags3D(cv::Size pCameraSize):
+mImpl(new chilitags::Chilitags3D::Impl(pCameraSize)){}
 
 const chilitags::Chilitags &chilitags::Chilitags3D::getChilitags() const{
 	return mImpl->getChilitags();
