@@ -12,7 +12,7 @@ namespace {
 
 cv::Size CAMERA_SIZE(640,480);
 
-cv::Matx44f makeTransformation(
+cv::Matx44d makeTransformation(
 	float rx, float ry, float rz,
 	float tx, float ty, float tz){
 
@@ -58,7 +58,7 @@ TEST(Estimate3dPose, 2D) {
 	auto tTagImage = tChilitags3D.getChilitags().draw(42, 5, true);
 	auto tTags = tChilitags3D.getChilitags().find(tTagImage);
 	EXPECT_EQ(1, tTags.size());
-	auto tObjects = tChilitags3D.findPose(tTags);
+	auto tObjects = tChilitags3D.estimate(tTags);
 	EXPECT_EQ(1, tObjects.size());
 }
 
@@ -77,12 +77,12 @@ TEST(Estimate3dPose, FreeTags) {
 	tChilitags3D.setDefaultTagSize(tSize);
 
 	int tTagId = 0;
-	auto tResult = tChilitags3D.findPose({{tTagId,tCorners}});
+	auto tResult = tChilitags3D.estimate({{tTagId,tCorners}});
 	ASSERT_EQ(1, tResult.size());
 
 	std::string tActualID = tResult.cbegin()->first;
-	EXPECT_EQ(cv::format("marker_%d", tTagId), tActualID);
-	cv::Matx44f tActualTransformation = tResult.cbegin()->second;
+	EXPECT_EQ(cv::format("tag_%d", tTagId), tActualID);
+	cv::Matx44d tActualTransformation = tResult.cbegin()->second;
 	EXPECT_GT(1e-3, cv::norm(tActualTransformation-tExpectedTransformation))
 		<< "\nExpected:\n" << cv::Mat(tExpectedTransformation)
 		<< "\nActual:\n" << cv::Mat(tActualTransformation);
@@ -93,7 +93,7 @@ TEST(Estimate3dPose, Configurations) {
 
 	std::vector<int> tIds = {2, 3};
 	std::vector<float> tSizes = {20,30};
-	std::vector<cv::Matx44f> tTagTransformations = {
+	std::vector<cv::Matx44d> tTagTransformations = {
 		tObjectTransformation*makeTransformation(0, 0, 0, -50, -100, 0),
 		tObjectTransformation*makeTransformation(0, 0, 0, +50, -100, 0),
 	};
@@ -110,28 +110,35 @@ TEST(Estimate3dPose, Configurations) {
 
 	chilitags::Chilitags3D tChilitags3D(CAMERA_SIZE);
 	tChilitags3D.setDefaultTagSize(20.f);
-	tChilitags3D.read3DConfiguration(
+	tChilitags3D.readTagConfiguration(
 		cvtest::TS::ptr()->get_data_path()
-		+"misc/markers_configuration_sample.yml");
+		+"misc/tag_configuration_sample.yml");
 
-	auto tResult = tChilitags3D.findPose(tTags);
+	auto tResult = tChilitags3D.estimate(tTags);
 	EXPECT_EQ(2, tResult.size());
 
-	auto tResultIt = tResult.cbegin();
-	std::vector<std::string> tExpectedNames = {"marker_2", "myobject3"};
-	std::vector<cv::Matx44f> tExpectedTransformations = {
-		tTagTransformations[0],
-		tObjectTransformation};
-	for (std::size_t i = 0; i<tExpectedNames.size(); ++i) {
-		EXPECT_EQ(tExpectedNames[i], tResultIt->first);
+	
+	std::map<std::string, cv::Matx44d> tExpected = {
+		{"tag_2"    , tTagTransformations[0]},
+		{"myobject3", tObjectTransformation },
+	};
+	
+	EXPECT_EQ(tExpected.size(), tResult.size());
+	for (auto tExpectedIt = tExpected.cbegin() ;
+		tExpectedIt != tExpected.cend();
+		++tExpectedIt) {
+		auto tResultIt = tResult.find(tExpectedIt->first);
 
-		cv::Matx44f tActualTransformation = tResultIt->second;
-		EXPECT_GT(1e-3, cv::norm(tActualTransformation-tExpectedTransformations[i]))
-			<< "For:" << tExpectedNames[i]
-			<< "\nExpected:\n" << cv::Mat(tExpectedTransformations[i])
-			<< "\nActual:\n" << cv::Mat(tActualTransformation);
+		if (tResult.cend() == tResultIt) {
+			ADD_FAILURE() << "Missing:" << tExpectedIt->first;
+		} else {
+			EXPECT_GT(1e-3, cv::norm(tResultIt->second - tExpectedIt->second))
+				<< "For:" << tExpectedIt->first
+				<< "\nExpected:\n" << cv::Mat(tExpectedIt->second)
+				<< "\nActual:\n"   << cv::Mat(tResultIt->second);
 
-		++tResultIt;
+			++tResultIt;
+		}
 	}
 }
 

@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
     if (argc != 2) {
         cout
 			<< "Usage: chilitags-detect <image>\n\n"
-			<< "Returns the list of detected markers id in the image, one per line.\n";
+			<< "Returns the list of detected tag id's in the image, one per line.\n";
         return 1;
     }
 

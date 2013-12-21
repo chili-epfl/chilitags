@@ -1,7 +1,7 @@
 Chilitags Creator
 =================
 
-`creator` program is used to generate images of Chilitags, to use with your favourite software to print the markers.
+`creator` program is used to generate images of Chilitags, to use with your favourite software to print the tags.
 We first give some guidelines relative to the use of such images to maximize the detection performance.
 We then decribe the few options that can be given to `creator`.
 
@@ -31,10 +31,10 @@ The following guidelines should help in this purpuse:
 
 Additional notes:
 
- * Some markers are known to be problematic. #22 is not recognized for an undetermined reason. #682 is completely black.
+ * Some tags are known to be problematic. #22 is not recognized for an undetermined reason. #682 is completely black.
 
- * Each marker is assumed to be unique on the image.
- If more than one marker with the same identifier is present, the behavior is undetermined.
+ * Each tags is assumed to be unique on the image.
+ If more than one tag with the same identifier is present, the behavior is undetermined.
 
 Usage of `creator`
 ------------------
@@ -53,7 +53,7 @@ The generated image will be called [tagId].png and placed in the folder of execu
 *zoom* is a non null integer indicating the length in pixel of each bit of the tag matrix.
 By default, the black border has a size of 10x10 pixels, i.e. 1 pixel ber bit of the matrix.
 Some graphical editors (e.g. Inkscape) interpolate images when resized.
-As a result, the inside of the marker becomes blurry.
+As a result, the inside of the tag becomes blurry.
 It does not disturb the detection, as long as the outside, black border remains sharp, but for aesthetic reasons, it may be useful to provide a bigger size to `creator`. 
 
 *margin* is n if and only if no white rectangle should be drawn around the tag.

@@ -2,7 +2,7 @@ Chilitags 2: Robust Fiducial Markers for Augmented Reality and Robotics
 =====================================================================
 
 Chilitags are a C++ cross-platform software library for the detection and
-identification of 2D fiducial markers.  Their purpose is to be printed and
+identification of 2D fiducial markers (a.k.a. tags).  Their purpose is to be printed and
 placed on objects from the real world, to form the basis of Robotics or
 Augmented Reality (AR) applications.  Using a camera, the position of the tagged
 objects can be acquired by a computer.
@@ -50,7 +50,7 @@ The characteristics of Chilitags come from their original use:
    valid conditions, which required to build systems stable even in various,
    uncontrolled settings.
 
-Chilitags can be recognized even from low resolution images (markers as narrow
+Chilitags can be recognized even from low resolution images (tags as narrow
 as 12 pixels are recognized).  However, they are very sensitive to occlusions:
 if a border is occluded, the tag will not be detected.
 
@@ -66,7 +66,7 @@ This release of Chilitags consists of four components:
 
  * `include` and `src`, the library itself,
 
- * `tools`, containing a utility to generate markers,
+ * `tools`, containing a utility to generate tags,
 
  * `samples`, sample programs illustrating how to use the library,
 
@@ -125,11 +125,11 @@ following commands:
  
  to start the sample program with default parameters for the camera.
 
-### Markers Generation
+### Tag Generation
 
-Once the software is up and running, the markers can be generated using the
+Once the software is up and running, the tags can be generated using the
 `creator` executable in `tools`.  We also [generated sets of
-markers](http://chili.epfl.ch/files/content/sites/chili/files/files/tags.zip) with various settings.
+tags](http://chili.epfl.ch/files/content/sites/chili/files/files/tags.zip) with various settings.
 
 The `README` file accompanying `creator` gives important guidelines on how to
 design and print chilitags.  It also explains the usage of `creator`.
