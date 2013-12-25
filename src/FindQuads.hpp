@@ -34,7 +34,7 @@ class FindQuads
 public:
 FindQuads();
 
-std::vector<std::vector<cv::Point2f>> operator()(const cv::Mat &pGreyscaleImage);
+std::vector<std::vector<cv::Point2f> > operator()(const cv::Mat &pGreyscaleImage);
 
 protected:
 

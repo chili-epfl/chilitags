@@ -32,11 +32,11 @@ public:
 
 /** The default values will code and decode chilitags */
 Codec(
-	int pBitsId = 10,
-	int pBitsCrc = 16,
-	int pBitsFec = 10,
-	const char *pXorMask = "1010101010",
-	const char *pCrcPoly = "10001000000100001");
+    int pBitsId = 10,
+    int pBitsCrc = 16,
+    int pBitsFec = 10,
+    const char *pXorMask = "1010101010",
+    const char *pCrcPoly = "10001000000100001");
 
 virtual ~Codec();
 
@@ -47,7 +47,7 @@ bool decode(const unsigned char *data, int &id) const;
 bool getTagEncodedId(int tagId, unsigned char *data) const;
 
 int getMaxTagsNumber() const {
-	return m_maxTagsNumber;
+    return m_maxTagsNumber;
 }
 
 private:
@@ -55,10 +55,10 @@ private:
 void addTagToTrackingList(int id);
 
 struct tag_info_t {
-	int id; // id of the tag
-	int xor_id; // id after applying XOR mask
-	long crc; // id after computing the crc
-	unsigned char fec[36]; // id after computing the fec, used to draw the tag
+    int id; // id of the tag
+    int xor_id; // id after applying XOR mask
+    long crc; // id after computing the crc
+    unsigned char fec[36]; // id after computing the fec, used to draw the tag
 };
 
 void encode(tag_info_t *tag);
@@ -102,14 +102,14 @@ int *m_fec_state;
 unsigned char *m_fec_decoded_id;
 
 struct fec_state {
-	int output[2];
-	int next_state[2];
+    int output[2];
+    int next_state[2];
 };
 
 struct fec_state_dec {
-	int input[2];
-	int output[2];
-	int next_state[2];
+    int input[2];
+    int output[2];
+    int next_state[2];
 };
 
 fec_state m_fec_fsm[4];

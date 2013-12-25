@@ -27,7 +27,7 @@
 #include <vector>
 #include <opencv2/core/core.hpp>
 
-namespace chilitags{
+namespace chilitags {
 
 /** CachingFilter aims at preventing that tags "flicker", i.e. that they rapidly
  *  appear and disappear in the detection. To do so, CachingFilter takes as
@@ -38,76 +38,76 @@ class CachingFilter {
 
 public:
 
-	/** \param pPersistence defines how many updates of the tag positions should
-	 *  happen before an undetected tag actually disappear from the filtered
-	 * output.
-	 */
-	CachingFilter(int pPersistence):
-	mPersistence(pPersistence),
-	mCachedTags(),
-	mCacheAge()
-	{
-	}
+/** \param pPersistence defines how many updates of the tag positions should
+ *  happen before an undetected tag actually disappear from the filtered
+ * output.
+ */
+CachingFilter(int pPersistence) :
+    mPersistence(pPersistence),
+    mCachedTags(),
+    mCacheAge()
+{
+}
 
-	void setPersistence(int pPersistence) {
-		mPersistence = pPersistence;
-	}
+void setPersistence(int pPersistence) {
+    mPersistence = pPersistence;
+}
 
-	const std::map<int, std::vector<cv::Point2f>> &operator()(
-		const std::map<int, std::vector<cv::Point2f>> &pRawTags){
+const std::map<int, std::vector<cv::Point2f> > &operator()(
+    const std::map<int, std::vector<cv::Point2f> > &pRawTags){
 
-		if (mPersistence <= 0) return pRawTags;
+    if (mPersistence <= 0) return pRawTags;
 
-		auto tRawTagIt = pRawTags.cbegin();
-		auto tCachedTagIt = mCachedTags.begin();
-		auto tCacheAgeIt = mCacheAge.begin();
-		while (tRawTagIt != pRawTags.end()) {
-			while (tCachedTagIt != mCachedTags.end()
-				&& tCachedTagIt->first < tRawTagIt->first) {
-				if (tCacheAgeIt->second > mPersistence) {
-					mCacheAge.erase(tCacheAgeIt);
-					mCachedTags.erase(tCachedTagIt);
-				} else {
-					++tCacheAgeIt->second;
-				}
-				++tCacheAgeIt;
-				++tCachedTagIt;
-			}
-			if (tCachedTagIt != mCachedTags.end()
-			 && tCachedTagIt->first == tRawTagIt->first) {
-				tCacheAgeIt->second = 0;
-				tCachedTagIt->second = tRawTagIt->second;
-			} else {
-				mCacheAge.insert(tCacheAgeIt,
-					std::make_pair(tRawTagIt->first, 0));
-				mCachedTags.insert(tCachedTagIt, *tRawTagIt);
-			}
-			++tRawTagIt;
-			++tCacheAgeIt;
-			++tCachedTagIt;
-		}
-		while (tCachedTagIt != mCachedTags.end()) {
-			if (tCacheAgeIt->second > mPersistence) {
-				mCacheAge.erase(tCacheAgeIt);
-				mCachedTags.erase(tCachedTagIt);
-			} else {
-				++tCacheAgeIt->second;
-			}
-			++tCacheAgeIt;
-			++tCachedTagIt;
-		}
+    auto tRawTagIt = pRawTags.cbegin();
+    auto tCachedTagIt = mCachedTags.begin();
+    auto tCacheAgeIt = mCacheAge.begin();
+    while (tRawTagIt != pRawTags.end()) {
+        while (tCachedTagIt != mCachedTags.end()
+               && tCachedTagIt->first < tRawTagIt->first) {
+            if (tCacheAgeIt->second > mPersistence) {
+                mCacheAge.erase(tCacheAgeIt);
+                mCachedTags.erase(tCachedTagIt);
+            } else {
+                ++tCacheAgeIt->second;
+            }
+            ++tCacheAgeIt;
+            ++tCachedTagIt;
+        }
+        if (tCachedTagIt != mCachedTags.end()
+            && tCachedTagIt->first == tRawTagIt->first) {
+            tCacheAgeIt->second = 0;
+            tCachedTagIt->second = tRawTagIt->second;
+        } else {
+            mCacheAge.insert(tCacheAgeIt,
+                             std::make_pair(tRawTagIt->first, 0));
+            mCachedTags.insert(tCachedTagIt, *tRawTagIt);
+        }
+        ++tRawTagIt;
+        ++tCacheAgeIt;
+        ++tCachedTagIt;
+    }
+    while (tCachedTagIt != mCachedTags.end()) {
+        if (tCacheAgeIt->second > mPersistence) {
+            mCacheAge.erase(tCacheAgeIt);
+            mCachedTags.erase(tCachedTagIt);
+        } else {
+            ++tCacheAgeIt->second;
+        }
+        ++tCacheAgeIt;
+        ++tCachedTagIt;
+    }
 
-		return mCachedTags;
-	}
+    return mCachedTags;
+}
 
 protected:
-	int mPersistence;
-	/** The filtered tag list
-	*/
-	std::map<int, std::vector<cv::Point2f>> mCachedTags;
-	/** Keeps track of how many times a cached tag has been returned
-	*/
-	std::map<int, int> mCacheAge;
+int mPersistence;
+/** The filtered tag list
+ */
+std::map<int, std::vector<cv::Point2f> > mCachedTags;
+/** Keeps track of how many times a cached tag has been returned
+ */
+std::map<int, int> mCacheAge;
 
 };
 

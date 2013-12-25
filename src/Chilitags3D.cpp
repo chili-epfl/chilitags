@@ -29,64 +29,65 @@
 namespace {
 
 struct TagConfig {
-	TagConfig():
-	mId(-1),
-	mSize(-1.f),
-	mKeep(false),
-	mCorners(4),
-	mLocalcorners(4)
-	{}
+    TagConfig() :
+        mId(-1),
+        mSize(-1.f),
+        mKeep(false),
+        mCorners(4),
+        mLocalcorners(4)
+    {
+    }
 
-	TagConfig(int pId, float pSize, bool pKeep,
-		cv::Vec3f pTranslation, cv::Vec3f pRotation
-	):
-	mId(pId),
-	mSize(pSize),
-	mKeep(pKeep),
-	mCorners(4),
-	mLocalcorners(4)
-	{
-		mLocalcorners[0] = cv::Point3f(0.f , 0.f , 0.f);
-		mLocalcorners[1] = cv::Point3f(pSize, 0.f , 0.f);
-		mLocalcorners[2] = cv::Point3f(pSize, pSize, 0.f);
-		mLocalcorners[3] = cv::Point3f(0.f , pSize, 0.f);
+    TagConfig(int pId, float pSize, bool pKeep,
+              cv::Vec3f pTranslation, cv::Vec3f pRotation
+              ) :
+        mId(pId),
+        mSize(pSize),
+        mKeep(pKeep),
+        mCorners(4),
+        mLocalcorners(4)
+    {
+        mLocalcorners[0] = cv::Point3f(0.f, 0.f, 0.f);
+        mLocalcorners[1] = cv::Point3f(pSize, 0.f, 0.f);
+        mLocalcorners[2] = cv::Point3f(pSize, pSize, 0.f);
+        mLocalcorners[3] = cv::Point3f(0.f, pSize, 0.f);
 
 
-		// Rotation matrix computation: cf The Matrix and Quaternions FAQ
-		// http://www.cs.princeton.edu/~gewang/projects/darth/stuff/quat_faq.html#Q36
-		
-		static const float DEG2RAD = 3.141593f / 180.f;
-		auto A = cos(pRotation[0] * DEG2RAD);
-		auto B = sin(pRotation[0] * DEG2RAD);
-		auto C = cos(pRotation[1] * DEG2RAD);
-		auto D = sin(pRotation[1] * DEG2RAD);
-		auto E = cos(pRotation[2] * DEG2RAD);
-		auto F = sin(pRotation[2] * DEG2RAD);
+        // Rotation matrix computation: cf The Matrix and Quaternions FAQ
+        // http://www.cs.princeton.edu/~gewang/projects/darth/stuff/quat_faq.html#Q36
 
-		cv::Matx44d tTransformation(
-				C*E,        -C*F,       D,    pTranslation[0],
-				B*D*E+A*F,  -B*D*F+A*E, -B*C, pTranslation[1],
-				-A*D*E+B*F, A*D*F+B*E,  A*C,  pTranslation[2],
-				0.,         0.,         0.,   1.);
+        static const float DEG2RAD = 3.141593f / 180.f;
+        auto A = cos(pRotation[0] * DEG2RAD);
+        auto B = sin(pRotation[0] * DEG2RAD);
+        auto C = cos(pRotation[1] * DEG2RAD);
+        auto D = sin(pRotation[1] * DEG2RAD);
+        auto E = cos(pRotation[2] * DEG2RAD);
+        auto F = sin(pRotation[2] * DEG2RAD);
 
-		for (auto i : {0, 1, 2, 3}) {
-			auto tCorner = tTransformation *
-				cv::Matx41d(mLocalcorners[i].x, mLocalcorners[i].y, 0.f, 1.f);
-			mCorners[i] = cv::Point3f(tCorner(0), tCorner(1), tCorner(2));
-		}
-	}
+        cv::Matx44d tTransformation(
+                   C*E ,        -C*F ,    D , pTranslation[0] ,
+             B*D*E+A*F ,  -B*D*F+A*E , -B*C , pTranslation[1] ,
+            -A*D*E+B*F ,   A*D*F+B*E ,  A*C , pTranslation[2] ,
+                    0. ,          0. ,   0. , 1.              );
+
+        for (auto i : {0, 1, 2, 3}) {
+            auto tCorner = tTransformation *
+                           cv::Matx41d(mLocalcorners[i].x, mLocalcorners[i].y, 0.f, 1.f);
+            mCorners[i] = cv::Point3f(tCorner(0), tCorner(1), tCorner(2));
+        }
+    }
 
     int mId;
     float mSize;
     bool mKeep;
 
-    // this array stores the 3D location of the 
-    // 4 corners of the tag *in the parent 
+    // this array stores the 3D location of the
+    // 4 corners of the tag *in the parent
     // object frame*. It is automatically computed.
     std::vector<cv::Point3f> mCorners;
 
-    // this array stores the 3D location of the 
-    // 4 corners of the tag *in the tag 
+    // this array stores the 3D location of the
+    // 4 corners of the tag *in the tag
     // own frame*. It is automatically computed.
     std::vector<cv::Point3f> mLocalcorners;
 };
@@ -96,238 +97,243 @@ struct TagConfig {
 class chilitags::Chilitags3D::Impl {
 
 public:
-    Impl(cv::Size pCameraSize) :
-	mChilitags(),
-	mOmitOtherTags(false),
-	mCameraMatrix(),
-	mDistCoeffs(),
-	mDefaultTagCorners(),
-	mId2Configuration()
-	{
-		double tFocalLength = 700.;
-		mCameraMatrix = (cv::Mat_<double>(3,3) << 
-			tFocalLength,            0,pCameraSize.width /2,
-			           0, tFocalLength,pCameraSize.height/2,
-			           0,            0,1
-		);
-		setDefaultTagSize(1.f);
-		mChilitags.setPersistence(0);
-	}
+Impl(cv::Size pCameraSize) :
+    mChilitags(),
+    mOmitOtherTags(false),
+    mCameraMatrix(),
+    mDistCoeffs(),
+    mDefaultTagCorners(),
+    mId2Configuration()
+{
+    double tFocalLength = 700.;
+    mCameraMatrix = (cv::Mat_<double>(3,3) <<
+        tFocalLength ,            0 , pCameraSize.width /2,
+                   0 , tFocalLength , pCameraSize.height/2,
+                   0,             0 , 1
+    );
+    setDefaultTagSize(1.f);
+    mChilitags.setPersistence(0);
+}
 
-	const Chilitags &getChilitags() const {return mChilitags;}
-	      Chilitags &getChilitags()       {return mChilitags;}
+const Chilitags &getChilitags() const {
+    return mChilitags;
+}
+      Chilitags &getChilitags()       {
+    return mChilitags;
+}
 
-    std::map<std::string, cv::Matx44d> estimate(
-		std::map<int, std::vector<cv::Point2f>> pTags) const {
+std::map<std::string, cv::Matx44d> estimate(
+    std::map<int, std::vector<cv::Point2f> > pTags) const {
 
-		std::map<std::string, cv::Matx44d> tObjects;
+    std::map<std::string, cv::Matx44d> tObjects;
 
-		std::map<
-			const std::string, //name of the object
-			std::pair<
-				std::vector<cv::Point3f>,  //points in object
-				std::vector<cv::Point2f>>> //points in frame
-			tObjectToPointMapping;
-
-
-		auto tConfigurationIt = mId2Configuration.begin();
-		auto tConfigurationEnd = mId2Configuration.end();
-		for (const auto &tTag: pTags) {
-			int tTagId = tTag.first;
-			while (tConfigurationIt != tConfigurationEnd
-				&& tConfigurationIt->first < tTagId)
-				++tConfigurationIt;
-
-			if (tConfigurationIt != tConfigurationEnd) {
-				if (tConfigurationIt->first == tTagId) {
-					const auto &tConfiguration = tConfigurationIt->second;
-					if (tConfiguration.second.mKeep) {
-						computeTransformation(cv::format("tag_%d", tTagId),
-											  tConfiguration.second.mLocalcorners,
-											  tTag.second,
-											  tObjects);
-					}
-					auto & tPointMapping = tObjectToPointMapping[tConfiguration.first];
-					tPointMapping.first.insert(
-						tPointMapping.first.end(),
-						tConfiguration.second.mCorners.begin(),
-						tConfiguration.second.mCorners.end());
-					tPointMapping.second.insert(
-						tPointMapping.second.end(),
-						tTag.second.begin(),
-						tTag.second.end());
-				} else if (!mOmitOtherTags) {
-					computeTransformation(cv::format("tag_%d", tTagId), 
-										  mDefaultTagCorners,
-										  tTag.second,
-										  tObjects);
-				}
-
-			} else if (!mOmitOtherTags) {
-				computeTransformation(cv::format("tag_%d", tTagId), 
-									  mDefaultTagCorners,
-									  tTag.second,
-									  tObjects);
-			}
-		}
-
-		for (auto& tObjectToPoints : tObjectToPointMapping) {
-			computeTransformation(
-				tObjectToPoints.first,
-				tObjectToPoints.second.first,
-				tObjectToPoints.second.second,
-				tObjects);
-		}
-
-		return tObjects;
-	}
-
-    std::map<std::string, cv::Matx44d> estimate(
-		const cv::Mat &pInputImage) const {
-		return estimate(mChilitags.find(pInputImage));
-	}
-
-	void setDefaultTagSize(float pDefaultSize){
-		mDefaultTagCorners = {
-			cv::Point3f(0., 0., 0.),
-			cv::Point3f(pDefaultSize, 0., 0.),
-			cv::Point3f(pDefaultSize, pDefaultSize, 0.),
-			cv::Point3f(0., pDefaultSize, 0.),
-		};
-	}
-
-	void read3DConfiguration(const std::string &pFilename, bool pOmitOtherTags) {
-		mOmitOtherTags = pOmitOtherTags;
-
-		cv::FileStorage tConfiguration(pFilename, cv::FileStorage::READ);
-		if (!tConfiguration.isOpened()) {
-			std::cerr << "Could not open " << pFilename << std::endl;
-			return;
-		}
-
-		mId2Configuration.clear();
-		for(const auto &tObjectConfig : tConfiguration.root()) {
-			for(const auto &tTagConfig : tObjectConfig) {
-				int tId;
-				tTagConfig["tag"] >> tId;
-				float tSize;
-				tTagConfig["size"] >> tSize;
-				bool tKeep;
-				tTagConfig["keep"] >> tKeep;
-				cv::Vec3f tTranslation;
-				cv::Vec3f tRotation;
-				for (int i:{0,1,2}) {
-					tTagConfig["translation"][i] >> tTranslation[i];
-					tTagConfig["rotation"]   [i] >> tRotation   [i];
-				}
-
-				mId2Configuration[tId] = std::make_pair(
-					tObjectConfig.name(), 
-					TagConfig(tId, tSize, tKeep, cv::Vec3f(tTranslation), cv::Vec3f(tRotation)));
-			}
-		}
-	}
+    std::map<
+        const std::string,     //name of the object
+        std::pair<
+            std::vector<cv::Point3f>,      //points in object
+            std::vector<cv::Point2f> > >   //points in frame
+    tObjectToPointMapping;
 
 
-    /** Sets new camera calibration values.
-     */
-    void setCalibration(cv::InputArray pNewCameraMatrix,
-                        cv::InputArray pNewDistCoeffs){
-		mCameraMatrix = pNewCameraMatrix.getMat();
-		mDistCoeffs = pNewDistCoeffs.getMat();
-	}
+    auto tConfigurationIt = mId2Configuration.begin();
+    auto tConfigurationEnd = mId2Configuration.end();
+    for (const auto &tTag : pTags) {
+        int tTagId = tTag.first;
+        while (tConfigurationIt != tConfigurationEnd
+               && tConfigurationIt->first < tTagId)
+            ++tConfigurationIt;
 
-	cv::Size readCalibration(const std::string &pFilename) {
-		cv::Size tSize;
-		cv::FileStorage fs(pFilename, cv::FileStorage::READ);
-		fs["image_width"]             >> tSize.width;
-		fs["image_height"]            >> tSize.height;
-		fs["distortion_coefficients"] >> mDistCoeffs;
-		fs["camera_matrix"]           >> mCameraMatrix;
+        if (tConfigurationIt != tConfigurationEnd) {
+            if (tConfigurationIt->first == tTagId) {
+                const auto &tConfiguration = tConfigurationIt->second;
+                if (tConfiguration.second.mKeep) {
+                    computeTransformation(cv::format("tag_%d", tTagId),
+                                          tConfiguration.second.mLocalcorners,
+                                          tTag.second,
+                                          tObjects);
+                }
+                auto & tPointMapping = tObjectToPointMapping[tConfiguration.first];
+                tPointMapping.first.insert(
+                    tPointMapping.first.end(),
+                    tConfiguration.second.mCorners.begin(),
+                    tConfiguration.second.mCorners.end());
+                tPointMapping.second.insert(
+                    tPointMapping.second.end(),
+                    tTag.second.begin(),
+                    tTag.second.end());
+            } else if (!mOmitOtherTags) {
+                computeTransformation(cv::format("tag_%d", tTagId),
+                                      mDefaultTagCorners,
+                                      tTag.second,
+                                      tObjects);
+            }
 
-		if( mDistCoeffs.type() != CV_64F )
-			mDistCoeffs = cv::Mat_<double>(mDistCoeffs);
-		if( mCameraMatrix.type() != CV_64F )
-			mCameraMatrix = cv::Mat_<double>(mCameraMatrix);
+        } else if (!mOmitOtherTags) {
+            computeTransformation(cv::format("tag_%d", tTagId),
+                                  mDefaultTagCorners,
+                                  tTag.second,
+                                  tObjects);
+        }
+    }
 
-		return tSize;
-	}
+    for (auto& tObjectToPoints : tObjectToPointMapping) {
+        computeTransformation(
+            tObjectToPoints.first,
+            tObjectToPoints.second.first,
+            tObjectToPoints.second.second,
+            tObjects);
+    }
+
+    return tObjects;
+}
+
+std::map<std::string, cv::Matx44d> estimate(
+    const cv::Mat &pInputImage) const {
+    return estimate(mChilitags.find(pInputImage));
+}
+
+void setDefaultTagSize(float pDefaultSize){
+    mDefaultTagCorners = {
+        cv::Point3f(0., 0., 0.),
+        cv::Point3f(pDefaultSize, 0., 0.),
+        cv::Point3f(pDefaultSize, pDefaultSize, 0.),
+        cv::Point3f(0., pDefaultSize, 0.),
+    };
+}
+
+void read3DConfiguration(const std::string &pFilename, bool pOmitOtherTags) {
+    mOmitOtherTags = pOmitOtherTags;
+
+    cv::FileStorage tConfiguration(pFilename, cv::FileStorage::READ);
+    if (!tConfiguration.isOpened()) {
+        std::cerr << "Could not open " << pFilename << std::endl;
+        return;
+    }
+
+    mId2Configuration.clear();
+    for(const auto &tObjectConfig : tConfiguration.root()) {
+        for(const auto &tTagConfig : tObjectConfig) {
+            int tId;
+            tTagConfig["tag"] >> tId;
+            float tSize;
+            tTagConfig["size"] >> tSize;
+            bool tKeep;
+            tTagConfig["keep"] >> tKeep;
+            cv::Vec3f tTranslation;
+            cv::Vec3f tRotation;
+            for (int i : {0,1,2}) {
+                tTagConfig["translation"][i] >> tTranslation[i];
+                tTagConfig["rotation"]   [i] >> tRotation   [i];
+            }
+
+            mId2Configuration[tId] = std::make_pair(
+                tObjectConfig.name(),
+                TagConfig(tId, tSize, tKeep, cv::Vec3f(tTranslation), cv::Vec3f(tRotation)));
+        }
+    }
+}
+
+
+/** Sets new camera calibration values.
+ */
+void setCalibration(cv::InputArray pNewCameraMatrix,
+                    cv::InputArray pNewDistCoeffs){
+    mCameraMatrix = pNewCameraMatrix.getMat();
+    mDistCoeffs = pNewDistCoeffs.getMat();
+}
+
+cv::Size readCalibration(const std::string &pFilename) {
+    cv::Size tSize;
+    cv::FileStorage fs(pFilename, cv::FileStorage::READ);
+    fs["image_width"]             >> tSize.width;
+    fs["image_height"]            >> tSize.height;
+    fs["distortion_coefficients"] >> mDistCoeffs;
+    fs["camera_matrix"]           >> mCameraMatrix;
+
+    if( mDistCoeffs.type() != CV_64F )
+        mDistCoeffs = cv::Mat_<double>(mDistCoeffs);
+    if( mCameraMatrix.type() != CV_64F )
+        mCameraMatrix = cv::Mat_<double>(mCameraMatrix);
+
+    return tSize;
+}
 
 private:
-	void computeTransformation(const std::string& pName,
-							   const std::vector<cv::Point3f>& pCorners,
-							   const std::vector<cv::Point2f>& pImagePoints,
-							   std::map<std::string, cv::Matx44d>& pObjects) const
-	{
-			// Rotation & translation vectors, computed by cv::solvePnP
-			cv::Mat tRotation, tTranslation;
-			
-			// Find the 3D pose of our tag
-			cv::solvePnP(pCorners,
-					pImagePoints,
-					mCameraMatrix, mDistCoeffs,
-					tRotation, tTranslation, false,
-					cv::ITERATIVE);
+void computeTransformation(const std::string& pName,
+                           const std::vector<cv::Point3f>& pCorners,
+                           const std::vector<cv::Point2f>& pImagePoints,
+                           std::map<std::string, cv::Matx44d>& pObjects) const
+{
+    // Rotation & translation vectors, computed by cv::solvePnP
+    cv::Mat tRotation, tTranslation;
 
-			cv::Matx33d tRotMat;
-			cv::Rodrigues(tRotation, tRotMat);
+    // Find the 3D pose of our tag
+    cv::solvePnP(pCorners,
+                 pImagePoints,
+                 mCameraMatrix, mDistCoeffs,
+                 tRotation, tTranslation, false,
+                 cv::ITERATIVE);
 
-			pObjects[pName] = {
-				tRotMat(0,0), tRotMat(0,1), tRotMat(0,2), tTranslation.at<double>(0),
-				tRotMat(1,0), tRotMat(1,1), tRotMat(1,2), tTranslation.at<double>(1),
-				tRotMat(2,0), tRotMat(2,1), tRotMat(2,2), tTranslation.at<double>(2),
-				0           , 0           , 0           , 1                         ,
-			};
-	}
+    cv::Matx33d tRotMat;
+    cv::Rodrigues(tRotation, tRotMat);
 
-	Chilitags mChilitags;
+    pObjects[pName] = {
+        tRotMat(0,0) , tRotMat(0,1) , tRotMat(0,2) , tTranslation.at<double>(0) ,
+        tRotMat(1,0) , tRotMat(1,1) , tRotMat(1,2) , tTranslation.at<double>(1) ,
+        tRotMat(2,0) , tRotMat(2,1) , tRotMat(2,2) , tTranslation.at<double>(2) ,
+                   0 ,            0 ,            0 ,                          1 ,
+    };
+}
 
-	bool mOmitOtherTags;
+Chilitags mChilitags;
 
-    cv::Mat mCameraMatrix;
-    cv::Mat mDistCoeffs;
-    std::vector<cv::Point3f> mDefaultTagCorners;
+bool mOmitOtherTags;
 
-	// associates a tag id with an object name and the configuration of the tag
-	// in this object
-	std::map<int, std::pair<std::string, TagConfig>> mId2Configuration;
+cv::Mat mCameraMatrix;
+cv::Mat mDistCoeffs;
+std::vector<cv::Point3f> mDefaultTagCorners;
+
+// associates a tag id with an object name and the configuration of the tag
+// in this object
+std::map<int, std::pair<std::string, TagConfig> > mId2Configuration;
 };
 
-chilitags::Chilitags3D::Chilitags3D(cv::Size pCameraSize):
-mImpl(new chilitags::Chilitags3D::Impl(pCameraSize)){}
+chilitags::Chilitags3D::Chilitags3D(cv::Size pCameraSize) :
+    mImpl(new chilitags::Chilitags3D::Impl(pCameraSize)){
+}
 
-const chilitags::Chilitags &chilitags::Chilitags3D::getChilitags() const{
-	return mImpl->getChilitags();
+const chilitags::Chilitags &chilitags::Chilitags3D::getChilitags() const {
+    return mImpl->getChilitags();
 }
 chilitags::Chilitags &chilitags::Chilitags3D::getChilitags(){
-	return mImpl->getChilitags();
+    return mImpl->getChilitags();
 }
 
 std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::estimate(
-	std::map<int, std::vector<cv::Point2f>> pTags) const {
-	return mImpl->estimate(pTags);
+    std::map<int, std::vector<cv::Point2f> > pTags) const {
+    return mImpl->estimate(pTags);
 }
 
 std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::estimate(
-	const cv::Mat &pInputImage) const {
-	return mImpl->estimate(pInputImage);
+    const cv::Mat &pInputImage) const {
+    return mImpl->estimate(pInputImage);
 }
 
 void chilitags::Chilitags3D::setDefaultTagSize(float pDefaultSize){
-	mImpl->setDefaultTagSize(pDefaultSize);
+    mImpl->setDefaultTagSize(pDefaultSize);
 }
 
 void chilitags::Chilitags3D::readTagConfiguration(const std::string &pFilename, bool pOmitOtherTags){
-	mImpl->read3DConfiguration(pFilename, pOmitOtherTags);
+    mImpl->read3DConfiguration(pFilename, pOmitOtherTags);
 }
 
 void chilitags::Chilitags3D::setCalibration(
-	cv::InputArray pNewCameraMatrix,
-	cv::InputArray pNewDistCoeffs) {
-	mImpl->setCalibration(pNewCameraMatrix, pNewDistCoeffs);
+    cv::InputArray pNewCameraMatrix,
+    cv::InputArray pNewDistCoeffs) {
+    mImpl->setCalibration(pNewCameraMatrix, pNewDistCoeffs);
 }
 cv::Size chilitags::Chilitags3D::readCalibration(const std::string &pFilename){
-	return mImpl->readCalibration(pFilename);
+    return mImpl->readCalibration(pFilename);
 }
 
 chilitags::Chilitags3D::~Chilitags3D() = default;

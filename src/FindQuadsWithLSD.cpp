@@ -43,7 +43,7 @@ bool intersection(const Point2f& o1, const Point2f& p1, const Point2f& o2, const
     Point2f d2 = p2 - o2;
 
     float cross = d1.x*d2.y - d1.y*d2.x;
-    if (abs(cross) < /*EPS*/1e-8)
+    if (abs(cross) < /*EPS*/ 1e-8)
         return false;
 
     double t1 = (x.x * d2.y - x.y * d2.x)/cross;
@@ -60,7 +60,7 @@ void mergePoints(vector<Vec4f>& lines, vector<Vec2f>& points, vector<Vec2i>& seg
 
         auto len = norm(seg00 - seg01);
         // discard too small segments
-        if (len < MIN_QUAD_SIZE) {continue;}
+        if (len < MIN_QUAD_SIZE) {continue; }
         //auto min_dist = max(1., min(0.1*len, 10.));
 
         for (auto& seg2 : lines) {
@@ -68,16 +68,16 @@ void mergePoints(vector<Vec4f>& lines, vector<Vec2f>& points, vector<Vec2i>& seg
             Point2f seg10 = {seg2[0], seg2[1]};
             Point2f seg11 = {seg2[2], seg2[3]};
 
-            if (seg00 == seg10 && seg01 == seg11) {continue;}
+            if (seg00 == seg10 && seg01 == seg11) {continue; }
 
             auto len2 = norm(seg10 - seg11);
             auto min_dist = 0.2*min(len,len2);
 
             Point2f corner;
-            if (!intersection(seg00, seg01, seg10, seg11, corner)) {continue;}
+            if (!intersection(seg00, seg01, seg10, seg11, corner)) {continue; }
 
             if (    norm(seg00 - corner) < min_dist
-                &&  norm(seg10 - corner) < min_dist) {
+                    &&  norm(seg10 - corner) < min_dist) {
                 seg[0] = corner.x;
                 seg[1] = corner.y;
                 seg2[0] = corner.x;
@@ -85,7 +85,7 @@ void mergePoints(vector<Vec4f>& lines, vector<Vec2f>& points, vector<Vec2i>& seg
                 continue;
             }
             if (    norm(seg01 - corner) < min_dist
-                &&  norm(seg10 - corner) < min_dist) {
+                    &&  norm(seg10 - corner) < min_dist) {
                 seg[2] = corner.x;
                 seg[3] = corner.y;
                 seg2[0] = corner.x;
@@ -94,7 +94,7 @@ void mergePoints(vector<Vec4f>& lines, vector<Vec2f>& points, vector<Vec2i>& seg
             }
 
             if (    norm(seg00 - corner) < min_dist
-                &&  norm(seg11 - corner) < min_dist) {
+                    &&  norm(seg11 - corner) < min_dist) {
                 seg[0] = corner.x;
                 seg[1] = corner.y;
                 seg2[2] = corner.x;
@@ -103,7 +103,7 @@ void mergePoints(vector<Vec4f>& lines, vector<Vec2f>& points, vector<Vec2i>& seg
             }
 
             if (    norm(seg01 - corner) < min_dist
-                &&  norm(seg11 - corner) < min_dist) {
+                    &&  norm(seg11 - corner) < min_dist) {
                 seg[2] = corner.x;
                 seg[3] = corner.y;
                 seg2[2] = corner.x;
@@ -126,14 +126,14 @@ void mergePoints(vector<Vec4f>& lines, vector<Vec2f>& points, vector<Vec2i>& seg
             points.push_back(p0);
             i = points.size()-1;
         }
-        else {i = it - points.begin();}
+        else {i = it - points.begin(); }
 
         it = find(points.begin(), points.end(), p1);
         if (it == points.end()) {
             points.push_back(p1);
             j = points.size()-1;
         }
-        else {j = it - points.begin();}
+        else {j = it - points.begin(); }
 
         segs_idx.push_back({i,j});
     }
@@ -149,11 +149,11 @@ chilitags::FindQuads::FindQuads() :
 #endif
 }
 
-std::vector<std::vector<cv::Point2f>> chilitags::FindQuads::operator()(const cv::Mat &pBinaryImage)
+std::vector<std::vector<cv::Point2f> > chilitags::FindQuads::operator()(const cv::Mat &pBinaryImage)
 {
     //TODO function too long, split it
 
-	std::vector<std::vector<cv::Point2f>> tQuads;
+    std::vector<std::vector<cv::Point2f> > tQuads;
 
     vector<Vec4f> lines;
     lsd->detect(pBinaryImage, lines);
@@ -175,7 +175,7 @@ std::vector<std::vector<cv::Point2f>> chilitags::FindQuads::operator()(const cv:
     vector<Vec2i> segs_idx;
     mergePoints(lines, points, segs_idx);
 
-    map<int, vector<int>> adjacency_list;
+    map<int, vector<int> > adjacency_list;
 
     for (auto& p : segs_idx) {
         adjacency_list[p[0]].push_back(p[1]);
@@ -197,9 +197,9 @@ std::vector<std::vector<cv::Point2f>> chilitags::FindQuads::operator()(const cv:
 
     set<int> unexplored;
     // store the list of vertices
-    for (auto& kv : adjacency_list) {unexplored.insert(kv.first);}
-    
-    vector<vector<int>> connected_components;
+    for (auto& kv : adjacency_list) {unexplored.insert(kv.first); }
+
+    vector<vector<int> > connected_components;
 
     for (auto it = unexplored.cbegin(); it != unexplored.cend() /* not hoisted */; /* no increment */)
     {
@@ -213,7 +213,7 @@ std::vector<std::vector<cv::Point2f>> chilitags::FindQuads::operator()(const cv:
             queue.pop_back();
             for (auto i : adjacency_list[n]) {
                 if (unexplored.count(i) == 1) {
-                    if (*it == i) {it++;}
+                    if (*it == i) {it++; }
                     unexplored.erase(i);
                     component.push_back(i);
                     queue.push_back(i);
@@ -228,12 +228,12 @@ std::vector<std::vector<cv::Point2f>> chilitags::FindQuads::operator()(const cv:
     for (auto& quad : connected_components) {
         vector<Point2f> hull;
         vector<Point2f> rawquad = {points[quad[0]],
-                                points[quad[1]],
-                                points[quad[3]],
-                                points[quad[2]]};
+                                   points[quad[1]],
+                                   points[quad[3]],
+                                   points[quad[2]]};
         convexHull(rawquad,
-                    hull, false);
-		if (hull.size() == 4) tQuads.push_back(hull);
+                   hull, false);
+        if (hull.size() == 4) tQuads.push_back(hull);
 
     }
 
@@ -242,36 +242,36 @@ std::vector<std::vector<cv::Point2f>> chilitags::FindQuads::operator()(const cv:
 
     cout << connected_components.size() << " connected components" << endl;
     for (auto line : lines) {
-            cv::line(
-                tDebugImage,
-                scPrecision*Point2f(line[0],line[1]),
-                scPrecision*Point2f(line[2],line[3]),
-                CV_RGB(0,0,0), 1, CV_AA, scShift);
- 
+        cv::line(
+            tDebugImage,
+            scPrecision*Point2f(line[0],line[1]),
+            scPrecision*Point2f(line[2],line[3]),
+            CV_RGB(0,0,0), 1, CV_AA, scShift);
+
     }
 
     for (auto& quad : connected_components) {
 
-            cv::line(
-                tDebugImage,
-                scPrecision*Point2f(points[quad[0]]),
-                scPrecision*Point2f(points[quad[1]]),
-                scColor, 1, CV_AA, scShift);
-            cv::line(
-                tDebugImage,
-                scPrecision*Point2f(points[quad[1]]),
-                scPrecision*Point2f(points[quad[3]]),
-                scColor, 1, CV_AA, scShift);
-            cv::line(
-                tDebugImage,
-                scPrecision*Point2f(points[quad[3]]),
-                scPrecision*Point2f(points[quad[2]]),
-                scColor, 1, CV_AA, scShift);
-            cv::line(
-                tDebugImage,
-                scPrecision*Point2f(points[quad[2]]),
-                scPrecision*Point2f(points[quad[0]]),
-                scColor, 1, CV_AA, scShift);
+        cv::line(
+            tDebugImage,
+            scPrecision*Point2f(points[quad[0]]),
+            scPrecision*Point2f(points[quad[1]]),
+            scColor, 1, CV_AA, scShift);
+        cv::line(
+            tDebugImage,
+            scPrecision*Point2f(points[quad[1]]),
+            scPrecision*Point2f(points[quad[3]]),
+            scColor, 1, CV_AA, scShift);
+        cv::line(
+            tDebugImage,
+            scPrecision*Point2f(points[quad[3]]),
+            scPrecision*Point2f(points[quad[2]]),
+            scColor, 1, CV_AA, scShift);
+        cv::line(
+            tDebugImage,
+            scPrecision*Point2f(points[quad[2]]),
+            scPrecision*Point2f(points[quad[0]]),
+            scColor, 1, CV_AA, scShift);
     }
 
     cv::imshow("FindQuads", tDebugImage);
@@ -292,14 +292,14 @@ std::vector<std::vector<cv::Point2f>> chilitags::FindQuads::operator()(const cv:
         for (size_t i=0; i < points.size();i++) {
             if (j == -1
                 && abs(points[i][0] - p[0]) < MIN_DIST
-                && abs(points[i][1] - p[1]) < MIN_DIST) 
+                && abs(points[i][1] - p[1]) < MIN_DIST)
             {
                 j = i;
                 continue;
             }
             if (k == -1
                 && abs(points[i][0] - p[2]) < MIN_DIST
-                && abs(points[i][1] - p[3]) < MIN_DIST) 
+                && abs(points[i][1] - p[3]) < MIN_DIST)
             {
                 k = i;
                 continue;
@@ -317,7 +317,7 @@ std::vector<std::vector<cv::Point2f>> chilitags::FindQuads::operator()(const cv:
         }
         segs_idx.push_back({j,k});
     }
-*/
-	return tQuads;
+ */
+    return tQuads;
 }
 

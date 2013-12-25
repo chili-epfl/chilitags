@@ -33,28 +33,28 @@ static const int scTagSize = 2*scTagMargin+scDataSize;
 }
 
 chilitags::ReadBits::ReadBits() :
-mDstBoundaries({{0        , 0},
-                {scTagSize, 0},
-                {scTagSize, scTagSize},
-                {0        , scTagSize}}),
-mSamplePoints(),
-mTransformedSamplePoints(scDataSize*scDataSize),
-mSamples(1, scDataSize*scDataSize, CV_8U),
-mBits(scDataSize*scDataSize)
+    mDstBoundaries({{        0,         0},
+                    {scTagSize,         0},
+                    {scTagSize, scTagSize},
+                    {        0, scTagSize}}),
+    mSamplePoints(),
+    mTransformedSamplePoints(scDataSize*scDataSize),
+    mSamples(1, scDataSize*scDataSize, CV_8U),
+    mBits(scDataSize*scDataSize)
 {
-	for (int y = 0; y < scDataSize; ++y)
+    for (int y = 0; y < scDataSize; ++y)
     {
-		for (int x = 0; x < scDataSize; ++x)
+        for (int x = 0; x < scDataSize; ++x)
         {
             mSamplePoints.push_back(cv::Point2f(
-				scTagMargin + x + .5,
-				scTagMargin + y + .5));
+                scTagMargin + x + .5,
+                scTagMargin + y + .5));
         }
     }
 
 #ifdef DEBUG_ReadBits
-	cv::namedWindow("ReadBits-full");
-	cv::namedWindow("ReadBits-tag");
+    cv::namedWindow("ReadBits-full");
+    cv::namedWindow("ReadBits-tag");
 #endif
 }
 
@@ -63,29 +63,29 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
 {
     auto tCorners = pCorners;
 
-	auto tRoi = cv::boundingRect(tCorners);
+    auto tRoi = cv::boundingRect(tCorners);
 
-	// Refine can actually provide corners outside the image
-	tRoi.x = cv::max(tRoi.x, 0);
-	tRoi.y = cv::max(tRoi.y, 0);
-	tRoi.width = cv::min(tRoi.width, pInputImage.cols-tRoi.x);
-	tRoi.height = cv::min(tRoi.height, pInputImage.rows-tRoi.y);
+    // Refine can actually provide corners outside the image
+    tRoi.x = cv::max(tRoi.x, 0);
+    tRoi.y = cv::max(tRoi.y, 0);
+    tRoi.width = cv::min(tRoi.width, pInputImage.cols-tRoi.x);
+    tRoi.height = cv::min(tRoi.height, pInputImage.rows-tRoi.y);
 
     cv::Point2f tOrigin = tRoi.tl();
     for (auto& p : tCorners) p -= tOrigin;
 
-	cv::Matx33f tTransformation = cv::getPerspectiveTransform(mDstBoundaries, tCorners);
+    cv::Matx33f tTransformation = cv::getPerspectiveTransform(mDstBoundaries, tCorners);
 
     cv::perspectiveTransform(mSamplePoints, mTransformedSamplePoints, tTransformation);
 
     cv::Mat tInputRoi = pInputImage(tRoi);
-	
-	uchar* tSampleData = mSamples.ptr(0);
+
+    uchar* tSampleData = mSamples.ptr(0);
     for (auto& tTransformedSamplePoint : mTransformedSamplePoints) {
-		*tSampleData++ = tInputRoi.at<uchar>(tTransformedSamplePoint);
+        *tSampleData++ = tInputRoi.at<uchar>(tTransformedSamplePoint);
     }
 
-	//cv::Mat tBinarizedImage(cv::Size(scDataSize*scDataSize, 1), CV_8U, mMatrix);
+    //cv::Mat tBinarizedImage(cv::Size(scDataSize*scDataSize, 1), CV_8U, mMatrix);
     cv::threshold(mSamples, mBits, -1, 1, cv::THRESH_BINARY | cv::THRESH_OTSU);
 
 #ifdef DEBUG_ReadBits
@@ -96,9 +96,9 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
         {
             std::cout << (int) mMatrix[i*scDataSize + j];
         }
-		std::cout << "\n";
+        std::cout << "\n";
     }
-	std::cout << std::endl;
+    std::cout << std::endl;
 
 #define ZOOM_FACTOR 10
 
@@ -113,14 +113,14 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
         for (int j = 0; j < scDataSize; ++j)
         {
             cv::Point2f position = tTransformedSamplePoints[i*scDataSize + j];
-			cv::circle(tag, position * ZOOM_FACTOR, 1,
-				cv::Scalar(0,255,0),2);
-			cv::circle(tag, position * ZOOM_FACTOR, 3,
-				cv::Scalar::all(mMatrix[i*scDataSize + j]*255),2);
+            cv::circle(tag, position * ZOOM_FACTOR, 1,
+                       cv::Scalar(0,255,0),2);
+            cv::circle(tag, position * ZOOM_FACTOR, 3,
+                       cv::Scalar::all(mMatrix[i*scDataSize + j]*255),2);
         }
     }
 
-	cv::circle(tag, tCorners[0] * ZOOM_FACTOR, 3, cv::Scalar(255,0,0),2);
+    cv::circle(tag, tCorners[0] * ZOOM_FACTOR, 3, cv::Scalar(255,0,0),2);
 
     cv::line(tag, tCorners[0]*ZOOM_FACTOR, tCorners[1]*ZOOM_FACTOR,cv::Scalar(255,0,0));
     cv::line(tag, tCorners[1]*ZOOM_FACTOR, tCorners[2]*ZOOM_FACTOR,cv::Scalar(255,0,255));
@@ -136,10 +136,10 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
     cv::line(debugImage, tCorners[3]+tOrigin, tCorners[0]+tOrigin,cv::Scalar(255,0,255));
 
 
-	cv::imshow("ReadBits-full", debugImage);
-	cv::imshow("ReadBits-tag", tag);
+    cv::imshow("ReadBits-full", debugImage);
+    cv::imshow("ReadBits-tag", tag);
     cv::waitKey(0);
 #endif
 
-	return mBits;
+    return mBits;
 }
