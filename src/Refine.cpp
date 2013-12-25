@@ -30,80 +30,80 @@
 chilitags::Refine::Refine()
 {
 #ifdef DEBUG_Refine
-	cv::namedWindow("Refine");
+    cv::namedWindow("Refine");
 #endif
 }
 
 std::vector<cv::Point2f> chilitags::Refine::operator()(const cv::Mat &pInputImage, const std::vector<cv::Point2f> &pQuad)
 {
-	auto tRefinedQuad = pQuad;
+    auto tRefinedQuad = pQuad;
 
-	// Taking a ROI around the raw corners with some margin
-	static const float scGrowthRatio = 2.0f/10.0f;
-	cv::Rect tRoi = cv::boundingRect(tRefinedQuad);
-	int tXGrowth = (int)(scGrowthRatio*tRoi.width);
-	int tYGrowth = (int)(scGrowthRatio*tRoi.height);
-	tRoi.x -= tXGrowth;
-	tRoi.y -= tYGrowth;
-	tRoi.width += 2*tXGrowth;
-	tRoi.height += 2*tYGrowth;
+    // Taking a ROI around the raw corners with some margin
+    static const float scGrowthRatio = 2.0f/10.0f;
+    cv::Rect tRoi = cv::boundingRect(tRefinedQuad);
+    int tXGrowth = (int)(scGrowthRatio*tRoi.width);
+    int tYGrowth = (int)(scGrowthRatio*tRoi.height);
+    tRoi.x -= tXGrowth;
+    tRoi.y -= tYGrowth;
+    tRoi.width += 2*tXGrowth;
+    tRoi.height += 2*tYGrowth;
 
-	// Making sure the ROI is still in the image
-	int tPreviousRoiX = tRoi.x;
-	int tPreviousRoiY = tRoi.y;
-	tRoi.x = std::max(tRoi.x, 0);
-	tRoi.y = std::max(tRoi.y, 0);
-	tRoi.width -= tRoi.x - tPreviousRoiX;
-	tRoi.height -= tRoi.y - tPreviousRoiY;
-	tRoi.width = cv::min(tRoi.x+tRoi.width, pInputImage.cols)-tRoi.x;
-	tRoi.height = cv::min(tRoi.y+tRoi.height, pInputImage.rows)-tRoi.y;
+    // Making sure the ROI is still in the image
+    int tPreviousRoiX = tRoi.x;
+    int tPreviousRoiY = tRoi.y;
+    tRoi.x = std::max(tRoi.x, 0);
+    tRoi.y = std::max(tRoi.y, 0);
+    tRoi.width -= tRoi.x - tPreviousRoiX;
+    tRoi.height -= tRoi.y - tPreviousRoiY;
+    tRoi.width = cv::min(tRoi.x+tRoi.width, pInputImage.cols)-tRoi.x;
+    tRoi.height = cv::min(tRoi.y+tRoi.height, pInputImage.rows)-tRoi.y;
 
-	cv::Point2f tRoiOffset = tRoi.tl();
-	tRefinedQuad[0] -= tRoiOffset;
-	tRefinedQuad[1] -= tRoiOffset;
-	tRefinedQuad[2] -= tRoiOffset;
-	tRefinedQuad[3] -= tRoiOffset;
+    cv::Point2f tRoiOffset = tRoi.tl();
+    tRefinedQuad[0] -= tRoiOffset;
+    tRefinedQuad[1] -= tRoiOffset;
+    tRefinedQuad[2] -= tRoiOffset;
+    tRefinedQuad[3] -= tRoiOffset;
 
-	static const double scProximityRatio = 1.5/10.0;
-	double tAverageSideLength = cv::arcLength(tRefinedQuad, true) / 4.0;
-	double tCornerNeighbourhood = scProximityRatio*tAverageSideLength;
-	
-	// ensure the cornerSubPixel search window is smaller that the ROI
-	tCornerNeighbourhood = cv::min(tCornerNeighbourhood, ((double) tRoi.width-5)/2);
-	tCornerNeighbourhood = cv::min(tCornerNeighbourhood, ((double) tRoi.height-5)/2);
-	
-	cv::cornerSubPix(pInputImage(tRoi), tRefinedQuad,
-		cv::Size(tCornerNeighbourhood, tCornerNeighbourhood),
-		cv::Size(-1, -1), cv::TermCriteria(
-			cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS,
-			5, 0.01));
+    static const double scProximityRatio = 1.5/10.0;
+    double tAverageSideLength = cv::arcLength(tRefinedQuad, true) / 4.0;
+    double tCornerNeighbourhood = scProximityRatio*tAverageSideLength;
 
-	tRefinedQuad[0] += tRoiOffset;
-	tRefinedQuad[1] += tRoiOffset;
-	tRefinedQuad[2] += tRoiOffset;
-	tRefinedQuad[3] += tRoiOffset;
+    // ensure the cornerSubPixel search window is smaller that the ROI
+    tCornerNeighbourhood = cv::min(tCornerNeighbourhood, ((double) tRoi.width-5)/2);
+    tCornerNeighbourhood = cv::min(tCornerNeighbourhood, ((double) tRoi.height-5)/2);
+
+    cv::cornerSubPix(pInputImage(tRoi), tRefinedQuad,
+                     cv::Size(tCornerNeighbourhood, tCornerNeighbourhood),
+                     cv::Size(-1, -1), cv::TermCriteria(
+                         cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS,
+                         5, 0.01));
+
+    tRefinedQuad[0] += tRoiOffset;
+    tRefinedQuad[1] += tRoiOffset;
+    tRefinedQuad[2] += tRoiOffset;
+    tRefinedQuad[3] += tRoiOffset;
 
 #ifdef DEBUG_Refine
-	cv::Mat tDebugImage = tInputImage(tRoi).clone();
-	for(int i=0; i<4; ++i)
-	{
-		cv::circle(tDebugImage, tRefinedQuad[i]-tRoiOffset,
-			3, cv::Scalar::all(128), 2);
-		cv::line(tDebugImage,
-			tRefinedQuad[i]-tRoiOffset, tRefinedQuad[i]-tRoiOffset,
-			cv::Scalar::all(255), 5);
-		printf("%1.1f  %1.1f        ", tRefinedQuad[i].x, tRefinedQuad[i].y);
-	}
-	printf("\n");
-	cv::imshow("Refine", tDebugImage);
-	cv::waitKey(0);
+    cv::Mat tDebugImage = tInputImage(tRoi).clone();
+    for(int i=0; i<4; ++i)
+    {
+        cv::circle(tDebugImage, tRefinedQuad[i]-tRoiOffset,
+                   3, cv::Scalar::all(128), 2);
+        cv::line(tDebugImage,
+                 tRefinedQuad[i]-tRoiOffset, tRefinedQuad[i]-tRoiOffset,
+                 cv::Scalar::all(255), 5);
+        printf("%1.1f  %1.1f        ", tRefinedQuad[i].x, tRefinedQuad[i].y);
+    }
+    printf("\n");
+    cv::imshow("Refine", tDebugImage);
+    cv::waitKey(0);
 #endif
 
-	// Sometimes, the corners are refined into a concave quadrilateral
-	// which makes ReadBits crash
-	std::vector<cv::Point2f> tConvexHull;
-	cv::convexHull(tRefinedQuad, tConvexHull, false);
-	if (tConvexHull.size() == 4) return tConvexHull;
+    // Sometimes, the corners are refined into a concave quadrilateral
+    // which makes ReadBits crash
+    std::vector<cv::Point2f> tConvexHull;
+    cv::convexHull(tRefinedQuad, tConvexHull, false);
+    if (tConvexHull.size() == 4) return tConvexHull;
 
-	return pQuad;
+    return pQuad;
 }

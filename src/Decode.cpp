@@ -26,55 +26,55 @@ const int scDataSize = 6;
 const int chilitags::Decode::INVALID_TAG = -1;
 
 chilitags::Decode::Decode() :
-	mMatrix   (new unsigned char[scDataSize*scDataSize]),
-	mMatrix90 (new unsigned char[scDataSize*scDataSize]),
-	mMatrix180(new unsigned char[scDataSize*scDataSize]),
-	mMatrix270(new unsigned char[scDataSize*scDataSize]),
-	mCodec(),
-	mDecodedTag(std::make_pair(INVALID_TAG, std::vector<cv::Point2f>(4)))
+    mMatrix   (new unsigned char[scDataSize*scDataSize]),
+    mMatrix90 (new unsigned char[scDataSize*scDataSize]),
+    mMatrix180(new unsigned char[scDataSize*scDataSize]),
+    mMatrix270(new unsigned char[scDataSize*scDataSize]),
+    mCodec(),
+    mDecodedTag(std::make_pair(INVALID_TAG, std::vector<cv::Point2f>(4)))
 {
 }
 
 chilitags::Decode::~Decode()
 {
-	delete[] mMatrix;
-	delete[] mMatrix270;
-	delete[] mMatrix180;
-	delete[] mMatrix90;
+    delete[] mMatrix;
+    delete[] mMatrix270;
+    delete[] mMatrix180;
+    delete[] mMatrix90;
 }
 
 
-const std::pair<int, std::vector<cv::Point2f>> &chilitags::Decode::operator()(const std::vector<unsigned char> &pBits, const std::vector<cv::Point2f> &pCorners)
+const std::pair<int, std::vector<cv::Point2f> > &chilitags::Decode::operator()(const std::vector<unsigned char> &pBits, const std::vector<cv::Point2f> &pCorners)
 {
-	for (int i = 0; i < scDataSize; ++i)
-	{
-		for (int j = 0; j < scDataSize; ++j)
-		{
-			unsigned char tBit = pBits[i*scDataSize + j];
-			mMatrix   [              i *scDataSize +               j ] = tBit;
-			mMatrix90 [(scDataSize-1-j)*scDataSize +               i ] = tBit;
-			mMatrix180[(scDataSize-1-i)*scDataSize + (scDataSize-1-j)] = tBit;
-			mMatrix270[              j *scDataSize + (scDataSize-1-i)] = tBit;
-		}
-	}
+    for (int i = 0; i < scDataSize; ++i)
+    {
+        for (int j = 0; j < scDataSize; ++j)
+        {
+            unsigned char tBit = pBits[i*scDataSize + j];
+            mMatrix   [              i *scDataSize +               j ] = tBit;
+            mMatrix90 [(scDataSize-1-j)*scDataSize +               i ] = tBit;
+            mMatrix180[(scDataSize-1-i)*scDataSize + (scDataSize-1-j)] = tBit;
+            mMatrix270[              j *scDataSize + (scDataSize-1-i)] = tBit;
+        }
+    }
 
-	int tOrientation = -1;
-	int &tId = mDecodedTag.first;
-	tId = INVALID_TAG;
-	     if (mCodec.decode(mMatrix   , tId)) tOrientation = 0;
-	else if (mCodec.decode(mMatrix90 , tId)) tOrientation = 1;
-	else if (mCodec.decode(mMatrix180, tId)) tOrientation = 2;
-	else if (mCodec.decode(mMatrix270, tId)) tOrientation = 3;
+    int tOrientation = -1;
+    int &tId = mDecodedTag.first;
+    tId = INVALID_TAG;
+         if (mCodec.decode(mMatrix   , tId)) tOrientation = 0;
+    else if (mCodec.decode(mMatrix90 , tId)) tOrientation = 1;
+    else if (mCodec.decode(mMatrix180, tId)) tOrientation = 2;
+    else if (mCodec.decode(mMatrix270, tId)) tOrientation = 3;
 
     //The dreadful Black Tag!
-	if (tId == 682) tId = INVALID_TAG;
+    if (tId == 682) tId = INVALID_TAG;
 
-	if (tId != INVALID_TAG)
-	{
-		for (size_t i = 0; i < 4; ++i) {
-			mDecodedTag.second[i] = pCorners[(i+tOrientation) % 4];
-		}
-	}
+    if (tId != INVALID_TAG)
+    {
+        for (size_t i = 0; i < 4; ++i) {
+            mDecodedTag.second[i] = pCorners[(i+tOrientation) % 4];
+        }
+    }
 
-	return mDecodedTag;
+    return mDecodedTag;
 }

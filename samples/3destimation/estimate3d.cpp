@@ -10,10 +10,10 @@ using namespace cv;
 
 int main(int argc, char* argv[])
 {
-	cout
-		<< "Usage: "<< argv[0]
-		<< " [-c <tag configuration (YAML)>] [-i <camera calibration (YAML)>]\n";
- 
+    cout
+       << "Usage: "<< argv[0]
+       << " [-c <tag configuration (YAML)>] [-i <camera calibration (YAML)>]\n";
+
     const char* intrinsicsFilename = 0;
     const char* configFilename = "";
 
@@ -35,34 +35,34 @@ int main(int argc, char* argv[])
         cerr << "Unable to initialise video capture.\n";
         return 1;
     }
-	
+
 
     /******************************/
     /* Setting up pose estimation */
     /******************************/
 
 #ifdef OPENCV3
-	double inputWidth  = capture.get(cv::CAP_PROP_FRAME_WIDTH);
-	double inputHeight = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
+    double inputWidth  = capture.get(cv::CAP_PROP_FRAME_WIDTH);
+    double inputHeight = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
 #else
-	double inputWidth  = capture.get(CV_CAP_PROP_FRAME_WIDTH);
-	double inputHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+    double inputWidth  = capture.get(CV_CAP_PROP_FRAME_WIDTH);
+    double inputHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
 #endif
 
     chilitags::Chilitags3D tChilitags3D(Size(inputWidth, inputHeight));
-	tChilitags3D.setDefaultTagSize(30.f);
-	tChilitags3D.readTagConfiguration(configFilename);
+    tChilitags3D.setDefaultTagSize(30.f);
+    tChilitags3D.readTagConfiguration(configFilename);
 
     if (intrinsicsFilename) {
-		Size calibratedImageSize = tChilitags3D.readCalibration(intrinsicsFilename);
+        Size calibratedImageSize = tChilitags3D.readCalibration(intrinsicsFilename);
 #ifdef OPENCV3
-		capture.set(cv::CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
-		capture.set(cv::CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
+        capture.set(cv::CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
+        capture.set(cv::CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
 #else
-		capture.set(CV_CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
-		capture.set(CV_CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
+        capture.set(CV_CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
+        capture.set(CV_CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
 #endif
-	}
+    }
 
     /*****************************/
     /*             Go!           */

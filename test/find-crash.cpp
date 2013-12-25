@@ -30,40 +30,40 @@
 
 int main(int argc, char* argv[])
 {
-	int tXRes = 640;
-	int tYRes = 480;
-	int tCameraIndex = 0;
-	if (argc > 2) {
-		tXRes = std::atoi(argv[1]);
-		tYRes = std::atoi(argv[2]);
-	}
-	if (argc > 3) {
-		tCameraIndex = std::atoi(argv[3]);
-	}
+    int tXRes = 640;
+    int tYRes = 480;
+    int tCameraIndex = 0;
+    if (argc > 2) {
+        tXRes = std::atoi(argv[1]);
+        tYRes = std::atoi(argv[2]);
+    }
+    if (argc > 3) {
+        tCameraIndex = std::atoi(argv[3]);
+    }
 
-	// The source of input images
-	cv::VideoCapture tCapture(tCameraIndex);
-	if (!tCapture.isOpened())
-	{
-		std::cerr << "Unable to initialise video capture." << std::endl;
-		return 1;
-	}
+    // The source of input images
+    cv::VideoCapture tCapture(tCameraIndex);
+    if (!tCapture.isOpened())
+    {
+        std::cerr << "Unable to initialise video capture." << std::endl;
+        return 1;
+    }
 #ifdef OPENCV3
-	tCapture.set(cv::CAP_PROP_FRAME_WIDTH, tXRes);
-	tCapture.set(cv::CAP_PROP_FRAME_HEIGHT, tYRes);
+    tCapture.set(cv::CAP_PROP_FRAME_WIDTH, tXRes);
+    tCapture.set(cv::CAP_PROP_FRAME_HEIGHT, tYRes);
 #else
-	tCapture.set(CV_CAP_PROP_FRAME_WIDTH, tXRes);
-	tCapture.set(CV_CAP_PROP_FRAME_HEIGHT, tYRes);
+    tCapture.set(CV_CAP_PROP_FRAME_WIDTH, tXRes);
+    tCapture.set(CV_CAP_PROP_FRAME_HEIGHT, tYRes);
 #endif
 
-	cv::Mat tInputImage;
-	chilitags::Chilitags tChilitags;
-	for (;;) {
-		tCapture.read(tInputImage);
-		cv::imwrite("lastimage.png", tInputImage);
-		tChilitags.find(tInputImage);
-	}
-	tCapture.release();
+    cv::Mat tInputImage;
+    chilitags::Chilitags tChilitags;
+    for (;;) {
+        tCapture.read(tInputImage);
+        cv::imwrite("lastimage.png", tInputImage);
+        tChilitags.find(tInputImage);
+    }
+    tCapture.release();
 
-	return 0;
+    return 0;
 }

@@ -27,25 +27,25 @@
 
 int main(int argc, char **argv)
 {
-	if (argc <= 1) {
-		std::cout << "Usage: " << argv[0] << " tagID [zoom [margin]]\n";
-		std::cout << " - tagId is the id of the tag to draw, between 0 and 1023,\n";
-		std::cout << " - zoom is a non null integer indicating the length in pixel\n";
-		std::cout << "   of each bit of the tag matrix (default: 1).\n";
-		std::cout << " - margin is n if no white rectangle should be drawn around the tag,\n";
-		std::cout << "   (make sure the black borders of the tag\n";
-		std::cout << "   still contrast with where it is placed),\n";
-		return 1;
-	}
+    if (argc <= 1) {
+        std::cout << "Usage: " << argv[0] << " tagID [zoom [margin]]\n";
+        std::cout << " - tagId is the id of the tag to draw, between 0 and 1023,\n";
+        std::cout << " - zoom is a non null integer indicating the length in pixel\n";
+        std::cout << "   of each bit of the tag matrix (default: 1).\n";
+        std::cout << " - margin is n if no white rectangle should be drawn around the tag,\n";
+        std::cout << "   (make sure the black borders of the tag\n";
+        std::cout << "   still contrast with where it is placed),\n";
+        return 1;
+    }
 
-	std::string tOutputFilename = std::string(argv[1])+".png";
-	int tTagId = std::atoi(argv[1]);
-	int tZoom = (argc > 2) ? std::atoi(argv[2]) : 1;
-	bool tNoMargin = (argc > 3 && argv[3][0] == 'n');
+    std::string tOutputFilename = std::string(argv[1])+".png";
+    int tTagId = std::atoi(argv[1]);
+    int tZoom = (argc > 2) ? std::atoi(argv[2]) : 1;
+    bool tNoMargin = (argc > 3 && argv[3][0] == 'n');
 
-	chilitags::Chilitags tChilitags;
+    chilitags::Chilitags tChilitags;
 
-	cv::imwrite(tOutputFilename, tChilitags.draw(tTagId, tZoom, !tNoMargin));
+    cv::imwrite(tOutputFilename, tChilitags.draw(tTagId, tZoom, !tNoMargin));
 
-	return 0;
+    return 0;
 }

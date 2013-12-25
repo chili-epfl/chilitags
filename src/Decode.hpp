@@ -33,11 +33,13 @@ static const int INVALID_TAG;
 
 Decode();
 
-const std::pair<int, std::vector<cv::Point2f>> &operator()(
-	const std::vector<unsigned char> &pBits,
-	const std::vector<cv::Point2f> &pCorners);
+const std::pair<int, std::vector<cv::Point2f> > &operator()(
+    const std::vector<unsigned char> &pBits,
+    const std::vector<cv::Point2f> &pCorners);
 
-const Codec &getCodec() const {return mCodec;}
+const Codec &getCodec() const {
+    return mCodec;
+}
 
 virtual ~Decode();
 
@@ -49,7 +51,7 @@ unsigned char *mMatrix180;
 unsigned char *mMatrix270;
 
 Codec mCodec;
-std::pair<int, std::vector<cv::Point2f>> mDecodedTag;
+std::pair<int, std::vector<cv::Point2f> > mDecodedTag;
 
 private:
 Decode(const Decode&);
