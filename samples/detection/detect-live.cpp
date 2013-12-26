@@ -38,35 +38,35 @@
 int main(int argc, char* argv[])
 {
     // Simple parsing of the parameters related to the image acquisition
-    int tXRes = 640;
-    int tYRes = 480;
-    int tCameraIndex = 0;
+    int xRes = 640;
+    int yRes = 480;
+    int cameraIndex = 0;
     if (argc > 2) {
-        tXRes = std::atoi(argv[1]);
-        tYRes = std::atoi(argv[2]);
+        xRes = std::atoi(argv[1]);
+        yRes = std::atoi(argv[2]);
     }
     if (argc > 3) {
-        tCameraIndex = std::atoi(argv[3]);
+        cameraIndex = std::atoi(argv[3]);
     }
 
     // The source of input images
-    cv::VideoCapture tCapture(tCameraIndex);
-    if (!tCapture.isOpened())
+    cv::VideoCapture capture(cameraIndex);
+    if (!capture.isOpened())
     {
         std::cerr << "Unable to initialise video capture." << std::endl;
         return 1;
     }
 #ifdef OPENCV3
-    tCapture.set(cv::CAP_PROP_FRAME_WIDTH, tXRes);
-    tCapture.set(cv::CAP_PROP_FRAME_HEIGHT, tYRes);
+    capture.set(cv::CAP_PROP_FRAME_WIDTH, xRes);
+    capture.set(cv::CAP_PROP_FRAME_HEIGHT, yRes);
 #else
-    tCapture.set(CV_CAP_PROP_FRAME_WIDTH, tXRes);
-    tCapture.set(CV_CAP_PROP_FRAME_HEIGHT, tYRes);
+    capture.set(CV_CAP_PROP_FRAME_WIDTH, xRes);
+    capture.set(CV_CAP_PROP_FRAME_HEIGHT, yRes);
 #endif
-    cv::Mat tInputImage;
+    cv::Mat inputImage;
 
     // The tag detection happens in the Chilitags class.
-    chilitags::Chilitags tChilitags;
+    chilitags::Chilitags chilitags;
 
     // The detection is not perfect, so if a tag is not detected during one frame,
     // the tag will shortly disappears, which results in flickering.
@@ -74,27 +74,27 @@ int main(int argc, char* argv[])
     // at the same position. When tags disappear for more than 5 frames,
     // Chilitags actually removes it.
     // Here, we cancel this to show the raw detection results.
-    tChilitags.setPersistence(0);
+    chilitags.setPersistence(0);
 
     cv::namedWindow("DisplayChilitags");
     // Main loop, exiting when 'q is pressed'
     for (; 'q' != (char) cv::waitKey(1); ) {
 
         // Capture a new image.
-        tCapture.read(tInputImage);
+        capture.read(inputImage);
 
         // Start measuring the time needed for the detection
-        int64 tStartTime = cv::getTickCount();
+        int64 startTime = cv::getTickCount();
 
         // Detect tags on the current image (and time the detection);
         // The resulting map associates tag ids (between 0 and 1023)
         // to four 2D points corresponding to the corners positions
         // in the picture.
-        std::map<int, std::vector<cv::Point2f> > tTags = tChilitags.find(tInputImage);
+        std::map<int, std::vector<cv::Point2f> > tags = chilitags.find(inputImage);
 
         // Measure the processing time needed for the detection
-        int64 tEndTime = cv::getTickCount();
-        double tProcessingTime = 1000.0*((double) tEndTime - tStartTime)/cv::getTickFrequency();
+        int64 endTime = cv::getTickCount();
+        double processingTime = 1000.0*((double) endTime - startTime)/cv::getTickFrequency();
 
 
         // Now we start using the result of the detection.
@@ -107,19 +107,19 @@ int main(int argc, char* argv[])
         static const float PRECISION = 1<<SHIFT;
 
         // We dont want to draw directly on the input image, so we clone it
-        cv::Mat tOutputImage = tInputImage.clone();
+        cv::Mat outputImage = inputImage.clone();
 
-        for (const std::pair<int, std::vector<cv::Point2f> > & tTag : tTags) {
+        for (const std::pair<int, std::vector<cv::Point2f> > & tag : tags) {
 
-            int tId = tTag.first;
-            const std::vector<cv::Point2f> &tCorners = tTag.second;
+            int id = tag.first;
+            const std::vector<cv::Point2f> &corners = tag.second;
 
             // We start by drawing the borders of the tag
             for (size_t i = 0; i < 4; ++i) {
                 cv::line(
-                    tOutputImage,
-                    PRECISION*tCorners[i],
-                    PRECISION*tCorners[(i+1)%4],
+                    outputImage,
+                    PRECISION*corners[i],
+                    PRECISION*corners[(i+1)%4],
                     COLOR, 1, CV_AA, SHIFT);
             }
 
@@ -130,25 +130,25 @@ int main(int argc, char* argv[])
             // (i.e. clockwise, starting from top-left)
             // Using this, we can compute (an approximation of) the center of
             // tag.
-            cv::Point2f tCenter = 0.5*(tCorners[0] + tCorners[2]);
-            cv::putText(tOutputImage, cv::format("%d", tId), tCenter,
+            cv::Point2f center = 0.5*(corners[0] + corners[2]);
+            cv::putText(outputImage, cv::format("%d", id), center,
                         cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
         }
 
         // Some stats on the current frame (resolution and processing time)
-        cv::putText(tOutputImage,
+        cv::putText(outputImage,
                     cv::format("%dx%d %4.0f ms (press q to quit)",
-                               tOutputImage.cols, tOutputImage.rows,
-                               tProcessingTime),
+                               outputImage.cols, outputImage.rows,
+                               processingTime),
                     cv::Point(32,32),
                     cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
 
         // Finally...
-        cv::imshow("DisplayChilitags", tOutputImage);
+        cv::imshow("DisplayChilitags", outputImage);
     }
 
     cv::destroyWindow("DisplayChilitags");
-    tCapture.release();
+    capture.release();
 
     return 0;
 }

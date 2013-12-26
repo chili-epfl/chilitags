@@ -38,63 +38,63 @@ class CachingFilter {
 
 public:
 
-/** \param pPersistence defines how many updates of the tag positions should
+/** \param persistence defines how many updates of the tag positions should
  *  happen before an undetected tag actually disappear from the filtered
  * output.
  */
-CachingFilter(int pPersistence) :
-    mPersistence(pPersistence),
+CachingFilter(int persistence) :
+    mPersistence(persistence),
     mCachedTags(),
     mCacheAge()
 {
 }
 
-void setPersistence(int pPersistence) {
-    mPersistence = pPersistence;
+void setPersistence(int persistence) {
+    mPersistence = persistence;
 }
 
 const std::map<int, std::vector<cv::Point2f> > &operator()(
-    const std::map<int, std::vector<cv::Point2f> > &pRawTags){
+    const std::map<int, std::vector<cv::Point2f> > &rawTags){
 
-    if (mPersistence <= 0) return pRawTags;
+    if (mPersistence <= 0) return rawTags;
 
-    auto tRawTagIt = pRawTags.cbegin();
-    auto tCachedTagIt = mCachedTags.begin();
-    auto tCacheAgeIt = mCacheAge.begin();
-    while (tRawTagIt != pRawTags.end()) {
-        while (tCachedTagIt != mCachedTags.end()
-               && tCachedTagIt->first < tRawTagIt->first) {
-            if (tCacheAgeIt->second > mPersistence) {
-                mCacheAge.erase(tCacheAgeIt);
-                mCachedTags.erase(tCachedTagIt);
+    auto rawTagIt = rawTags.cbegin();
+    auto cachedTagIt = mCachedTags.begin();
+    auto cacheAgeIt = mCacheAge.begin();
+    while (rawTagIt != rawTags.end()) {
+        while (cachedTagIt != mCachedTags.end()
+               && cachedTagIt->first < rawTagIt->first) {
+            if (cacheAgeIt->second > mPersistence) {
+                mCacheAge.erase(cacheAgeIt);
+                mCachedTags.erase(cachedTagIt);
             } else {
-                ++tCacheAgeIt->second;
+                ++cacheAgeIt->second;
             }
-            ++tCacheAgeIt;
-            ++tCachedTagIt;
+            ++cacheAgeIt;
+            ++cachedTagIt;
         }
-        if (tCachedTagIt != mCachedTags.end()
-            && tCachedTagIt->first == tRawTagIt->first) {
-            tCacheAgeIt->second = 0;
-            tCachedTagIt->second = tRawTagIt->second;
+        if (cachedTagIt != mCachedTags.end()
+            && cachedTagIt->first == rawTagIt->first) {
+            cacheAgeIt->second = 0;
+            cachedTagIt->second = rawTagIt->second;
         } else {
-            mCacheAge.insert(tCacheAgeIt,
-                             std::make_pair(tRawTagIt->first, 0));
-            mCachedTags.insert(tCachedTagIt, *tRawTagIt);
+            mCacheAge.insert(cacheAgeIt,
+                             std::make_pair(rawTagIt->first, 0));
+            mCachedTags.insert(cachedTagIt, *rawTagIt);
         }
-        ++tRawTagIt;
-        ++tCacheAgeIt;
-        ++tCachedTagIt;
+        ++rawTagIt;
+        ++cacheAgeIt;
+        ++cachedTagIt;
     }
-    while (tCachedTagIt != mCachedTags.end()) {
-        if (tCacheAgeIt->second > mPersistence) {
-            mCacheAge.erase(tCacheAgeIt);
-            mCachedTags.erase(tCachedTagIt);
+    while (cachedTagIt != mCachedTags.end()) {
+        if (cacheAgeIt->second > mPersistence) {
+            mCacheAge.erase(cacheAgeIt);
+            mCachedTags.erase(cachedTagIt);
         } else {
-            ++tCacheAgeIt->second;
+            ++cacheAgeIt->second;
         }
-        ++tCacheAgeIt;
-        ++tCachedTagIt;
+        ++cacheAgeIt;
+        ++cachedTagIt;
     }
 
     return mCachedTags;

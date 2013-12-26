@@ -28,8 +28,8 @@ int main(int argc, char* argv[])
     /*****************************/
     /*    Init camera capture    */
     /*****************************/
-    int tCameraIndex = 0;
-    cv::VideoCapture capture(tCameraIndex);
+    int cameraIndex = 0;
+    cv::VideoCapture capture(cameraIndex);
     if (!capture.isOpened())
     {
         cerr << "Unable to initialise video capture.\n";
@@ -49,12 +49,12 @@ int main(int argc, char* argv[])
     double inputHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
 #endif
 
-    chilitags::Chilitags3D tChilitags3D(Size(inputWidth, inputHeight));
-    tChilitags3D.setDefaultTagSize(30.f);
-    tChilitags3D.readTagConfiguration(configFilename);
+    chilitags::Chilitags3D chilitags3D(Size(inputWidth, inputHeight));
+    chilitags3D.setDefaultTagSize(30.f);
+    chilitags3D.readTagConfiguration(configFilename);
 
     if (intrinsicsFilename) {
-        Size calibratedImageSize = tChilitags3D.readCalibration(intrinsicsFilename);
+        Size calibratedImageSize = chilitags3D.readCalibration(intrinsicsFilename);
 #ifdef OPENCV3
         capture.set(cv::CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
         capture.set(cv::CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
@@ -68,12 +68,12 @@ int main(int argc, char* argv[])
     /*             Go!           */
     /*****************************/
     cout << "I'm now looking for objects...\n";
-    cv::Mat tInputImage;
+    cv::Mat inputImage;
 
     for (; 'q' != (char) cv::waitKey(10); ) {
-        capture.read(tInputImage);
+        capture.read(inputImage);
 
-        for (auto& kv : tChilitags3D.estimate(tInputImage)) {
+        for (auto& kv : chilitags3D.estimate(inputImage)) {
             cout << kv.first << " at " << Mat(kv.second) << "\n";
         }
     }

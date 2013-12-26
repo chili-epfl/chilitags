@@ -29,12 +29,12 @@
 #include <stdio.h>
 #include <string.h>
 
-chilitags::Codec::Codec(int pBitsId, int pBitsCrc, int pBitsFec, const char *pXorMask, const char *pCrcPoly) :
-    m_bitsId(pBitsId),
-    m_bitsCrc(pBitsCrc),
-    m_bitsFec(pBitsFec),
-    m_xorMask(binstr2int(pXorMask)),
-    m_crcPoly(binstr2int(pCrcPoly)),
+chilitags::Codec::Codec(int bitsId, int bitsCrc, int bitsFec, const char *xorMask, const char *crcPoly) :
+    m_bitsId(bitsId),
+    m_bitsCrc(bitsCrc),
+    m_bitsFec(bitsFec),
+    m_xorMask(binstr2int(xorMask)),
+    m_crcPoly(binstr2int(crcPoly)),
     m_maxTagsNumber(1<<m_bitsId),
     m_trackedTagsTable(new tag_info_t[m_maxTagsNumber]),
     m_bitsBeforePuncturing((m_bitsId + m_bitsCrc + 2) * 2),
@@ -262,10 +262,10 @@ void chilitags::Codec::bin2int(const unsigned char *bin, int *out, int size) {
 
 unsigned long chilitags::Codec::binstr2int(const char *bin) {
     if (!bin) return 0;
-    unsigned long tResult = (bin[0]!='0');
+    unsigned long result = (bin[0]!='0');
     for (int i = 1; bin[i] && i < 64; ++i) {
-        tResult <<= 1;
-        tResult += (bin[i]!='0');
+        result <<= 1;
+        result += (bin[i]!='0');
     }
-    return tResult;
+    return result;
 }

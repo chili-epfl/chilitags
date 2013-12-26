@@ -32,11 +32,11 @@ public:
 
 /** The default values will code and decode chilitags */
 Codec(
-    int pBitsId = 10,
-    int pBitsCrc = 16,
-    int pBitsFec = 10,
-    const char *pXorMask = "1010101010",
-    const char *pCrcPoly = "10001000000100001");
+    int bitsId = 10,
+    int bitsCrc = 16,
+    int bitsFec = 10,
+    const char *xorMask = "1010101010",
+    const char *crcPoly = "10001000000100001");
 
 virtual ~Codec();
 

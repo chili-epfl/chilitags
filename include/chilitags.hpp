@@ -60,7 +60,7 @@ Chilitags();
     the n following calls. A persistence of 0 thus means that the raw output of
     the detection is returned.
  */
-void setPersistence(int pPersistence);
+void setPersistence(int persistence);
 
 /**
     This is the main method of Chilitags.
@@ -68,20 +68,20 @@ void setPersistence(int pPersistence);
     \returns the detected tags, in the form of a mapping between their id's and
     the position of their four corners.
 
-    \param pInputImage an OpenCV image (gray or BGR)
+    \param inputImage an OpenCV image (gray or BGR)
  */
-std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &pInputImage) const;
+std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage) const;
 
 /**
     Finds the black and white, 6x6 matrix corresponding to the given id.
 
-    \param pId the id of the tag to encode, between  0 (included) and 1024
+    \param id the id of the tag to encode, between  0 (included) and 1024
     (excluded).
 
     \returns the 36-element bit matrix coding the given id (black is false,
     white is true)
  */
-std::vector<bool> encode(int pId) const;
+std::vector<bool> encode(int id) const;
 
 /**
     Finds the tag id corresponding given the  black and white, 6x6 matrix.
@@ -89,24 +89,24 @@ std::vector<bool> encode(int pId) const;
     \returns the id decoded from the bit matrix, between  0 (included) and 1024
     (excluded). If the bit matrix did not code a valid id, -1 is returned.
 
-    \param pBits the 36-element bit matrix coding the given id (black is false,
+    \param bits the 36-element bit matrix coding the given id (black is false,
     white is true)
  */
-int decode(const std::vector<bool> &pBits) const;
+int decode(const std::vector<bool> &bits) const;
 
 /**
     \returns an OpenCV image of a given tag.
 
-    \param pId the id of the tag to draw, between [0,1024)
+    \param id the id of the tag to draw, between [0,1024)
 
-    \param pZoom the (integer) zoom factor with which to draw the tag. In other
-    words, every bit of the data matrix of the tag will be pZoom large.
+    \param zoom the (integer) zoom factor with which to draw the tag. In other
+    words, every bit of the data matrix of the tag will be zoom large.
 
-    \param pWithMargin a boolean coding whether the returned image of the tag
+    \param withMargin a boolean coding whether the returned image of the tag
     should be surrounded by a white frame, ensuring that the edges of the tag
     will contrast with the background.
  */
-cv::Mat draw(int pId, int pZoom = 1, bool pWithMargin = false) const;
+cv::Mat draw(int id, int zoom = 1, bool withMargin = false) const;
 
 ~Chilitags();
 
@@ -144,7 +144,7 @@ public:
     Chilitags3D creates a Chilitags instance (with a persistence of 0), which
     can be accessed through the getChilitags() accessors.
  */
-Chilitags3D(cv::Size pCameraSize);
+Chilitags3D(cv::Size cameraSize);
 
 /** Accessor to the underlying (2D) Chilitags detection. */
 const Chilitags &getChilitags() const;
@@ -154,10 +154,10 @@ Chilitags &getChilitags();
 /**
     \returns a mapping of the detected objects to their transformation
     matrices.
-    \param pTags a list of tags, as returned by Chilitags::find().
+    \param tags a list of tags, as returned by Chilitags::find().
  */
 std::map<std::string, cv::Matx44d> estimate(
-    std::map<int, std::vector<cv::Point2f> > pTags) const;
+    std::map<int, std::vector<cv::Point2f> > tags) const;
 
 /**
     This is a convenience variant of estimate() which also takes care of the
@@ -165,27 +165,27 @@ std::map<std::string, cv::Matx44d> estimate(
 
     \returns a mapping of the detected objects to their transformation
     matrices.
-    \param pInputImage the image to feed to Chilitags::find().
+    \param inputImage the image to feed to Chilitags::find().
  */
-std::map<std::string, cv::Matx44d> estimate(const cv::Mat &pInputImage) const;
+std::map<std::string, cv::Matx44d> estimate(const cv::Mat &inputImage) const;
 
 /**
     Chilitags3D can also detect rigid assemblies of tags. This allows for a
     more precise estimation of the object holding the tag, and for a graceful
     degradation of the estimation, should some of the tag be misdetected.
 
-    \param pFilename: The filename of the  configuration file describing rigid
+    \param filename: The filename of the  configuration file describing rigid
     clusters of tags. The library is distributed with a sample
     configuration file documenting the expected format.
 
-    \param pOmitOtherTags: if true, the pose of tags not specified in the
+    \param omitOtherTags: if true, the pose of tags not specified in the
     configuration file will not be returned by estimate(). If false,
     setDefaultTagSize() can be used to set a coherent unit length among the
     tags.
  */
 void readTagConfiguration(
-    const std::string &pFilename,
-    bool pOmitOtherTags = false);
+    const std::string &filename,
+    bool omitOtherTags = false);
 
 /**
     Sets the size of tags. By default, the result of estimate() uses the
@@ -195,26 +195,26 @@ void readTagConfiguration(
     this methods allows to remain coherent with tags that are not specified in
     the configuration file.
  */
-void setDefaultTagSize(float pDefaultSize);
+void setDefaultTagSize(float defaultSize);
 
 /**
     For accurate results, Chilitags3D can be provided the calibration data of
     the camera detecting the chilitags.
-    \param pNewCameraMatrix the 3x3 camera matrix.
-    \param pNewDistCoeffs a vector containing the distortion coefficients.
+    \param newCameraMatrix the 3x3 camera matrix.
+    \param newDistCoeffs a vector containing the distortion coefficients.
  */
-void setCalibration(cv::InputArray pNewCameraMatrix,
-                    cv::InputArray pNewDistCoeffs);
+void setCalibration(cv::InputArray newCameraMatrix,
+                    cv::InputArray newDistCoeffs);
 
 /**
     For accurate results, Chilitags3D can be provided the calibration data of
     the camera detecting the chilitags. This method is similar to
     setCalibration, but reads the camera calibration information directly from
     a file, as generated by OpenCV's 'calibration' sample.
-    \param pFilename the path to a file containing the calibration data
+    \param filename the path to a file containing the calibration data
     \returns the size of the images used to generate the calibration data.
  */
-cv::Size readCalibration(const std::string &pFilename);
+cv::Size readCalibration(const std::string &filename);
 
 ~Chilitags3D();
 

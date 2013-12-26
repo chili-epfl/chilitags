@@ -9,30 +9,30 @@
 #include "HardcodedIds.hpp"
 
 TEST(Drawer, Defaults) {
-    chilitags::Chilitags tChilitags;
-    cv::Mat tImage = tChilitags.draw(0);
-    ASSERT_EQ(CV_8U, tImage.type());
-    ASSERT_EQ(10,tImage.cols);
-    ASSERT_EQ(10,tImage.rows);
+    chilitags::Chilitags chilitags;
+    cv::Mat image = chilitags.draw(0);
+    ASSERT_EQ(CV_8U, image.type());
+    ASSERT_EQ(10,image.cols);
+    ASSERT_EQ(10,image.rows);
 }
 
 TEST(Drawer, DrawCode) {
-    HardcodedIds tHardcodedIds;
-    chilitags::Chilitags tChilitags;
+    HardcodedIds hardcodedIds;
+    chilitags::Chilitags chilitags;
 
     for (int t = 0; t<1024; ++t) {
-        cv::Mat tImage = tChilitags.draw(t);
-        ASSERT_EQ(CV_8U, tImage.type());
-        ASSERT_EQ(10,tImage.cols);
-        ASSERT_EQ(10,tImage.rows);
+        cv::Mat image = chilitags.draw(t);
+        ASSERT_EQ(CV_8U, image.type());
+        ASSERT_EQ(10,image.cols);
+        ASSERT_EQ(10,image.rows);
 
-        int tContentStart = 2;
-        for (int y = 0; y<tImage.rows; ++y) {
-            for (int x = 0; x<tImage.cols; ++x) {
+        int contentStart = 2;
+        for (int y = 0; y<image.rows; ++y) {
+            for (int x = 0; x<image.cols; ++x) {
 
-                if (x < tContentStart || x >= tImage.cols-tContentStart
-                    || y < tContentStart || y >= tImage.rows-tContentStart) {
-                    ASSERT_EQ(0, tImage.at<unsigned char>(y,x));
+                if (x < contentStart || x >= image.cols-contentStart
+                    || y < contentStart || y >= image.rows-contentStart) {
+                    ASSERT_EQ(0, image.at<unsigned char>(y,x));
                 }
             }
         }
@@ -40,62 +40,62 @@ TEST(Drawer, DrawCode) {
         for (int i = 0; i<6; ++i) {
             for (int j = 0; j<6; ++j) {
                 ASSERT_EQ(
-                    tHardcodedIds.id[t][6*i+j]*255,
-                    tImage.at<unsigned char>(2+i,2+j));
+                    hardcodedIds.id[t][6*i+j]*255,
+                    image.at<unsigned char>(2+i,2+j));
             }
         }
     }
 }
 
 TEST(Drawer, WithMargin) {
-    HardcodedIds tHardcodedIds;
-    chilitags::Chilitags tChilitags;
+    HardcodedIds hardcodedIds;
+    chilitags::Chilitags chilitags;
 
     for (int t = 0; t<1024; ++t) {
-        cv::Mat tImage = tChilitags.draw(t,1,true);
-        ASSERT_EQ(CV_8U, tImage.type());
-        ASSERT_EQ(14,tImage.cols);
-        ASSERT_EQ(14,tImage.rows);
+        cv::Mat image = chilitags.draw(t,1,true);
+        ASSERT_EQ(CV_8U, image.type());
+        ASSERT_EQ(14,image.cols);
+        ASSERT_EQ(14,image.rows);
 
         for (int i = 0; i<6; ++i) {
             for (int j = 0; j<6; ++j) {
                 ASSERT_EQ(
-                    tHardcodedIds.id[t][6*i+j]*255,
-                    tImage.at<unsigned char>(4+i,4+j));
+                    hardcodedIds.id[t][6*i+j]*255,
+                    image.at<unsigned char>(4+i,4+j));
             }
         }
     }
 }
 
 TEST(Drawer, Zoom) {
-    HardcodedIds tHardcodedIds;
-    chilitags::Chilitags tChilitags;
+    HardcodedIds hardcodedIds;
+    chilitags::Chilitags chilitags;
 
-    int tZoom = 10;
+    int zoom = 10;
     for (int t = 0; t<1024; ++t) {
-        cv::Mat tImage = tChilitags.draw(t, tZoom);
-        ASSERT_EQ(CV_8U, tImage.type());
-        ASSERT_EQ(100,tImage.cols);
-        ASSERT_EQ(100,tImage.rows);
+        cv::Mat image = chilitags.draw(t, zoom);
+        ASSERT_EQ(CV_8U, image.type());
+        ASSERT_EQ(100,image.cols);
+        ASSERT_EQ(100,image.rows);
 
-        int tContentStart = tZoom*2;
-        for (int y = 0; y<tImage.rows; ++y) {
-            for (int x = 0; x<tImage.cols; ++x) {
+        int contentStart = zoom*2;
+        for (int y = 0; y<image.rows; ++y) {
+            for (int x = 0; x<image.cols; ++x) {
 
-                if (x < tContentStart || x >= tImage.cols-tContentStart
-                    || y < tContentStart || y >= tImage.rows-tContentStart) {
-                    ASSERT_EQ(0, tImage.at<unsigned char>(y,x));
+                if (x < contentStart || x >= image.cols-contentStart
+                    || y < contentStart || y >= image.rows-contentStart) {
+                    ASSERT_EQ(0, image.at<unsigned char>(y,x));
                 }
             }
         }
 
         for (int i = 0; i<6; ++i) {
             for (int j = 0; j<6; ++j) {
-                for (int y = tZoom*(2+i); y<tZoom*(2+i+1); ++y) {
-                    for (int x = tZoom*(2+j); x<tZoom*(2+j+1); ++x) {
+                for (int y = zoom*(2+i); y<zoom*(2+i+1); ++y) {
+                    for (int x = zoom*(2+j); x<zoom*(2+j+1); ++x) {
                         ASSERT_EQ(
-                            tHardcodedIds.id[t][6*i+j]*255,
-                            tImage.at<unsigned char>(y,x));
+                            hardcodedIds.id[t][6*i+j]*255,
+                            image.at<unsigned char>(y,x));
                     }
                 }
             }
@@ -104,22 +104,22 @@ TEST(Drawer, Zoom) {
 }
 
 TEST(Drawer, ZoomWithMargin) {
-    HardcodedIds tHardcodedIds;
-    chilitags::Chilitags tChilitags;
+    HardcodedIds hardcodedIds;
+    chilitags::Chilitags chilitags;
 
-    int tZoom = 10;
+    int zoom = 10;
     for (int t = 0; t<1024; ++t) {
-        cv::Mat tImage = tChilitags.draw(t, tZoom, true);
-        ASSERT_EQ(CV_8U, tImage.type());
-        ASSERT_EQ(140,tImage.cols);
-        ASSERT_EQ(140,tImage.rows);
+        cv::Mat image = chilitags.draw(t, zoom, true);
+        ASSERT_EQ(CV_8U, image.type());
+        ASSERT_EQ(140,image.cols);
+        ASSERT_EQ(140,image.rows);
         for (int i = 0; i<6; ++i) {
             for (int j = 0; j<6; ++j) {
-                for (int y = tZoom*(4+i); y<tZoom*(4+i+1); ++y) {
-                    for (int x = tZoom*(4+j); x<tZoom*(4+j+1); ++x) {
+                for (int y = zoom*(4+i); y<zoom*(4+i+1); ++y) {
+                    for (int x = zoom*(4+j); x<zoom*(4+j+1); ++x) {
                         ASSERT_EQ(
-                            tHardcodedIds.id[t][6*i+j]*255,
-                            tImage.at<unsigned char>(y,x));
+                            hardcodedIds.id[t][6*i+j]*255,
+                            image.at<unsigned char>(y,x));
                     }
                 }
             }
