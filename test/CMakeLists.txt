@@ -1,13 +1,10 @@
-
 MACRO(declare_test)
     cmake_parse_arguments(declare_test "NEEDS_DATA" "TESTNAME" "CV_MODULES" ${ARGN} )
 
 	file(GLOB ${declare_test_TESTNAME}_source_files ${declare_test_TESTNAME}*.cpp)
 	add_executable(${declare_test_TESTNAME} ${${declare_test_TESTNAME}_source_files})
 
-	include_directories(${CMAKE_SOURCE_DIR}/src/lib/include)
 	target_link_libraries(${declare_test_TESTNAME} chilitags)
-
 	target_link_libraries(${declare_test_TESTNAME} ${OpenCV_LIBS} )
 
 	add_test(${declare_test_TESTNAME} ${declare_test_TESTNAME})
@@ -17,9 +14,14 @@ MACRO(declare_test)
 	endif()
 endMACRO()
 
-add_definitions(-std=c++11)
+include_directories(../src)
 
 declare_test(TESTNAME codec)
-declare_test(TESTNAME drawer                )
-declare_test(TESTNAME integration NEEDS_DATA)
-declare_test(TESTNAME benchmark NEEDS_DATA)
+declare_test(TESTNAME drawer)
+declare_test(TESTNAME CachingFilter)
+declare_test(TESTNAME detection-performance NEEDS_DATA)
+declare_test(TESTNAME pose-estimation NEEDS_DATA)
+
+add_executable(find-crash find-crash.cpp)
+target_link_libraries(find-crash chilitags)
+target_link_libraries(find-crash ${OpenCV_LIBS} )
