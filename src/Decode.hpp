@@ -34,8 +34,8 @@ static const int INVALID_TAG;
 Decode();
 
 const std::pair<int, std::vector<cv::Point2f> > &operator()(
-    const std::vector<unsigned char> &pBits,
-    const std::vector<cv::Point2f> &pCorners);
+    const std::vector<unsigned char> &bits,
+    const std::vector<cv::Point2f> &corners);
 
 const Codec &getCodec() const {
     return mCodec;

@@ -38,14 +38,14 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    std::string tOutputFilename = std::string(argv[1])+".png";
-    int tTagId = std::atoi(argv[1]);
-    int tZoom = (argc > 2) ? std::atoi(argv[2]) : 1;
-    bool tNoMargin = (argc > 3 && argv[3][0] == 'n');
+    std::string outputFilename = std::string(argv[1])+".png";
+    int tagId = std::atoi(argv[1]);
+    int zoom = (argc > 2) ? std::atoi(argv[2]) : 1;
+    bool noMargin = (argc > 3 && argv[3][0] == 'n');
 
-    chilitags::Chilitags tChilitags;
+    chilitags::Chilitags chilitags;
 
-    cv::imwrite(tOutputFilename, tChilitags.draw(tTagId, tZoom, !tNoMargin));
+    cv::imwrite(outputFilename, chilitags.draw(tagId, zoom, !noMargin));
 
     return 0;
 }

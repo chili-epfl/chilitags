@@ -29,8 +29,8 @@ int main(int argc, char* argv[])
     /*****************************/
     /*    Init camera capture    */
     /*****************************/
-    int tCameraIndex = 0;
-    cv::VideoCapture capture(tCameraIndex);
+    int cameraIndex = 0;
+    cv::VideoCapture capture(cameraIndex);
     if (!capture.isOpened())
     {
         cerr << "Unable to initialise video capture.\n";
@@ -48,15 +48,15 @@ int main(int argc, char* argv[])
     double inputHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
 #endif
 
-    chilitags::Chilitags3D tChilitags3D(Size(inputWidth, inputHeight));
+    chilitags::Chilitags3D chilitags3D(Size(inputWidth, inputHeight));
     static const float DEFAULT_SIZE = 20.f;
-    tChilitags3D.setDefaultTagSize(DEFAULT_SIZE);
-    if (configFilename) tChilitags3D.readTagConfiguration(configFilename);
+    chilitags3D.setDefaultTagSize(DEFAULT_SIZE);
+    if (configFilename) chilitags3D.readTagConfiguration(configFilename);
 
     Mat cameraMatrix;
     Mat distCoeffs;
     if (intrinsicsFilename) {
-        Size calibratedImageSize = tChilitags3D.readCalibration(intrinsicsFilename);
+        Size calibratedImageSize = chilitags3D.readCalibration(intrinsicsFilename);
 #ifdef OPENCV3
         capture.set(cv::CAP_PROP_FRAME_WIDTH, calibratedImageSize.width);
         capture.set(cv::CAP_PROP_FRAME_HEIGHT, calibratedImageSize.height);
@@ -66,10 +66,10 @@ int main(int argc, char* argv[])
 #endif
     }
 
-    cv::Mat tProjectionMat = cv::Mat::zeros(4,4,CV_64F);
-    cameraMatrix.copyTo(tProjectionMat(cv::Rect(0,0,3,3)));
-    cv::Matx44d tProjection = tProjectionMat;
-    tProjection(3,2) = 1;
+    cv::Mat projectionMat = cv::Mat::zeros(4,4,CV_64F);
+    cameraMatrix.copyTo(projectionMat(cv::Rect(0,0,3,3)));
+    cv::Matx44d projection = projectionMat;
+    projection(3,2) = 1;
 
     /*****************************/
     /*             Go!           */
@@ -77,11 +77,11 @@ int main(int argc, char* argv[])
     cv::namedWindow("Pose Estimation");
 
     for (; 'q' != (char) cv::waitKey(10); ) {
-        cv::Mat tInputImage;
-        capture.read(tInputImage);
-        cv::Mat tOutputImage(tInputImage.size(), CV_8UC3, cv::Scalar(0,0,0));
+        cv::Mat inputImage;
+        capture.read(inputImage);
+        cv::Mat outputImage(inputImage.size(), CV_8UC3, cv::Scalar(0,0,0));
 
-        for (auto& kv : tChilitags3D.estimate(tInputImage)) {
+        for (auto& kv : chilitags3D.estimate(inputImage)) {
 
             static const cv::Vec4d UNITS[4] {
                 {0.f, 0.f, 0.f, 1.f},
@@ -90,19 +90,19 @@ int main(int argc, char* argv[])
                 {0.f, 0.f, DEFAULT_SIZE, 1.f},
             };
 
-            cv::Matx44d tTransformation = kv.second;
-            cv::Vec4f tReferential[4] = {
-                tProjection*tTransformation*UNITS[0],
-                tProjection*tTransformation*UNITS[1],
-                tProjection*tTransformation*UNITS[2],
-                tProjection*tTransformation*UNITS[3],
+            cv::Matx44d transformation = kv.second;
+            cv::Vec4f referential[4] = {
+                projection*transformation*UNITS[0],
+                projection*transformation*UNITS[1],
+                projection*transformation*UNITS[2],
+                projection*transformation*UNITS[3],
             };
 
             std::vector<cv::Point2f> t2DPoints;
-            for (auto tHomogenousPoint : tReferential)
+            for (auto homogenousPoint : referential)
                 t2DPoints.push_back(cv::Point2f(
-                    tHomogenousPoint[0]/tHomogenousPoint[3],
-                    tHomogenousPoint[1]/tHomogenousPoint[3]));
+                    homogenousPoint[0]/homogenousPoint[3],
+                    homogenousPoint[1]/homogenousPoint[3]));
 
             static const int SHIFT = 16;
             static const float PRECISION = 1<<SHIFT;
@@ -112,20 +112,20 @@ int main(int argc, char* argv[])
             };
             for (int i : {1,2,3}) {
                 cv::line(
-                    tOutputImage,
+                    outputImage,
                     PRECISION*t2DPoints[0],
                     PRECISION*t2DPoints[i],
                     AXIS_COLORS[i-1],
                     1, CV_AA, SHIFT);
-                cv::putText(tOutputImage, AXIS_NAMES[i-1], t2DPoints[i],
+                cv::putText(outputImage, AXIS_NAMES[i-1], t2DPoints[i],
                             cv::FONT_HERSHEY_SIMPLEX, 0.5, AXIS_COLORS[i-1]);
             }
 
-            cv::putText(tOutputImage, kv.first, t2DPoints[0],
+            cv::putText(outputImage, kv.first, t2DPoints[0],
                         cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255,255,255));
         }
 
-        cv::imshow("Pose Estimation", tOutputImage);
+        cv::imshow("Pose Estimation", outputImage);
     }
 
     cv::destroyWindow("Pose Estimation");

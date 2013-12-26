@@ -149,23 +149,23 @@ chilitags::FindQuads::FindQuads() :
 #endif
 }
 
-std::vector<std::vector<cv::Point2f> > chilitags::FindQuads::operator()(const cv::Mat &pBinaryImage)
+std::vector<std::vector<cv::Point2f> > chilitags::FindQuads::operator()(const cv::Mat &binaryImage)
 {
     //TODO function too long, split it
 
-    std::vector<std::vector<cv::Point2f> > tQuads;
+    std::vector<std::vector<cv::Point2f> > quads;
 
     vector<Vec4f> lines;
-    lsd->detect(pBinaryImage, lines);
+    lsd->detect(binaryImage, lines);
 
 #ifdef DEBUG_FindQuads
     // These constants will be given to OpenCv for drawing with
     // sub-pixel accuracy with fixed point precision coordinates
-    static const int scShift = 16;
-    static const float scPrecision = 1<<scShift;
-    const static cv::Scalar scColor(255, 0, 255);
+    static const int SHIFT = 16;
+    static const float PRECISION = 1<<SHIFT;
+    const static cv::Scalar COLOR(255, 0, 255);
 
-    Mat tDebugImage(pBinaryImage);
+    Mat debugImage(binaryImage);
 
     cout << "Found " << lines.size() << " lines (" << 2*lines.size() << " points)" << endl;
 #endif
@@ -233,7 +233,7 @@ std::vector<std::vector<cv::Point2f> > chilitags::FindQuads::operator()(const cv
                                    points[quad[2]]};
         convexHull(rawquad,
                    hull, false);
-        if (hull.size() == 4) tQuads.push_back(hull);
+        if (hull.size() == 4) quads.push_back(hull);
 
     }
 
@@ -243,38 +243,38 @@ std::vector<std::vector<cv::Point2f> > chilitags::FindQuads::operator()(const cv
     cout << connected_components.size() << " connected components" << endl;
     for (auto line : lines) {
         cv::line(
-            tDebugImage,
-            scPrecision*Point2f(line[0],line[1]),
-            scPrecision*Point2f(line[2],line[3]),
-            CV_RGB(0,0,0), 1, CV_AA, scShift);
+            debugImage,
+            PRECISION*Point2f(line[0],line[1]),
+            PRECISION*Point2f(line[2],line[3]),
+            CV_RGB(0,0,0), 1, CV_AA, SHIFT);
 
     }
 
     for (auto& quad : connected_components) {
 
         cv::line(
-            tDebugImage,
-            scPrecision*Point2f(points[quad[0]]),
-            scPrecision*Point2f(points[quad[1]]),
-            scColor, 1, CV_AA, scShift);
+            debugImage,
+            PRECISION*Point2f(points[quad[0]]),
+            PRECISION*Point2f(points[quad[1]]),
+            COLOR, 1, CV_AA, SHIFT);
         cv::line(
-            tDebugImage,
-            scPrecision*Point2f(points[quad[1]]),
-            scPrecision*Point2f(points[quad[3]]),
-            scColor, 1, CV_AA, scShift);
+            debugImage,
+            PRECISION*Point2f(points[quad[1]]),
+            PRECISION*Point2f(points[quad[3]]),
+            COLOR, 1, CV_AA, SHIFT);
         cv::line(
-            tDebugImage,
-            scPrecision*Point2f(points[quad[3]]),
-            scPrecision*Point2f(points[quad[2]]),
-            scColor, 1, CV_AA, scShift);
+            debugImage,
+            PRECISION*Point2f(points[quad[3]]),
+            PRECISION*Point2f(points[quad[2]]),
+            COLOR, 1, CV_AA, SHIFT);
         cv::line(
-            tDebugImage,
-            scPrecision*Point2f(points[quad[2]]),
-            scPrecision*Point2f(points[quad[0]]),
-            scColor, 1, CV_AA, scShift);
+            debugImage,
+            PRECISION*Point2f(points[quad[2]]),
+            PRECISION*Point2f(points[quad[0]]),
+            COLOR, 1, CV_AA, SHIFT);
     }
 
-    cv::imshow("FindQuads", tDebugImage);
+    cv::imshow("FindQuads", debugImage);
     //cv::waitKey(0);
 #endif
 
@@ -318,6 +318,6 @@ std::vector<std::vector<cv::Point2f> > chilitags::FindQuads::operator()(const cv
         segs_idx.push_back({j,k});
     }
  */
-    return tQuads;
+    return quads;
 }
 

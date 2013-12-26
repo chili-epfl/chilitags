@@ -15,10 +15,10 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    cv::Mat tImage = cv::imread(argv[1]);
-    if(tImage.data) {
-        for (const auto &tTag : chilitags::Chilitags().find(tImage))
-            cout << tTag.first << "\n";
+    cv::Mat image = cv::imread(argv[1]);
+    if(image.data) {
+        for (const auto &tag : chilitags::Chilitags().find(image))
+            cout << tag.first << "\n";
 
         return 0;
     }

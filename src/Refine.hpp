@@ -31,7 +31,7 @@ public:
 
 Refine();
 
-std::vector<cv::Point2f> operator()(const cv::Mat &pInputImage, const std::vector<cv::Point2f> &pQuad);
+std::vector<cv::Point2f> operator()(const cv::Mat &inputImage, const std::vector<cv::Point2f> &quad);
 
 };
 

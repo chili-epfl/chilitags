@@ -30,7 +30,7 @@ public:
 
 EnsureGreyscale();
 
-const cv::Mat & operator()(const cv::Mat & pInputImage);
+const cv::Mat & operator()(const cv::Mat & inputImage);
 
 protected:
 

@@ -47,67 +47,67 @@ Impl() :
 {
 }
 
-void setPersistence(int pPersistence) {
-    mCachingFilter.setPersistence(pPersistence);
+void setPersistence(int persistence) {
+    mCachingFilter.setPersistence(persistence);
 }
 
-std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &pInputImage){
-    auto tGreyscaleImage = mEnsureGreyscale(pInputImage);
+std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage){
+    auto greyscaleImage = mEnsureGreyscale(inputImage);
 
-    std::map<int, std::vector<cv::Point2f> > tTags;
+    std::map<int, std::vector<cv::Point2f> > tags;
 
-    for (const auto & tQuad : mFindQuads(tGreyscaleImage)) {
-        auto tRefinedQuad = mRefine(tGreyscaleImage, tQuad);
-        auto &tTag = mDecode(mReadBits(tGreyscaleImage, tRefinedQuad), tRefinedQuad);
-        if (tTag.first != Decode::INVALID_TAG) tTags.insert(tTag);
+    for (const auto & quad : mFindQuads(greyscaleImage)) {
+        auto refinedQuad = mRefine(greyscaleImage, quad);
+        auto &tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
+        if (tag.first != Decode::INVALID_TAG) tags.insert(tag);
     }
-    return mCachingFilter(tTags);
+    return mCachingFilter(tags);
 };
 
-std::vector<bool> encode(int pId) const {
-    unsigned char tData[36];
-    mDecode.getCodec().getTagEncodedId(pId, tData);
-    std::vector<bool> tBits(36);
+std::vector<bool> encode(int id) const {
+    unsigned char data[36];
+    mDecode.getCodec().getTagEncodedId(id, data);
+    std::vector<bool> bits(36);
     for (int i = 0; i<36; ++i) {
-        tBits[i] = tData[i];
+        bits[i] = data[i];
     }
-    return tBits;
+    return bits;
 }
 
-int decode(const std::vector<bool> &pBits) const {
-    unsigned char tData[36];
+int decode(const std::vector<bool> &bits) const {
+    unsigned char data[36];
     for (int i = 0; i<36; ++i) {
-        tData[i] = pBits[i] ? 1 : 0;
+        data[i] = bits[i] ? 1 : 0;
     }
-    int tId = -1;
-    mDecode.getCodec().decode(tData, tId);
-    return tId;
+    int id = -1;
+    mDecode.getCodec().decode(data, id);
+    return id;
 }
 
-cv::Mat draw(int pId, int pZoom, bool pWithMargin) const {
+cv::Mat draw(int id, int zoom, bool withMargin) const {
     // Creating the image of the bit matrix
     static const int DATA_SIZE = 6;
-    cv::Size tDataDim(DATA_SIZE,DATA_SIZE);
-    unsigned char tDataMatrix[DATA_SIZE*DATA_SIZE];
-    mDecode.getCodec().getTagEncodedId(pId, tDataMatrix);
-    cv::Mat tDataImage(tDataDim, CV_8U, tDataMatrix);
-    tDataImage *= 255;
+    cv::Size dataDim(DATA_SIZE,DATA_SIZE);
+    unsigned char dataMatrix[DATA_SIZE*DATA_SIZE];
+    mDecode.getCodec().getTagEncodedId(id, dataMatrix);
+    cv::Mat dataImage(dataDim, CV_8U, dataMatrix);
+    dataImage *= 255;
 
     // Adding the black border arounf the bit matrix
-    cv::Size tBorderSize(2,2);
-    cv::Mat tTagImage(tDataImage.size()+tBorderSize*2, CV_8U, cv::Scalar(0));
-    tDataImage.copyTo(tTagImage(cv::Rect(tBorderSize, tDataImage.size())));
+    cv::Size borderSize(2,2);
+    cv::Mat tagImage(dataImage.size()+borderSize*2, CV_8U, cv::Scalar(0));
+    dataImage.copyTo(tagImage(cv::Rect(borderSize, dataImage.size())));
 
     // Adding the optionnal white margin
-    cv::Size tMarginSize(0,0);
-    if (pWithMargin) tMarginSize += tBorderSize;
-    cv::Mat tOutlinedImage(tTagImage.size()+tMarginSize*2, CV_8U, cv::Scalar(255));
-    tTagImage.copyTo(tOutlinedImage(cv::Rect(tMarginSize, tTagImage.size())));
+    cv::Size marginSize(0,0);
+    if (withMargin) marginSize += borderSize;
+    cv::Mat outlinedImage(tagImage.size()+marginSize*2, CV_8U, cv::Scalar(255));
+    tagImage.copyTo(outlinedImage(cv::Rect(marginSize, tagImage.size())));
 
     // Resizing to specified zoom
-    cv::Mat tOutputImage(tOutlinedImage.size()*pZoom, CV_8U);
-    cv::resize(tOutlinedImage, tOutputImage, tOutputImage.size(), 0, 0, cv::INTER_NEAREST);
-    return tOutputImage;
+    cv::Mat outputImage(outlinedImage.size()*zoom, CV_8U);
+    cv::resize(outlinedImage, outputImage, outputImage.size(), 0, 0, cv::INTER_NEAREST);
+    return outputImage;
 }
 
 protected:
@@ -128,25 +128,25 @@ Chilitags::Chilitags() :
 {
 }
 
-void Chilitags::setPersistence(int pPersistence) {
-    mImpl->setPersistence(pPersistence);
+void Chilitags::setPersistence(int persistence) {
+    mImpl->setPersistence(persistence);
 }
 
 std::map<int, std::vector<cv::Point2f> > Chilitags::find(
-    const cv::Mat &pInputImage) const {
-    return mImpl->find(pInputImage);
+    const cv::Mat &inputImage) const {
+    return mImpl->find(inputImage);
 }
 
-std::vector<bool> Chilitags::encode(int pId) const {
-    return mImpl->encode(pId);
+std::vector<bool> Chilitags::encode(int id) const {
+    return mImpl->encode(id);
 }
 
-int Chilitags::decode(const std::vector<bool> & pBits) const {
-    return mImpl->decode(pBits);
+int Chilitags::decode(const std::vector<bool> & bits) const {
+    return mImpl->decode(bits);
 }
 
-cv::Mat Chilitags::draw(int pId, int pZoom, bool pWithMargin) const {
-    return mImpl->draw(pId, pZoom, pWithMargin);
+cv::Mat Chilitags::draw(int id, int zoom, bool withMargin) const {
+    return mImpl->draw(id, zoom, withMargin);
 }
 
 Chilitags::~Chilitags() = default;

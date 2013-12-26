@@ -23,14 +23,14 @@
 chilitags::EnsureGreyscale::EnsureGreyscale() : mOutputImage(){
 }
 
-const cv::Mat &chilitags::EnsureGreyscale::operator()(const cv::Mat &pInputImage)
+const cv::Mat &chilitags::EnsureGreyscale::operator()(const cv::Mat &inputImage)
 {
-    if (pInputImage.channels() != 1) {
+    if (inputImage.channels() != 1) {
         // assuming BGR
-        cv::cvtColor(pInputImage, mOutputImage, cv::COLOR_BGR2GRAY);
+        cv::cvtColor(inputImage, mOutputImage, cv::COLOR_BGR2GRAY);
     } else {
         // Shallow copy
-        mOutputImage = pInputImage;
+        mOutputImage = inputImage;
     }
     return mOutputImage;
 }

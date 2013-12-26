@@ -30,40 +30,40 @@
 
 int main(int argc, char* argv[])
 {
-    int tXRes = 640;
-    int tYRes = 480;
-    int tCameraIndex = 0;
+    int xRes = 640;
+    int yRes = 480;
+    int cameraIndex = 0;
     if (argc > 2) {
-        tXRes = std::atoi(argv[1]);
-        tYRes = std::atoi(argv[2]);
+        xRes = std::atoi(argv[1]);
+        yRes = std::atoi(argv[2]);
     }
     if (argc > 3) {
-        tCameraIndex = std::atoi(argv[3]);
+        cameraIndex = std::atoi(argv[3]);
     }
 
     // The source of input images
-    cv::VideoCapture tCapture(tCameraIndex);
-    if (!tCapture.isOpened())
+    cv::VideoCapture capture(cameraIndex);
+    if (!capture.isOpened())
     {
         std::cerr << "Unable to initialise video capture." << std::endl;
         return 1;
     }
 #ifdef OPENCV3
-    tCapture.set(cv::CAP_PROP_FRAME_WIDTH, tXRes);
-    tCapture.set(cv::CAP_PROP_FRAME_HEIGHT, tYRes);
+    capture.set(cv::CAP_PROP_FRAME_WIDTH, xRes);
+    capture.set(cv::CAP_PROP_FRAME_HEIGHT, yRes);
 #else
-    tCapture.set(CV_CAP_PROP_FRAME_WIDTH, tXRes);
-    tCapture.set(CV_CAP_PROP_FRAME_HEIGHT, tYRes);
+    capture.set(CV_CAP_PROP_FRAME_WIDTH, xRes);
+    capture.set(CV_CAP_PROP_FRAME_HEIGHT, yRes);
 #endif
 
-    cv::Mat tInputImage;
-    chilitags::Chilitags tChilitags;
+    cv::Mat inputImage;
+    chilitags::Chilitags chilitags;
     for (;;) {
-        tCapture.read(tInputImage);
-        cv::imwrite("lastimage.png", tInputImage);
-        tChilitags.find(tInputImage);
+        capture.read(inputImage);
+        cv::imwrite("lastimage.png", inputImage);
+        chilitags.find(inputImage);
     }
-    tCapture.release();
+    capture.release();
 
     return 0;
 }

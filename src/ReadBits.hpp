@@ -30,7 +30,7 @@ class ReadBits
 public:
 ReadBits();
 
-const std::vector<unsigned char> &operator()(const cv::Mat &pInputImage, const std::vector<cv::Point2f> &pCorners);
+const std::vector<unsigned char> &operator()(const cv::Mat &inputImage, const std::vector<cv::Point2f> &corners);
 
 protected:
 
