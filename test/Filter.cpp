@@ -1,0 +1,157 @@
+#ifdef OPENCV3
+#include <opencv2/ts.hpp>
+#else
+#include <opencv2/ts/ts.hpp>
+#endif
+
+#include <Filter.hpp>
+#include <iostream>
+
+namespace {
+    typedef chilitags::FindOutdated<int>
+            FindOutdated2D;
+
+    typedef chilitags::FindOutdated<std::string>
+            FindOutdated3D;
+
+    const std::map<int, std::vector<cv::Point2f>> EMPTY_TAG_LIST;
+    const std::map<int, std::vector<cv::Point2f>> ONLY_TAG_42 = {{42, {}}};
+    const std::map<int, std::vector<cv::Point2f>> ONLY_TAG_43 = {{43, {}}};
+
+    const std::map<std::string, cv::Matx44d> EMPTY_OBJECT_LIST;
+    const std::map<std::string, cv::Matx44d> ONLY_OBJECT_42 = {{"42", {}}};
+    const std::map<std::string, cv::Matx44d> ONLY_OBJECT_43 = {{"43", {}}};
+}
+
+TEST(FindOutdated2D, ZeroPersistence) {
+    FindOutdated2D findOutdated(0);
+
+    EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
+    EXPECT_EQ(0, findOutdated(ONLY_TAG_42).size());
+    EXPECT_EQ(1, findOutdated(EMPTY_TAG_LIST).size());
+}
+
+TEST(FindOutdated2D, InvalidateOne) {
+    FindOutdated2D findOutdated(3);
+
+    EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
+    EXPECT_EQ(0, findOutdated(ONLY_TAG_42).size());
+    EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
+    EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
+    EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
+    EXPECT_EQ(1, findOutdated(EMPTY_TAG_LIST).size());
+}
+
+TEST(FindOutdated2D, InvalidateFirst) {
+    FindOutdated2D findOutdated(2);
+
+    EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
+    EXPECT_EQ(0, findOutdated(ONLY_TAG_42).size());
+    EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
+    EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
+    EXPECT_EQ(1, findOutdated(ONLY_TAG_43).size());
+}
+
+TEST(FindOutdated2D, ChangePersistence) {
+    FindOutdated2D findOutdated(2);
+
+    EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
+    EXPECT_EQ(0, findOutdated(ONLY_TAG_42).size());
+    findOutdated.setPersistence(1);
+    EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
+    EXPECT_EQ(1, findOutdated(EMPTY_TAG_LIST).size());
+}
+
+TEST(FindOutdated3D, ZeroPersistence) {
+    FindOutdated3D findOutdated(0);
+
+    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
+    EXPECT_EQ(0, findOutdated(ONLY_OBJECT_42).size());
+    EXPECT_EQ(1, findOutdated(EMPTY_OBJECT_LIST).size());
+
+}
+
+TEST(FindOutdated3D, InvalidateOne) {
+    FindOutdated3D findOutdated(3);
+
+    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
+    EXPECT_EQ(0, findOutdated(ONLY_OBJECT_42).size());
+    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
+    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
+    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
+    EXPECT_EQ(1, findOutdated(EMPTY_OBJECT_LIST).size());
+}
+
+TEST(FindOutdated3D, InvalidateFirst) {
+    FindOutdated3D findOutdated(2);
+
+    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
+    EXPECT_EQ(0, findOutdated(ONLY_OBJECT_42).size());
+    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
+    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
+    EXPECT_EQ(1, findOutdated(ONLY_OBJECT_43).size());
+}
+
+TEST(FindOutdated3D, ChangePersistence) {
+    FindOutdated3D findOutdated(2);
+
+    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
+    EXPECT_EQ(0, findOutdated(ONLY_OBJECT_42).size());
+    findOutdated.setPersistence(1);
+    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
+    EXPECT_EQ(1, findOutdated(EMPTY_OBJECT_LIST).size());
+}
+
+TEST(Filter, ZeroGain) {
+    chilitags::Filter<int, std::vector<cv::Point2f>> filter(0, 0.);
+    std::vector<cv::Point2f> coordinates {
+        {1.,2.},
+        {3.,4.},
+        {5.,6.},
+        {7.,8.},
+    };
+    std::vector<cv::Point2f> expected;
+    std::map<int, std::vector<cv::Point2f>> tags;
+    std::map<int, std::vector<cv::Point2f>> results;
+    
+    tags = {{0, coordinates}};
+    results = filter(tags);
+    expected = coordinates;
+    EXPECT_EQ(results.size(), tags.size());
+    EXPECT_EQ(0., cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
+    
+    coordinates = cv::Mat(cv::Mat(coordinates) + 9.);
+    tags = {{0, coordinates}};
+    results = filter(tags);
+    expected = coordinates;
+    EXPECT_EQ(results.size(), tags.size());
+    EXPECT_EQ(0., cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
+}
+
+TEST(Filter, NonZeroGain) {
+    chilitags::Filter<int, std::vector<cv::Point2f>> filter(0, 0.1);
+    std::vector<cv::Point2f> coordinates {
+        {1.,2.},
+        {3.,4.},
+        {5.,6.},
+        {7.,8.},
+    };
+    std::vector<cv::Point2f> expected;
+    std::map<int, std::vector<cv::Point2f>> tags;
+    std::map<int, std::vector<cv::Point2f>> results;
+    
+    tags = {{0, coordinates}};
+    results = filter(tags);
+    expected = coordinates;
+    EXPECT_EQ(results.size(), tags.size());
+    EXPECT_EQ(0., cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
+    
+    std::vector<cv::Point2f> coordinates2 = cv::Mat(cv::Mat(coordinates) + 9.);
+    tags = {{0, coordinates2}};
+    results = filter(tags);
+    expected = cv::Mat(0.1*cv::Mat(coordinates)+.9*cv::Mat(coordinates2));
+    EXPECT_EQ(results.size(), tags.size());
+    EXPECT_EQ(0., cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
+}
+
+CV_TEST_MAIN(".")

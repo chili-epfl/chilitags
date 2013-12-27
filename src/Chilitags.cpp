@@ -19,12 +19,14 @@
 
 #include <chilitags.hpp>
 
-#include "CachingFilter.hpp"
 #include "EnsureGreyscale.hpp"
 #include "FindQuads.hpp"
+
 #include "ReadBits.hpp"
 #include "Decode.hpp"
 #include "Refine.hpp"
+
+#include "Filter.hpp"
 
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -37,18 +39,20 @@ class Chilitags::Impl
 public:
 
 Impl() :
-    mCachingFilter(5),
     mEnsureGreyscale(),
     mFindQuads(),
 
     mRefine(),
     mReadBits(),
-    mDecode()
+    mDecode(),
+
+    mFilter(5, 0.)
 {
 }
 
-void setPersistence(int persistence) {
-    mCachingFilter.setPersistence(persistence);
+void setFilter(int persistence, double gain) {
+    mFilter.setPersistence(persistence);
+    mFilter.setGain(gain);
 }
 
 std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage){
@@ -61,7 +65,7 @@ std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage){
         auto &tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
         if (tag.first != Decode::INVALID_TAG) tags.insert(tag);
     }
-    return mCachingFilter(tags);
+    return mFilter(tags);
 };
 
 std::vector<bool> encode(int id) const {
@@ -112,14 +116,15 @@ cv::Mat draw(int id, int zoom, bool withMargin) const {
 
 protected:
 
-CachingFilter mCachingFilter;
-
 EnsureGreyscale mEnsureGreyscale;
 FindQuads mFindQuads;
 
 Refine mRefine;
 ReadBits mReadBits;
 Decode mDecode;
+
+Filter<int, std::vector<cv::Point2f>> mFilter;
+
 };
 
 
@@ -128,8 +133,8 @@ Chilitags::Chilitags() :
 {
 }
 
-void Chilitags::setPersistence(int persistence) {
-    mImpl->setPersistence(persistence);
+void Chilitags::setFilter(int persistence, double gain) {
+    mImpl->setFilter(persistence, gain);
 }
 
 std::map<int, std::vector<cv::Point2f> > Chilitags::find(

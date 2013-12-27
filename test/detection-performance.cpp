@@ -103,8 +103,8 @@ TEST(Integration, Snapshots) {
     cvtest::TS::ptr()->init("");
 
     chilitags::Chilitags chilitags;
-    // We do not want any persistence, to measure the taw performances
-    chilitags.setPersistence(0);
+    // We do not want any filtering, to measure the raw performances
+    chilitags.setFilter(0, 0.);
 
     int newFalseNegatives = 0;
     int newTruePositives = 0;

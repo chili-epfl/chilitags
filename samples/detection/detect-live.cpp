@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
     // at the same position. When tags disappear for more than 5 frames,
     // Chilitags actually removes it.
     // Here, we cancel this to show the raw detection results.
-    chilitags.setPersistence(0);
+    chilitags.setFilter(0, 0.);
 
     cv::namedWindow("DisplayChilitags");
     // Main loop, exiting when 'q is pressed'
