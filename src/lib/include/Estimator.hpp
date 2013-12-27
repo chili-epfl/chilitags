@@ -29,7 +29,7 @@ public:
     std::vector<T> data;
 
 private:
-    uint idx;
+    unsigned int idx;
     size_t size;
 };
 
@@ -88,7 +88,7 @@ public:
         // clone() is required here because cv::Mat assignment does *not*
         // copy the data, but merely a pointer to it
         T sum = vals.data[0].clone();
-        for(uint i = 1 ; i < nbvals ; ++i) sum += vals.data[i];
+        for(unsigned int i = 1 ; i < nbvals ; ++i) sum += vals.data[i];
         return sum/nbvals;
     }
 
@@ -99,7 +99,7 @@ public:
         // clone() is required here because cv::Mat assignment does *not*
         // copy the data, but merely a pointer to it
          T temp = (current_mean-vals.data[0])*(current_mean-vals.data[0]).clone();
-        for(uint i = 1 ; i < vals.data.size() ; ++i)
+        for(unsigned int i = 1 ; i < vals.data.size() ; ++i)
             temp += (current_mean-vals.data[i])*(current_mean-vals.data[i]);
         return temp/length;
     }
