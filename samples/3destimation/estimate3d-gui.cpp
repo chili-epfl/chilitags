@@ -53,8 +53,6 @@ int main(int argc, char* argv[])
     chilitags3D.setDefaultTagSize(DEFAULT_SIZE);
     if (configFilename) chilitags3D.readTagConfiguration(configFilename);
 
-    Mat cameraMatrix;
-    Mat distCoeffs;
     if (intrinsicsFilename) {
         Size calibratedImageSize = chilitags3D.readCalibration(intrinsicsFilename);
 #ifdef OPENCV3
@@ -67,7 +65,7 @@ int main(int argc, char* argv[])
     }
 
     cv::Mat projectionMat = cv::Mat::zeros(4,4,CV_64F);
-    cameraMatrix.copyTo(projectionMat(cv::Rect(0,0,3,3)));
+    chilitags3D.getCameraMatrix().copyTo(projectionMat(cv::Rect(0,0,3,3)));
     cv::Matx44d projection = projectionMat;
     projection(3,2) = 1;
 

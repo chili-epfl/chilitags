@@ -258,6 +258,9 @@ cv::Size readCalibration(const std::string &filename) {
     return size;
 }
 
+const cv::Mat &getCameraMatrix()     const {return mCameraMatrix;}
+const cv::Mat &getDistortionCoeffs() const{return mDistCoeffs;}
+
 private:
 void computeTransformation(const std::string& name,
                            const std::vector<cv::Point3f>& corners,
@@ -281,7 +284,7 @@ void computeTransformation(const std::string& name,
         rotMat(0,0) , rotMat(0,1) , rotMat(0,2) , translation.at<double>(0) ,
         rotMat(1,0) , rotMat(1,1) , rotMat(1,2) , translation.at<double>(1) ,
         rotMat(2,0) , rotMat(2,1) , rotMat(2,2) , translation.at<double>(2) ,
-                   0 ,            0 ,            0 ,                          1 ,
+                  0 ,           0 ,           0 ,                         1 ,
     };
 }
 
@@ -337,3 +340,8 @@ cv::Size chilitags::Chilitags3D::readCalibration(const std::string &filename){
 }
 
 chilitags::Chilitags3D::~Chilitags3D() = default;
+
+const cv::Mat &chilitags::Chilitags3D::getCameraMatrix()     const {
+    return mImpl->getCameraMatrix();}
+const cv::Mat &chilitags::Chilitags3D::getDistortionCoeffs() const {
+    return mImpl->getDistortionCoeffs();}
