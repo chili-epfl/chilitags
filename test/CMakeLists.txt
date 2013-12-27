@@ -18,7 +18,7 @@ include_directories(../src)
 
 declare_test(TESTNAME codec)
 declare_test(TESTNAME drawer)
-declare_test(TESTNAME CachingFilter)
+declare_test(TESTNAME Filter)
 declare_test(TESTNAME detection-performance NEEDS_DATA)
 declare_test(TESTNAME pose-estimation NEEDS_DATA)
 
