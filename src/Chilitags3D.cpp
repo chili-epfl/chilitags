@@ -123,7 +123,7 @@ const Chilitags &getChilitags() const {
 }
 
 std::map<std::string, cv::Matx44d> estimate(
-    std::map<int, std::vector<cv::Point2f> > tags) const {
+    std::map<int, std::vector<cv::Point2f> > tags) {
 
     std::map<std::string, cv::Matx44d> objects;
 
@@ -188,7 +188,7 @@ std::map<std::string, cv::Matx44d> estimate(
 }
 
 std::map<std::string, cv::Matx44d> estimate(
-    const cv::Mat &inputImage) const {
+    const cv::Mat &inputImage) {
     return estimate(mChilitags.find(inputImage));
 }
 
@@ -310,12 +310,12 @@ chilitags::Chilitags &chilitags::Chilitags3D::getChilitags(){
 }
 
 std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::estimate(
-    std::map<int, std::vector<cv::Point2f> > tags) const {
+    std::map<int, std::vector<cv::Point2f> > tags) {
     return mImpl->estimate(tags);
 }
 
 std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::estimate(
-    const cv::Mat &inputImage) const {
+    const cv::Mat &inputImage) {
     return mImpl->estimate(inputImage);
 }
 

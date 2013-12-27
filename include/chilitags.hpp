@@ -70,7 +70,7 @@ void setPersistence(int persistence);
 
     \param inputImage an OpenCV image (gray or BGR)
  */
-std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage) const;
+std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage);
 
 /**
     Finds the black and white, 6x6 matrix corresponding to the given id.
@@ -157,7 +157,7 @@ Chilitags &getChilitags();
     \param tags a list of tags, as returned by Chilitags::find().
  */
 std::map<std::string, cv::Matx44d> estimate(
-    std::map<int, std::vector<cv::Point2f> > tags) const;
+    std::map<int, std::vector<cv::Point2f> > tags);
 
 /**
     This is a convenience variant of estimate() which also takes care of the
@@ -167,7 +167,7 @@ std::map<std::string, cv::Matx44d> estimate(
     matrices.
     \param inputImage the image to feed to Chilitags::find().
  */
-std::map<std::string, cv::Matx44d> estimate(const cv::Mat &inputImage) const;
+std::map<std::string, cv::Matx44d> estimate(const cv::Mat &inputImage);
 
 /**
     Chilitags3D can also detect rigid assemblies of tags. This allows for a

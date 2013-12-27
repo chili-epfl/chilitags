@@ -133,7 +133,7 @@ void Chilitags::setPersistence(int persistence) {
 }
 
 std::map<int, std::vector<cv::Point2f> > Chilitags::find(
-    const cv::Mat &inputImage) const {
+    const cv::Mat &inputImage) {
     return mImpl->find(inputImage);
 }
 
