@@ -65,13 +65,13 @@ const std::map<int, std::vector<cv::Point2f> > &operator()(
         while (cachedTagIt != mCachedTags.end()
                && cachedTagIt->first < rawTagIt->first) {
             if (cacheAgeIt->second > mPersistence) {
-                mCacheAge.erase(cacheAgeIt);
-                mCachedTags.erase(cachedTagIt);
+                cacheAgeIt = mCacheAge.erase(cacheAgeIt);
+                cachedTagIt = mCachedTags.erase(cachedTagIt);
             } else {
                 ++cacheAgeIt->second;
+                ++cacheAgeIt;
+                ++cachedTagIt;
             }
-            ++cacheAgeIt;
-            ++cachedTagIt;
         }
         if (cachedTagIt != mCachedTags.end()
             && cachedTagIt->first == rawTagIt->first) {
@@ -86,15 +86,16 @@ const std::map<int, std::vector<cv::Point2f> > &operator()(
         ++cacheAgeIt;
         ++cachedTagIt;
     }
+
     while (cachedTagIt != mCachedTags.end()) {
         if (cacheAgeIt->second > mPersistence) {
-            mCacheAge.erase(cacheAgeIt);
-            mCachedTags.erase(cachedTagIt);
+            cacheAgeIt  = mCacheAge.erase(cacheAgeIt);
+            cachedTagIt = mCachedTags.erase(cachedTagIt);
         } else {
             ++cacheAgeIt->second;
+            ++cacheAgeIt;
+            ++cachedTagIt;
         }
-        ++cacheAgeIt;
-        ++cachedTagIt;
     }
 
     return mCachedTags;
