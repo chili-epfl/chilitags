@@ -112,7 +112,7 @@ cv::Mat draw(int id, int zoom, bool withMargin) const {
 
 protected:
 
-CachingFilter mCachingFilter;
+CachingFilter<int, std::vector<cv::Point2f>> mCachingFilter;
 
 EnsureGreyscale mEnsureGreyscale;
 FindQuads mFindQuads;

@@ -17,10 +17,12 @@
 *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
 *******************************************************************************/
 
-#include <opencv2/calib3d/calib3d.hpp>
+#include <chilitags.hpp>
 
-#include "chilitags.hpp"
+
+#include "CachingFilter.hpp"
 #include <iostream>
+#include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp> //for FileStorage
 #ifdef OPENCV3
 #include <opencv2/core/utility.hpp>
@@ -103,7 +105,8 @@ Impl(cv::Size cameraSize) :
     mCameraMatrix(),
     mDistCoeffs(),
     mDefaultTagCorners(),
-    mId2Configuration()
+    mId2Configuration(),
+    mCachingFilter(5)
 {
     double focalLength = 700.;
     mCameraMatrix = (cv::Mat_<double>(3,3) <<
@@ -113,6 +116,10 @@ Impl(cv::Size cameraSize) :
     );
     setDefaultTagSize(1.f);
     mChilitags.setPersistence(0);
+}
+
+void setPersistence(int persistence) {
+    mCachingFilter.setPersistence(persistence);
 }
 
 const Chilitags &getChilitags() const {
@@ -184,7 +191,7 @@ std::map<std::string, cv::Matx44d> estimate(
             objects);
     }
 
-    return objects;
+    return mCachingFilter(objects);
 }
 
 std::map<std::string, cv::Matx44d> estimate(
@@ -299,7 +306,13 @@ std::vector<cv::Point3f> mDefaultTagCorners;
 // associates a tag id with an object name and the configuration of the tag
 // in this object
 std::map<int, std::pair<std::string, TagConfig> > mId2Configuration;
+
+CachingFilter<std::string, cv::Matx44d> mCachingFilter;
 };
+
+void chilitags::Chilitags3D::setPersistence(int persistence) {
+    mImpl->setPersistence(persistence);
+}
 
 chilitags::Chilitags3D::Chilitags3D(cv::Size cameraSize) :
     mImpl(new chilitags::Chilitags3D::Impl(cameraSize)){

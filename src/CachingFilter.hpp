@@ -34,6 +34,7 @@ namespace chilitags {
  *  parameter of how long the tag should be artificially kept present, and
  *  simply returns the last known position.
  */
+template<typename Id, typename Coordinates>
 class CachingFilter {
 
 public:
@@ -53,8 +54,8 @@ void setPersistence(int persistence) {
     mPersistence = persistence;
 }
 
-const std::map<int, std::vector<cv::Point2f> > &operator()(
-    const std::map<int, std::vector<cv::Point2f> > &rawTags){
+const std::map<Id, Coordinates > &operator()(
+    const std::map<Id, Coordinates > &rawTags){
 
     if (mPersistence <= 0) return rawTags;
 
@@ -102,13 +103,18 @@ const std::map<int, std::vector<cv::Point2f> > &operator()(
 }
 
 protected:
+
 int mPersistence;
-/** The filtered tag list
+
+/**
+    The filtered tag list
  */
-std::map<int, std::vector<cv::Point2f> > mCachedTags;
-/** Keeps track of how many times a cached tag has been returned
+std::map<Id, Coordinates> mCachedTags;
+
+/**
+    Keeps track of how many times a cached tag has been returned
  */
-std::map<int, int> mCacheAge;
+std::map<Id, int> mCacheAge;
 
 };
 

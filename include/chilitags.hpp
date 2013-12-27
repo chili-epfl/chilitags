@@ -141,13 +141,33 @@ public:
     read3DConfiguration() can be used to specify which tags are of interest,
     and how they are arranged on a rigid object.
 
-    Chilitags3D creates a Chilitags instance (with a persistence of 0), which
-    can be accessed through the getChilitags() accessors.
+    Chilitags3D creates a Chilitags instance, which can be accessed through the
+    getChilitags() accessors. This Chilitags instance is set to have a
+    persistence of 0, but Chilitags3D sets a default persistence of 5 frames
+    for the estimated poses. Please refer to the documentation of
+    Chilitags3D::setPersistence() for more detail.
  */
 Chilitags3D(cv::Size cameraSize);
 
+/**
+    Sets the number of frames in which a 3d object, i.e. a tag or a rigid
+    object containing several tags, should be absent before being removed from
+    the output of estimate().
+
+    Chilitags3D manages persistence separately from the 2D detection of
+    Chilitags, because an object can be composed of several tags. If one or
+    more of these tags are not detected, the pose of the object is estimated
+    with the remaining, detected tags. In this case, it would hurt the pose
+    estimation to make the individual tags persistent. Chilitags3D thus sets
+    the 2D detection to have no persistence, and applies its persistence
+    mechanism only after the estimation of the pose. Note that for independent
+    tags, it should not matter.
+ */
+void setPersistence(int persistence);
+
 /** Accessor to the underlying (2D) Chilitags detection. */
 const Chilitags &getChilitags() const;
+
 /** Accessor to the underlying (2D) Chilitags detection. */
 Chilitags &getChilitags();
 
