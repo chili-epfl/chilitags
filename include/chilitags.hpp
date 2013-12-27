@@ -216,6 +216,16 @@ void setCalibration(cv::InputArray newCameraMatrix,
  */
 cv::Size readCalibration(const std::string &filename);
 
+/**
+    Returns the camera matrix used for the pose estimation.
+*/
+const cv::Mat &getCameraMatrix()     const;
+
+/**
+    Returns the distortion coefficients used for the pose estimation.
+*/
+const cv::Mat &getDistortionCoeffs() const;
+
 ~Chilitags3D();
 
 private:
