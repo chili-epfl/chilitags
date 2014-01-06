@@ -20,7 +20,7 @@
 #include <chilitags.hpp>
 
 
-#include "CachingFilter.hpp"
+#include "PersistenceManager.hpp"
 #include <iostream>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp> //for FileStorage
@@ -106,7 +106,7 @@ Impl(cv::Size cameraSize) :
     mDistCoeffs(),
     mDefaultTagCorners(),
     mId2Configuration(),
-    mCachingFilter(5)
+    mPersistenceManager(5)
 {
     double focalLength = 700.;
     mCameraMatrix = (cv::Mat_<double>(3,3) <<
@@ -119,7 +119,7 @@ Impl(cv::Size cameraSize) :
 }
 
 void setPersistence(int persistence) {
-    mCachingFilter.setPersistence(persistence);
+    mPersistenceManager.setPersistence(persistence);
 }
 
 const Chilitags &getChilitags() const {
@@ -191,7 +191,7 @@ std::map<std::string, cv::Matx44d> estimate(
             objects);
     }
 
-    return mCachingFilter(objects);
+    return mPersistenceManager(objects);
 }
 
 std::map<std::string, cv::Matx44d> estimate(
@@ -307,7 +307,7 @@ std::vector<cv::Point3f> mDefaultTagCorners;
 // in this object
 std::map<int, std::pair<std::string, TagConfig> > mId2Configuration;
 
-CachingFilter<std::string, cv::Matx44d> mCachingFilter;
+PersistenceManager<std::string, cv::Matx44d> mPersistenceManager;
 };
 
 void chilitags::Chilitags3D::setPersistence(int persistence) {

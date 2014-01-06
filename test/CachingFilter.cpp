@@ -4,18 +4,18 @@
 #include <opencv2/ts/ts.hpp>
 #endif
 
-#include <CachingFilter.hpp>
+#include <PersistenceManager.hpp>
 #include <iostream>
 
 namespace {
-    typedef chilitags::CachingFilter<int, std::vector<cv::Point2f> >
-            CachingFilter2D;
-    typedef chilitags::CachingFilter<std::string, cv::Matx44d>
-            CachingFilter3D;
+    typedef chilitags::PersistenceManager<int, std::vector<cv::Point2f>>
+            PersistenceManager2D;
+    typedef chilitags::PersistenceManager<std::string, cv::Matx44d>
+            PersistenceManager3D;
 }
 
-TEST(CachingFilter2D, Cache) {
-    CachingFilter2D filter(1);
+TEST(PersistenceManager2D, Cache) {
+    PersistenceManager2D filter(1);
     std::vector<cv::Point2f> corners = {
         {1.0f, 5.0f},
         {2.0f, 6.0f},
@@ -36,8 +36,8 @@ TEST(CachingFilter2D, Cache) {
 
 }
 
-TEST(CachingFilter2D, ZeroPersistence) {
-    CachingFilter2D filter(0);
+TEST(PersistenceManager2D, ZeroPersistence) {
+    PersistenceManager2D filter(0);
 
     EXPECT_EQ(0, filter({}).size());
     EXPECT_EQ(1, filter({{42,{}}}).size());
@@ -45,8 +45,8 @@ TEST(CachingFilter2D, ZeroPersistence) {
 
 }
 
-TEST(CachingFilter2D, InvalidateOne) {
-    CachingFilter2D filter(3);
+TEST(PersistenceManager2D, InvalidateOne) {
+    PersistenceManager2D filter(3);
 
     EXPECT_EQ(0, filter({}).size());
     EXPECT_EQ(1, filter({{42,{}}}).size());
@@ -56,8 +56,8 @@ TEST(CachingFilter2D, InvalidateOne) {
     EXPECT_EQ(0, filter({}).size());
 }
 
-TEST(CachingFilter2D, InvalidateFirst) {
-    CachingFilter2D filter(2);
+TEST(PersistenceManager2D, InvalidateFirst) {
+    PersistenceManager2D filter(2);
 
     EXPECT_EQ(0, filter({}).size());
     EXPECT_EQ(1, filter({{42,{}}}).size());
@@ -66,8 +66,8 @@ TEST(CachingFilter2D, InvalidateFirst) {
     EXPECT_EQ(1, filter({{43,{}}}).size());
 }
 
-TEST(CachingFilter2D, ChangePersistence) {
-    CachingFilter2D filter(2);
+TEST(PersistenceManager2D, ChangePersistence) {
+    PersistenceManager2D filter(2);
 
     EXPECT_EQ(0, filter({}).size());
     EXPECT_EQ(1, filter({{42,{}}}).size());
@@ -77,8 +77,8 @@ TEST(CachingFilter2D, ChangePersistence) {
 }
 
 
-TEST(CachingFilter3D, Cache) {
-    CachingFilter3D filter(1);
+TEST(PersistenceManager3D, Cache) {
+    PersistenceManager3D filter(1);
     cv::Matx44d matrix = {
         1., 5.,  9., 13.,
         2., 6., 10., 14.,
@@ -100,8 +100,8 @@ TEST(CachingFilter3D, Cache) {
 
 }
 
-TEST(CachingFilter3D, ZeroPersistence) {
-    CachingFilter3D filter(0);
+TEST(PersistenceManager3D, ZeroPersistence) {
+    PersistenceManager3D filter(0);
 
     EXPECT_EQ(0, filter({}).size());
     EXPECT_EQ(1, filter({{"42",{}}}).size());
@@ -109,8 +109,8 @@ TEST(CachingFilter3D, ZeroPersistence) {
 
 }
 
-TEST(CachingFilter3D, InvalidateOne) {
-    CachingFilter3D filter(3);
+TEST(PersistenceManager3D, InvalidateOne) {
+    PersistenceManager3D filter(3);
 
     EXPECT_EQ(0, filter({}).size());
     EXPECT_EQ(1, filter({{"42",{}}}).size());
@@ -120,8 +120,8 @@ TEST(CachingFilter3D, InvalidateOne) {
     EXPECT_EQ(0, filter({}).size());
 }
 
-TEST(CachingFilter3D, InvalidateFirst) {
-    CachingFilter3D filter(2);
+TEST(PersistenceManager3D, InvalidateFirst) {
+    PersistenceManager3D filter(2);
 
     EXPECT_EQ(0, filter({}).size());
     EXPECT_EQ(1, filter({{"42",{}}}).size());
@@ -130,8 +130,8 @@ TEST(CachingFilter3D, InvalidateFirst) {
     EXPECT_EQ(1, filter({{"43",{}}}).size());
 }
 
-TEST(CachingFilter3D, ChangePersistence) {
-    CachingFilter3D filter(2);
+TEST(PersistenceManager3D, ChangePersistence) {
+    PersistenceManager3D filter(2);
 
     EXPECT_EQ(0, filter({}).size());
     EXPECT_EQ(1, filter({{"42",{}}}).size());

@@ -19,7 +19,7 @@
 
 #include <chilitags.hpp>
 
-#include "CachingFilter.hpp"
+#include "PersistenceManager.hpp"
 #include "EnsureGreyscale.hpp"
 #include "FindQuads.hpp"
 #include "ReadBits.hpp"
@@ -37,7 +37,7 @@ class Chilitags::Impl
 public:
 
 Impl() :
-    mCachingFilter(5),
+    mPersistenceManager(5),
     mEnsureGreyscale(),
     mFindQuads(),
 
@@ -48,7 +48,7 @@ Impl() :
 }
 
 void setPersistence(int persistence) {
-    mCachingFilter.setPersistence(persistence);
+    mPersistenceManager.setPersistence(persistence);
 }
 
 std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage){
@@ -61,7 +61,7 @@ std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage){
         auto &tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
         if (tag.first != Decode::INVALID_TAG) tags.insert(tag);
     }
-    return mCachingFilter(tags);
+    return mPersistenceManager(tags);
 };
 
 std::vector<bool> encode(int id) const {
@@ -112,7 +112,7 @@ cv::Mat draw(int id, int zoom, bool withMargin) const {
 
 protected:
 
-CachingFilter<int, std::vector<cv::Point2f>> mCachingFilter;
+PersistenceManager<int, std::vector<cv::Point2f> > mPersistenceManager;
 
 EnsureGreyscale mEnsureGreyscale;
 FindQuads mFindQuads;
