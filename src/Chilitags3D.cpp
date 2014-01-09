@@ -19,8 +19,8 @@
 
 #include <chilitags.hpp>
 
+#include "Filters.hpp"
 
-#include "PersistenceManager.hpp"
 #include <iostream>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp> //for FileStorage
@@ -96,6 +96,7 @@ struct TagConfig {
 
 }
 
+
 class chilitags::Chilitags3D::Impl {
 
 public:
@@ -106,8 +107,9 @@ Impl(cv::Size cameraSize) :
     mDistCoeffs(),
     mDefaultTagCorners(),
     mId2Configuration(),
-    mPersistenceManager(5),
-    mFilter(mPersistenceManager)
+
+    mFindOutdated(5),
+    mFilter(mFindOutdated)
 {
     double focalLength = 700.;
     mCameraMatrix = (cv::Mat_<double>(3,3) <<
@@ -120,7 +122,7 @@ Impl(cv::Size cameraSize) :
 }
 
 void setPersistence(int persistence) {
-    mPersistenceManager.setPersistence(persistence);
+    mFindOutdated.setPersistence(persistence);
 }
 
 const Chilitags &getChilitags() const {
@@ -308,7 +310,7 @@ std::vector<cv::Point3f> mDefaultTagCorners;
 // in this object
 std::map<int, std::pair<std::string, TagConfig> > mId2Configuration;
 
-PersistenceManager<std::string> mPersistenceManager;
+FindOutdated<std::string> mFindOutdated;
 Cache<std::string, cv::Matx44d> mFilter;
 };
 

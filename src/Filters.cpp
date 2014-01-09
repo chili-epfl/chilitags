@@ -17,35 +17,27 @@
 *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
 *******************************************************************************/
 
-/** This header contains various utilities to paliate with imperfect detection.
- */
+#include "Filters.hpp"
 
-#ifndef PersistenceManager_HPP
-#define PersistenceManager_HPP
-
-#include <map>
-#include <vector>
 #include <opencv2/core/core.hpp>
 
 namespace chilitags {
 
 template<typename Id>
-class PersistenceManager {
-
-public:
-
-PersistenceManager(int persistence) :
+FindOutdated<Id>::FindOutdated(int persistence) :
     mPersistence(persistence),
     mDisappearanceTime()
 {
 }
 
-void setPersistence(int persistence) {
+template<typename Id>
+void FindOutdated<Id>::setPersistence(int persistence) {
     mPersistence = persistence;
 }
 
+template <typename Id>
 template <typename Coordinates>
-std::vector<Id> operator()(const std::map<Id, Coordinates > &tags){
+std::vector<Id> FindOutdated<Id>::operator()(const std::map<Id, Coordinates > &tags){
 
     std::vector<Id> tagsToForget;
 
@@ -95,47 +87,38 @@ std::vector<Id> operator()(const std::map<Id, Coordinates > &tags){
     return tagsToForget;
 }
 
-protected:
-
-int mPersistence;
-std::map<Id, int> mDisappearanceTime;
-
-};
+template<typename Id, typename Coordinates>
+Cache<Id, Coordinates>::Cache(FindOutdated<Id> &findOutdated):
+mFindOutdated(findOutdated),
+mCachedCoordinates()
+{}
 
 template<typename Id, typename Coordinates>
-class Cache {
-public:
-    Cache(PersistenceManager<Id> &persistenceManager):
-    mPersistenceManager(persistenceManager),
-    mCachedCoordinates()
-    {}
-
-    void setPersistence(int persistence) {
-        mPersistenceManager.setPersistence(persistence);
-    }
-
-    const std::map<Id, Coordinates> & operator()(
-        const std::map<Id, Coordinates > &tags) {
-
-        for(const auto &tagToForget : mPersistenceManager(tags)) {
-            //TODO lookup can be avoided if Ids are sorted
-            mCachedCoordinates.erase(tagToForget);
-        }
-
-        for (const auto &tag : tags) {
-            //TODO lookup can be avoided by iterating the maps simultaneously
-            mCachedCoordinates[tag.first] = tag.second;
-        }
-
-        return mCachedCoordinates;
-    }
-
-protected:
-    PersistenceManager<Id> &mPersistenceManager;
-    std::map<Id, Coordinates> mCachedCoordinates;
-};
-
-
+void Cache<Id, Coordinates>::setPersistence(int persistence) {
+    mFindOutdated.setPersistence(persistence);
 }
 
-#endif
+template<typename Id, typename Coordinates>
+const std::map<Id, Coordinates> & Cache<Id, Coordinates>::operator()(
+    const std::map<Id, Coordinates > &tags) {
+
+    for(const auto &tagToForget : mFindOutdated(tags)) {
+        //TODO lookup can be avoided if Ids are sorted
+        mCachedCoordinates.erase(tagToForget);
+    }
+
+    for (const auto &tag : tags) {
+        //TODO lookup can be avoided by iterating the maps simultaneously
+        mCachedCoordinates[tag.first] = tag.second;
+    }
+
+    return mCachedCoordinates;
+}
+
+template class FindOutdated<int>;
+template class Cache<int, std::vector<cv::Point2f>>;
+
+template class FindOutdated<std::string>;
+template class Cache<std::string, cv::Matx44d>;
+
+}

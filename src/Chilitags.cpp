@@ -19,12 +19,14 @@
 
 #include <chilitags.hpp>
 
-#include "PersistenceManager.hpp"
 #include "EnsureGreyscale.hpp"
 #include "FindQuads.hpp"
+
 #include "ReadBits.hpp"
 #include "Decode.hpp"
 #include "Refine.hpp"
+
+#include "Filters.hpp"
 
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -37,19 +39,20 @@ class Chilitags::Impl
 public:
 
 Impl() :
-    mPersistenceManager(5),
-    mFilter(mPersistenceManager),
     mEnsureGreyscale(),
     mFindQuads(),
 
     mRefine(),
     mReadBits(),
-    mDecode()
+    mDecode(),
+
+    mFindOutdated(5),
+    mFilter(mFindOutdated)
 {
 }
 
 void setPersistence(int persistence) {
-    mPersistenceManager.setPersistence(persistence);
+    mFindOutdated.setPersistence(persistence);
 }
 
 std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage){
@@ -113,15 +116,16 @@ cv::Mat draw(int id, int zoom, bool withMargin) const {
 
 protected:
 
-PersistenceManager<int> mPersistenceManager;
-Cache<int, std::vector<cv::Point2f>> mFilter;
-
 EnsureGreyscale mEnsureGreyscale;
 FindQuads mFindQuads;
 
 Refine mRefine;
 ReadBits mReadBits;
 Decode mDecode;
+
+FindOutdated<int> mFindOutdated;
+Cache<int, std::vector<cv::Point2f>> mFilter;
+
 };
 
 
