@@ -29,41 +29,14 @@
 
 namespace chilitags {
 
-template<typename Coordinates>
-class Cache {
-public:
-    Cache(const Coordinates &coordinates):
-    mCachedCoordinates(coordinates)
-    {}
-
-    Coordinates update(const Coordinates &coordinates) {
-        return mCachedCoordinates = coordinates;
-    }
-
-    Coordinates update() {
-        return mCachedCoordinates;
-    }
-protected:
-    Coordinates mCachedCoordinates;
-};
-
-
-/** PersistenceManager aims at preventing that tags "flicker", i.e. that they
- * rapidly appear and disappear in the detection. To do so, PersistenceManager
- * takes as parameter of how long the tag should be artificially kept present,
- * and simply returns the last known position.
- */
-template<typename Id, typename Coordinates, typename Filter = Cache<Coordinates> >
+template<typename Id>
 class PersistenceManager {
 
 public:
 
-/** \param persistence defines how many updates of the tag positions should
- * happen before an undetected tag actually disappear from the filtered output.
- */
 PersistenceManager(int persistence) :
     mPersistence(persistence),
-    mFilters()
+    mDisappearanceTime()
 {
 }
 
@@ -71,104 +44,97 @@ void setPersistence(int persistence) {
     mPersistence = persistence;
 }
 
-std::map<Id, Coordinates> operator()(
-    const std::map<Id, Coordinates > &rawTags){
+template <typename Coordinates>
+std::vector<Id> operator()(const std::map<Id, Coordinates > &tags){
 
-    std::map<Id, Coordinates > filteredTags;
+    std::vector<Id> tagsToForget;
 
-    auto rawTagIt = rawTags.cbegin();
-    auto cacheIt = mFilters.begin();
+    auto tagIt = tags.cbegin();
+    auto ageIt = mDisappearanceTime.begin();
 
     // for each tags that are detected in the current frame
-    while (rawTagIt != rawTags.end()) {
+    while (tagIt != tags.end()) {
 
         // update all the tags that come before the current tag,
         // i.e. that haven't bee detected this time
-        while (cacheIt != mFilters.end()
-               && id(cacheIt) < rawTagIt->first) {
+        while (ageIt != mDisappearanceTime.end()
+               && ageIt->first < tagIt->first) {
 
-            // remove the tags that haven't been seen for too long
-            if (age(cacheIt) >= mPersistence) {
-                cacheIt = mFilters.erase(cacheIt);
-            // mark as older the last update of the others
+            if (ageIt->second >= mPersistence) {
+                // remove the tags that haven't been seen for too long
+                tagsToForget.push_back(ageIt->first);
+                ageIt = mDisappearanceTime.erase(ageIt);
             } else {
-                ++age(cacheIt);
-                filteredTags.insert(std::make_pair(id(cacheIt), filter(cacheIt).update()));
-                ++cacheIt;
+                // mark as older the last update of the others
+                ++(ageIt->second);
+                ++ageIt;
             }
         }
 
-        // update the filter of the current tag with the new data
-        if (cacheIt != mFilters.end()
-            && id(cacheIt) == rawTagIt->first) {
-            age(cacheIt) = 0;
-            filteredTags.insert(std::make_pair(rawTagIt->first,
-                                               filter(cacheIt).update(rawTagIt->second)));
-        // or just create a new one if it is the first occurence
-        } else {
-            cacheIt = mFilters.insert(cacheIt,
-                                    std::make_pair(rawTagIt->first,
-                                                   std::make_pair(0, rawTagIt->second)));
-            filteredTags.insert(*rawTagIt);
-        }
+        ageIt = mDisappearanceTime.insert(ageIt, std::make_pair(tagIt->first, 0));
 
-        ++rawTagIt;
-        ++cacheIt;
+        ++tagIt;
+        ++ageIt;
     }
 
-    // update the remaining tags that haven been detected in this frame either
-    while (cacheIt != mFilters.end()) {
+    // update the remaining tags that have not been detected in this frame either
+    while (ageIt != mDisappearanceTime.end()) {
 
-        // remove the tags that haven't been seen for too long
-        if (age(cacheIt) >= mPersistence) {
-            cacheIt  = mFilters.erase(cacheIt);
-
-        // mark as older the last update of the others
+        if (ageIt->second >= mPersistence) {
+            // remove the tags that haven't been seen for too long
+            tagsToForget.push_back(ageIt->first);
+            ageIt  = mDisappearanceTime.erase(ageIt);
         } else {
-            ++age(cacheIt);
-            filteredTags.insert(std::make_pair(id(cacheIt),
-                                               filter(cacheIt).update()));
-            ++cacheIt;
+            // mark as older the last update of the others
+            ++ageIt->second;
+            ++ageIt;
         }
     }
 
-    return filteredTags;
+
+    return tagsToForget;
 }
 
 protected:
 
 int mPersistence;
-
-std::map<Id, std::pair<int, Filter> > mFilters;
-
-// Helpers to access the elements of the datastructure above
-typedef typename std::map<Id, std::pair<int, Filter> >::const_iterator
-        FilterConstIterator;
-
-typedef typename std::map<Id, std::pair<int, Filter> >::iterator
-        FilterIterator;
-
-static const Id & id(const FilterConstIterator & it) {
-    return it->first;
-}
-
-static int & age(const FilterIterator & it) {
-    return it->second.first;
-}
-
-static const int & age(const FilterConstIterator & it) {
-    return it->second.first;
-}
-
-static Filter & filter(const FilterIterator & it) {
-    return it->second.second;
-}
-
-static const Filter & filter(const FilterConstIterator & it) {
-    return it->second.second;
-}
+std::map<Id, int> mDisappearanceTime;
 
 };
+
+template<typename Id, typename Coordinates>
+class Cache {
+public:
+    Cache(PersistenceManager<Id> &persistenceManager):
+    mPersistenceManager(persistenceManager),
+    mCachedCoordinates()
+    {}
+
+    void setPersistence(int persistence) {
+        mPersistenceManager.setPersistence(persistence);
+    }
+
+    const std::map<Id, Coordinates> & operator()(
+        const std::map<Id, Coordinates > &tags) {
+
+        for(const auto &tagToForget : mPersistenceManager(tags)) {
+            //TODO lookup can be avoided if Ids are sorted
+            mCachedCoordinates.erase(tagToForget);
+        }
+
+        for (const auto &tag : tags) {
+            //TODO lookup can be avoided by iterating the maps simultaneously
+            mCachedCoordinates[tag.first] = tag.second;
+        }
+
+        return mCachedCoordinates;
+    }
+
+protected:
+    PersistenceManager<Id> &mPersistenceManager;
+    std::map<Id, Coordinates> mCachedCoordinates;
+};
+
 
 }
 

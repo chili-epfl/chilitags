@@ -38,6 +38,7 @@ public:
 
 Impl() :
     mPersistenceManager(5),
+    mFilter(mPersistenceManager),
     mEnsureGreyscale(),
     mFindQuads(),
 
@@ -61,7 +62,7 @@ std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage){
         auto &tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
         if (tag.first != Decode::INVALID_TAG) tags.insert(tag);
     }
-    return mPersistenceManager(tags);
+    return mFilter(tags);
 };
 
 std::vector<bool> encode(int id) const {
@@ -112,7 +113,8 @@ cv::Mat draw(int id, int zoom, bool withMargin) const {
 
 protected:
 
-PersistenceManager<int, std::vector<cv::Point2f> > mPersistenceManager;
+PersistenceManager<int> mPersistenceManager;
+Cache<int, std::vector<cv::Point2f>> mFilter;
 
 EnsureGreyscale mEnsureGreyscale;
 FindQuads mFindQuads;

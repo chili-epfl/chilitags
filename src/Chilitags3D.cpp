@@ -106,7 +106,8 @@ Impl(cv::Size cameraSize) :
     mDistCoeffs(),
     mDefaultTagCorners(),
     mId2Configuration(),
-    mPersistenceManager(5)
+    mPersistenceManager(5),
+    mFilter(mPersistenceManager)
 {
     double focalLength = 700.;
     mCameraMatrix = (cv::Mat_<double>(3,3) <<
@@ -191,7 +192,7 @@ std::map<std::string, cv::Matx44d> estimate(
             objects);
     }
 
-    return mPersistenceManager(objects);
+    return mFilter(objects);
 }
 
 std::map<std::string, cv::Matx44d> estimate(
@@ -307,7 +308,8 @@ std::vector<cv::Point3f> mDefaultTagCorners;
 // in this object
 std::map<int, std::pair<std::string, TagConfig> > mId2Configuration;
 
-PersistenceManager<std::string, cv::Matx44d> mPersistenceManager;
+PersistenceManager<std::string> mPersistenceManager;
+Cache<std::string, cv::Matx44d> mFilter;
 };
 
 void chilitags::Chilitags3D::setPersistence(int persistence) {
