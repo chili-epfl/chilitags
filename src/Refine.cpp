@@ -58,6 +58,9 @@ std::vector<cv::Point2f> chilitags::Refine::operator()(const cv::Mat &inputImage
     roi.width = cv::min(roi.x+roi.width, inputImage.cols)-roi.x;
     roi.height = cv::min(roi.y+roi.height, inputImage.rows)-roi.y;
 
+    static const int MIN_ROI_SIZE = 10;
+    if (roi.width < MIN_ROI_SIZE || roi.height < MIN_ROI_SIZE) return quad;
+
     cv::Point2f roiOffset = roi.tl();
     refinedQuad[0] -= roiOffset;
     refinedQuad[1] -= roiOffset;
