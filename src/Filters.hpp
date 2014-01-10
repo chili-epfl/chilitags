@@ -25,6 +25,7 @@
 
 #include <map>
 #include <vector>
+#include <deque>
 
 namespace chilitags {
 
@@ -50,18 +51,19 @@ std::map<Id, int> mDisappearanceTime;
 
 
 template<typename Id, typename Coordinates>
-class Cache {
+class SimpleFilter {
 public:
-    Cache(FindOutdated<Id> &findOutdated);
+    SimpleFilter(FindOutdated<Id> &findOutdated, int span);
 
     void setPersistence(int persistence);
 
-    const std::map<Id, Coordinates> & operator()(
+    std::map<Id, Coordinates> operator()(
         const std::map<Id, Coordinates > &tags) ;
 
 protected:
     FindOutdated<Id> &mFindOutdated;
-    std::map<Id, Coordinates> mCachedCoordinates;
+    int mSpan;
+    std::map<Id, std::deque<Coordinates>> mCoordinates;
 };
 
 

@@ -109,7 +109,7 @@ Impl(cv::Size cameraSize) :
     mId2Configuration(),
 
     mFindOutdated(5),
-    mFilter(mFindOutdated)
+    mFilter(mFindOutdated, 5)
 {
     double focalLength = 700.;
     mCameraMatrix = (cv::Mat_<double>(3,3) <<
@@ -311,7 +311,8 @@ std::vector<cv::Point3f> mDefaultTagCorners;
 std::map<int, std::pair<std::string, TagConfig> > mId2Configuration;
 
 FindOutdated<std::string> mFindOutdated;
-Cache<std::string, cv::Matx44d> mFilter;
+SimpleFilter<std::string, cv::Matx44d> mFilter;
+
 };
 
 void chilitags::Chilitags3D::setPersistence(int persistence) {

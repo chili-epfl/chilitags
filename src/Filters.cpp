@@ -88,37 +88,83 @@ std::vector<Id> FindOutdated<Id>::operator()(const std::map<Id, Coordinates > &t
 }
 
 template<typename Id, typename Coordinates>
-Cache<Id, Coordinates>::Cache(FindOutdated<Id> &findOutdated):
+SimpleFilter<Id, Coordinates>::SimpleFilter(
+    FindOutdated<Id> &findOutdated,
+    int span):
 mFindOutdated(findOutdated),
-mCachedCoordinates()
+mSpan(span),
+mCoordinates()
 {}
 
 template<typename Id, typename Coordinates>
-void Cache<Id, Coordinates>::setPersistence(int persistence) {
+void SimpleFilter<Id, Coordinates>::setPersistence(int persistence) {
     mFindOutdated.setPersistence(persistence);
 }
 
+namespace {
+    std::vector<cv::Point2f> average(std::deque<std::vector<cv::Point2f> >coordinates) {
+
+        std::vector<cv::Point2f> result = {
+            {0.f, 0.f},
+            {0.f, 0.f},
+            {0.f, 0.f},
+            {0.f, 0.f},
+        };
+
+        for (const auto & component : coordinates) {
+            result[0] += component[0];
+            result[1] += component[1];
+            result[2] += component[2];
+            result[3] += component[3];
+        }
+
+        float ratio = 1.f/(float) coordinates.size(); 
+        result[0] *= ratio;
+        result[1] *= ratio;
+        result[2] *= ratio;
+        result[3] *= ratio;
+
+        return result;
+    }
+
+    cv::Matx44d average(std::deque<cv::Matx44d> coordinates) {
+        cv::Matx44d result;
+        for (const auto & component : coordinates) {
+            result += component;
+        }
+        float ratio = 1.f/(float) coordinates.size(); 
+        result *= ratio;
+        return result;
+    }
+
+}
+
 template<typename Id, typename Coordinates>
-const std::map<Id, Coordinates> & Cache<Id, Coordinates>::operator()(
+std::map<Id, Coordinates> SimpleFilter<Id, Coordinates>::operator()(
     const std::map<Id, Coordinates > &tags) {
 
     for(const auto &tagToForget : mFindOutdated(tags)) {
         //TODO lookup can be avoided if Ids are sorted
-        mCachedCoordinates.erase(tagToForget);
+        mCoordinates.erase(tagToForget);
     }
 
+    std::map<Id, Coordinates> filteredTags;
     for (const auto &tag : tags) {
         //TODO lookup can be avoided by iterating the maps simultaneously
-        mCachedCoordinates[tag.first] = tag.second;
+        auto & coordinates = mCoordinates[tag.first];
+        if (coordinates.size() >= mSpan) coordinates.pop_front();
+        mCoordinates[tag.first].push_back(tag.second);
+
+        filteredTags[tag.first] = average(coordinates);
     }
 
-    return mCachedCoordinates;
+    return filteredTags;
 }
 
 template class FindOutdated<int>;
-template class Cache<int, std::vector<cv::Point2f>>;
+template class SimpleFilter<int, std::vector<cv::Point2f>>;
 
 template class FindOutdated<std::string>;
-template class Cache<std::string, cv::Matx44d>;
+template class SimpleFilter<std::string, cv::Matx44d>;
 
 }
