@@ -6,8 +6,8 @@ set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "3")
 set(CPACK_PACKAGE_VERSION_PATCH "1")
 
-find_package( OpenCV REQUIRED COMPONENTS core imgproc calib3d )
-find_package( OpenCV QUIET COMPONENTS highgui ts )
+find_package( OpenCV REQUIRED )
+
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 
 ##########################################
