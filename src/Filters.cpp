@@ -164,89 +164,146 @@ std::map<Id, Coordinates> SimpleFilter<Id, Coordinates>::operator()(
 }
 
 
-template<typename Id, typename TYPE, int NDIMS, int NORDERS>
-KalmanFilter<Id, TYPE, NDIMS, NORDERS>::KalmanFilter(FindOutdated<Id> &findOutdated):
+template<typename Id, int NORDERS>
+KalmanFilter<Id, NORDERS>::KalmanFilter(FindOutdated<Id> &findOutdated):
 mFindOutdated(findOutdated),
 mFilters() {
 }
 
-template<typename Id, typename TYPE, int NDIMS, int NORDERS>
+template<typename Id, int NORDERS>
 template<typename Coordinates>
-std::map<Id, Coordinates> KalmanFilter<Id, TYPE, NDIMS, NORDERS>::operator()(
+std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
         const std::map<Id, Coordinates > &tags){
+std::cout << __LINE__ << std::endl;
 
     for(const auto &tagToForget : mFindOutdated(tags)) {
         //TODO lookup can be avoided if Ids are sorted
         mFilters.erase(tagToForget);
     }
+std::cout << __LINE__ << std::endl;
 
     auto tagIt = tags.cbegin();
     auto filterIt = mFilters.begin();
     std::map<Id, Coordinates> filteredTags;
+std::cout << __LINE__ << std::endl;
 
     while (tagIt != tags.end()) {
         while (filterIt != mFilters.end()
                 && filterIt->first < tagIt->first) {
-            filteredTags[filterIt->first] = filterIt->second.predict()(cv::Rect(0,0,1,NDIMS));
+std::cout << __LINE__ << std::endl;
+
+            auto & filter = filterIt->second;
+
+            filter.statePre = filter.transitionMatrix*filter.statePost;
+std::cout << __LINE__ << std::endl;
+
+            filter.temp1 = filter.transitionMatrix*filter.errorCovPost;
+std::cout << __LINE__ << std::endl;
+
+            gemm(filter.temp1, filter.transitionMatrix, 1, filter.processNoiseCov, 1, filter.errorCovPre, cv::GEMM_2_T);
+std::cout << __LINE__ << std::endl;
+
+            filter.statePre.copyTo(filter.statePost);
+std::cout << __LINE__ << std::endl;
+            filter.errorCovPre.copyTo(filter.errorCovPost);
+std::cout << __LINE__ << std::endl;
+
+            filteredTags[filterIt->first] = filter.statePre(cv::Rect(0,0,1,filter.measurementMatrix.cols));
+std::cout << __LINE__ << std::endl;
+
+            //filteredTags[filterIt->first] = filterIt->second.predict().col(0);
+std::cout << __LINE__ << std::endl;
             ++filterIt;
         }
 
-        if (filterIt != mFilters.end()
-            && filterIt->first == tagIt->first) {
-            filterIt->second.predict();
-            cv::Mat measurementf(tagIt->second);
-            cv::Mat_<double> measurement(measurementf);
+std::cout << __LINE__ << std::endl;
+        if (filterIt != mFilters.end() && filterIt->first == tagIt->first) {
 
-//auto &filter = filterIt->second;
-//std::cout << __LINE__ << std::endl;
-//
-//filter.temp2 = filter.measurementMatrix * filter.errorCovPre;
-//std::cout << __LINE__ << std::endl;
-//
-//gemm(filter.temp2, filter.measurementMatrix, 1, filter.measurementNoiseCov, 1, filter.temp3, cv::GEMM_2_T);
-//std::cout << __LINE__ << std::endl;
-//
-//solve(filter.temp3, filter.temp2, filter.temp4, cv::DECOMP_SVD);
-//std::cout << __LINE__ << std::endl;
-//
-//filter.gain = filter.temp4.t();
-//std::cout << __LINE__ << std::endl;
-//
-//std::cout << measurement.reshape(0,measurement.size().area()) << std::endl;
-//std::cout << filter.measurementMatrix*filter.statePre << std::endl;
-//std::cout << "__LINE__" << std::endl;
-//cv::Mat tmp = filter.measurementMatrix*filter.statePre;
-//std::cout << "__LINE__" << std::endl;
-//measurement = measurement.reshape(0,measurement.size().area());
-//std::cout << measurement.type() << std::endl;
-//std::cout << tmp.type() << std::endl;
-//std::cout << measurement << std::endl;
-//std::cout << tmp << std::endl;
-//cv::Mat tmp2 = measurement - tmp;
-//std::cout << "__LINE__" << std::endl;
-//filter.temp5 = measurement - tmp;
-////filter.temp5 = measurement - filter.measurementMatrix*filter.statePre;
-//std::cout << "__LINE__" << std::endl;
-//std::cout << __LINE__ << std::endl;
-//
-//filter.statePost = filter.statePre + filter.gain*filter.temp5;
-//std::cout << __LINE__ << std::endl;
-//
-//filter.errorCovPost = filter.errorCovPre - filter.gain*filter.temp2;
-//std::cout << __LINE__ << std::endl;
-//
-//filteredTags[tagIt->first] = filter.statePost(cv::Rect(0,0,1,NDIMS));
-//std::cout << __LINE__ << std::endl;
+            auto &filter = filterIt->second;
+std::cout << __LINE__ << std::endl;
+
+
+std::cout << filter.statePost.type() << "\t" << filter.statePost.channels() << "\t" << filter.statePost.size() << std::endl;
+std::cout << filter.transitionMatrix.type() << "\t" << filter.transitionMatrix.channels() << "\t" << filter.transitionMatrix.size() << std::endl;
+std::cout << filter.statePre.type() << "\t" << filter.statePre.channels() << "\t" << filter.statePre.size() << std::endl;
+            filter.statePre = filter.transitionMatrix*filter.statePost;
+std::cout << __LINE__ << std::endl;
+
+            filter.temp1 = filter.transitionMatrix*filter.errorCovPost;
+std::cout << __LINE__ << std::endl;
+
+            gemm(filter.temp1, filter.transitionMatrix, 1, filter.processNoiseCov, 1, filter.errorCovPre, cv::GEMM_2_T);
+std::cout << __LINE__ << std::endl;
+
+            filter.statePre.copyTo(filter.statePost);
+std::cout << __LINE__ << std::endl;
+            filter.errorCovPre.copyTo(filter.errorCovPost);
+std::cout << __LINE__ << std::endl;
+
+            //filter.predict();
+
+
+
+
+std::cout << __LINE__ << std::endl;
+            cv::Mat measurement;
+            cv::Mat coordinates(tagIt->second);
+std::cout << coordinates.type() << "\t" << coordinates.channels() << "\t" << coordinates.size() << std::endl;
+            int nChannels = coordinates.channels();
+            int nRows = coordinates.rows;
+            coordinates
+                .reshape(1, coordinates.total()*coordinates.channels())
+                .convertTo(measurement, CV_32F);
+
+std::cout << __LINE__ << std::endl;
+
+filter.temp2 = filter.measurementMatrix * filter.errorCovPre;
+std::cout << __LINE__ << std::endl;
+
+gemm(filter.temp2, filter.measurementMatrix, 1, filter.measurementNoiseCov, 1, filter.temp3, cv::GEMM_2_T);
+std::cout << __LINE__ << std::endl;
+
+solve(filter.temp3, filter.temp2, filter.temp4, cv::DECOMP_SVD);
+std::cout << __LINE__ << std::endl;
+
+filter.gain = filter.temp4.t();
+std::cout << __LINE__ << std::endl;
+
+std::cout << filter.temp5.type() << "\t" << filter.temp5.channels() << "\t" << filter.temp5.size() << std::endl;
+std::cout << measurement.type() << "\t" << measurement.channels() << "\t" << measurement.size() << std::endl;
+std::cout << filter.measurementMatrix.type() << "\t" << filter.measurementMatrix.channels() << "\t" << filter.measurementMatrix.size() << std::endl;
+std::cout << filter.statePre.type() << "\t" << filter.statePre.channels() << "\t" << filter.statePre.size() << std::endl;
+filter.temp5 = measurement - filter.measurementMatrix*filter.statePre;
+std::cout << __LINE__ << std::endl;
+
+filter.statePost = filter.statePre + filter.gain*filter.temp5;
+std::cout << __LINE__ << std::endl;
+
+filter.errorCovPost = filter.errorCovPre - filter.gain*filter.temp2;
+std::cout << __LINE__ << std::endl;
+
+filteredTags[tagIt->first] = filter.statePost(cv::Rect(0,0,1,measurement.total())).reshape(nChannels, nRows);
+std::cout << __LINE__ << std::endl;
 
             //TODO avoid lookup
-            //cv::Mat putain = cv::Mat_<double>(measurement.reshape(0,measurement.size().area()));
-            //std::cout << putain.type() << std::endl;
-            filteredTags[tagIt->first] = filterIt->second.correct(measurement)(cv::Rect(0,0,1,NDIMS));
+            //filteredTags[tagIt->first] = filterIt->second.correct(measurement).col(0);
         } else {
+std::cout << __LINE__ << std::endl;
+            cv::Mat firstMeasurement(tagIt->second);
+            const int NDIMS = firstMeasurement.total()*firstMeasurement.channels();
+            const auto TYPE = firstMeasurement.depth();
+            std::cout << NDIMS << std::endl;
+            std::cout << TYPE << std::endl;
+            std::cout << CV_32F << std::endl;
+            std::cout << CV_64F << std::endl;
+            std::cout << CV_64FC1 << std::endl;
+
             filterIt = mFilters.insert(filterIt, std::make_pair(
                 tagIt->first,
                 cv::KalmanFilter(NORDERS*NDIMS, NDIMS, 0)));
 
+
+std::cout << __LINE__ << std::endl;
             auto &filter = filterIt->second;
             // transitionMatrix<NDIMS=3, NORDERS=2> =
             // 1 0 0 1 0 0
@@ -256,24 +313,28 @@ std::map<Id, Coordinates> KalmanFilter<Id, TYPE, NDIMS, NORDERS>::operator()(
             // 0 0 0 0 1 0
             // 0 0 0 0 0 1
             filter.transitionMatrix = cv::Mat::zeros(
-                    NORDERS*NDIMS, NORDERS*NDIMS, CV_64F);
+                    NORDERS*NDIMS, NORDERS*NDIMS, CV_32F);
             for (int d = 0; d<NDIMS*NORDERS; d+=NDIMS) {
                 filter.transitionMatrix.diag(d) = 1.f;
                 //std::cout << filter.transitionMatrix << std::endl;
                 //filter.transitionMatrix.at(i, j) = 1.f;
             }
 
+std::cout << __LINE__ << std::endl;
             cv::setIdentity(filter.measurementMatrix);
             cv::setIdentity(filter.processNoiseCov, cv::Scalar::all(1e-5));
             cv::setIdentity(filter.measurementNoiseCov, cv::Scalar::all(1e-1));
             cv::setIdentity(filter.errorCovPost, cv::Scalar::all(1));
 
+std::cout << __LINE__ << std::endl;
             // Initialize the filter with the current position
             // The rest (speeds) is already initialised to 0 by default.
-            cv::Mat firstMeasurement(tagIt->second);
-            filter.statePost(cv::Rect(0,0,1,NDIMS)) = firstMeasurement;
+            filter.statePost(cv::Rect(0,0,1,NDIMS)) = firstMeasurement.reshape(1, NDIMS);
+
+std::cout << __LINE__ << std::endl;
             //filter.predict();
             filteredTags[tagIt->first] = tagIt->second;
+std::cout << __LINE__ << std::endl;
         }
 
         ++filterIt; //FIXME: iterator after inster
@@ -281,29 +342,31 @@ std::map<Id, Coordinates> KalmanFilter<Id, TYPE, NDIMS, NORDERS>::operator()(
 
     }
 
+std::cout << __LINE__ << std::endl;
     while (filterIt != mFilters.end()) {
-        filteredTags[filterIt->first] = filterIt->second.predict()(cv::Rect(0,0,1,NDIMS));
+        filteredTags[filterIt->first] = filterIt->second.predict().col(0);
         ++filterIt;
     }
 
+std::cout << __LINE__ << std::endl;
     return filteredTags;
 }
 
 
 template class FindOutdated<int>;
 template class SimpleFilter<int, std::vector<cv::Point2f>>;
-template class KalmanFilter<int, float, 8, 2>;
+template class KalmanFilter<int, 2>;
 template
     std::map<int, std::vector<cv::Point2f>>
-    KalmanFilter<int, float, 8, 2>::operator()(
+    KalmanFilter<int, 2>::operator()(
         const std::map<int, std::vector<cv::Point2f>> &tags);
 
 template class FindOutdated<std::string>;
 template class SimpleFilter<std::string, cv::Matx44d>;
-template class KalmanFilter<std::string, double, 16, 2>;
+template class KalmanFilter<std::string, 2>;
 template
     std::map<std::string, cv::Matx44d>
-    KalmanFilter<std::string, double, 16, 2>::operator()(
+    KalmanFilter<std::string, 2>::operator()(
         const std::map<std::string, cv::Matx44d> &tags);
 
 }

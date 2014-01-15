@@ -103,10 +103,10 @@ TEST(FindOutdated3D, ChangePersistence) {
 }
 
 namespace {
-    typedef chilitags::KalmanFilter<int, float, 8>
+    typedef chilitags::KalmanFilter<int>
             Kalman2D;
 
-    typedef chilitags::KalmanFilter<std::string, double, 16>
+    typedef chilitags::KalmanFilter<std::string>
             Kalman3D;
 
     const std::map<int, std::vector<cv::Point2f>> ONLY_TAG_42_1 = {{42, {
