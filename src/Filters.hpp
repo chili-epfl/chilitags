@@ -26,6 +26,7 @@
 #include <map>
 #include <vector>
 #include <deque>
+#include <opencv2/video/tracking.hpp>
 
 namespace chilitags {
 
@@ -49,7 +50,6 @@ std::map<Id, int> mDisappearanceTime;
 };
 
 
-
 template<typename Id, typename Coordinates>
 class SimpleFilter {
 public:
@@ -64,6 +64,20 @@ protected:
     FindOutdated<Id> &mFindOutdated;
     int mSpan;
     std::map<Id, std::deque<Coordinates>> mCoordinates;
+};
+
+template<typename Id, typename TYPE, int NDIMS, int NORDERS = 2>
+class KalmanFilter {
+public:
+    KalmanFilter(FindOutdated<Id> &findOutdated);
+
+    template<typename Coordinates>
+    std::map<Id, Coordinates> operator()(
+        const std::map<Id, Coordinates> &tags) ;
+
+protected:
+    FindOutdated<Id> &mFindOutdated;
+    std::map<Id, cv::KalmanFilter> mFilters;
 };
 
 

@@ -7,7 +7,7 @@ set(CPACK_PACKAGE_VERSION_MINOR "3")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 
 add_definitions(-std=c++11)
-find_package(OpenCV REQUIRED core imgproc calib3d highgui ts)
+find_package(OpenCV REQUIRED core imgproc calib3d video highgui ts)
 include_directories(${OpenCV_INCLUDE_DIRS})
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 

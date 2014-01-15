@@ -47,7 +47,8 @@ Impl() :
     mDecode(),
 
     mFindOutdated(5),
-    mFilter(mFindOutdated, 5)
+    //mFilter(mFindOutdated, 5),
+    mFilter(mFindOutdated)
 {
 }
 
@@ -124,7 +125,8 @@ ReadBits mReadBits;
 Decode mDecode;
 
 FindOutdated<int> mFindOutdated;
-SimpleFilter<int, std::vector<cv::Point2f>> mFilter;
+//SimpleFilter<int, std::vector<cv::Point2f>> mFilter;
+KalmanFilter<int, float, 8, 2> mFilter;
 
 };
 

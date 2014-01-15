@@ -102,4 +102,75 @@ TEST(FindOutdated3D, ChangePersistence) {
     EXPECT_EQ(1, findOutdated(EMPTY_OBJECT_LIST).size());
 }
 
+namespace {
+    typedef chilitags::KalmanFilter<int, float, 8>
+            Kalman2D;
+
+    typedef chilitags::KalmanFilter<std::string, double, 16>
+            Kalman3D;
+
+    const std::map<int, std::vector<cv::Point2f>> ONLY_TAG_42_1 = {{42, {
+        {1.f, 2.f},
+        {3.f, 4.f},
+        {5.f, 6.f},
+        {6.f, 8.f},
+    }}};
+
+    const std::map<std::string, cv::Matx44d> ONLY_OBJECT_42_1 = {{"42", {
+         1.f,  2.f,  3.f,  4.f,
+         5.f,  6.f,  7.f,  8.f,
+         9.f, 10.f, 11.f, 12.f,
+        13.f, 14.f, 15.f, 16.f,
+    }}};
+}
+
+
+TEST(KalmanFilter2D, ConstantPosition) {
+    FindOutdated2D findOutdated(2);
+    Kalman2D filter(findOutdated);
+    
+    auto result = filter(ONLY_TAG_42_1);
+    const auto &expected = ONLY_TAG_42_1;
+    ASSERT_EQ(expected.size(), result.size());
+    auto resultIt = result.cbegin();
+    for (const auto &expectedElem : expected) {
+        EXPECT_EQ(expectedElem.first, resultIt->first);
+        EXPECT_EQ(expectedElem.second, resultIt->second);
+        ++resultIt;
+    }
+
+    filter(ONLY_TAG_42_1);
+    ASSERT_EQ(expected.size(), result.size());
+    resultIt = result.cbegin();
+    for (const auto &expectedElem : expected) {
+        EXPECT_EQ(expectedElem.first, resultIt->first);
+        EXPECT_EQ(expectedElem.second, resultIt->second);
+        ++resultIt;
+    }
+}
+
+TEST(KalmanFilter3D, ConstantPosition) {
+    FindOutdated3D findOutdated(2);
+    Kalman3D filter(findOutdated);
+    
+    const auto result = filter(ONLY_OBJECT_42_1);
+    const auto &expected = ONLY_OBJECT_42_1;
+    ASSERT_EQ(expected.size(), result.size());
+    auto resultIt = result.cbegin();
+    for (const auto &expectedElem : expected) {
+        EXPECT_EQ(expectedElem.first, resultIt->first);
+        EXPECT_EQ(expectedElem.second, resultIt->second);
+        ++resultIt;
+    }
+
+    filter(ONLY_OBJECT_42_1);
+    ASSERT_EQ(expected.size(), result.size());
+    resultIt = result.cbegin();
+    for (const auto &expectedElem : expected) {
+        EXPECT_EQ(expectedElem.first, resultIt->first);
+        EXPECT_EQ(expectedElem.second, resultIt->second);
+        ++resultIt;
+    }
+}
+
 CV_TEST_MAIN(".")
