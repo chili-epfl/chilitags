@@ -115,12 +115,24 @@ namespace {
         {5.f, 6.f},
         {6.f, 8.f},
     }}};
+    const std::map<int, std::vector<cv::Point2f>> ONLY_TAG_43_1 = {{43, {
+        {11.f, 12.f},
+        {13.f, 14.f},
+        {15.f, 16.f},
+        {16.f, 18.f},
+    }}};
 
     const std::map<std::string, cv::Matx44d> ONLY_OBJECT_42_1 = {{"42", {
          1.f,  2.f,  3.f,  4.f,
          5.f,  6.f,  7.f,  8.f,
          9.f, 10.f, 11.f, 12.f,
         13.f, 14.f, 15.f, 16.f,
+    }}};
+    const std::map<std::string, cv::Matx44d> ONLY_OBJECT_43_1 = {{"43", {
+        101.f, 102.f, 103.f, 104.f,
+        105.f, 106.f, 107.f, 108.f,
+        109.f, 110.f, 111.f, 112.f,
+        113.f, 114.f, 115.f, 116.f,
     }}};
 }
 
@@ -150,6 +162,17 @@ TEST(KalmanFilter2D, ConstantPosition) {
         ++resultIt;
     }
 
+    result = filter(ONLY_TAG_43_1);
+    expected.insert(ONLY_TAG_43_1.cbegin(), ONLY_TAG_43_1.cend());
+    ASSERT_EQ(expected.size(), result.size());
+    resultIt = result.cbegin();
+    for (const auto &expectedElem : expected) {
+        EXPECT_EQ(expectedElem.first, resultIt->first);
+        EXPECT_EQ(expectedElem.second, resultIt->second)
+            << "For " << resultIt->first << std::endl;
+        ++resultIt;
+    }
+    
     result = filter(EMPTY_TAG_LIST);
     ASSERT_EQ(expected.size(), result.size());
     resultIt = result.cbegin();
@@ -177,6 +200,17 @@ TEST(KalmanFilter3D, ConstantPosition) {
     }
 
     result = filter(ONLY_OBJECT_42_1);
+    ASSERT_EQ(expected.size(), result.size());
+    resultIt = result.cbegin();
+    for (const auto &expectedElem : expected) {
+        EXPECT_EQ(expectedElem.first, resultIt->first);
+        EXPECT_EQ(expectedElem.second, resultIt->second)
+            << "For " << resultIt->first << std::endl;
+        ++resultIt;
+    }
+
+    result = filter(ONLY_OBJECT_43_1);
+    expected.insert(ONLY_OBJECT_43_1.cbegin(), ONLY_OBJECT_43_1.cend());
     ASSERT_EQ(expected.size(), result.size());
     resultIt = result.cbegin();
     for (const auto &expectedElem : expected) {
