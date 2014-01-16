@@ -126,7 +126,7 @@ Decode mDecode;
 
 FindOutdated<int> mFindOutdated;
 //SimpleFilter<int, std::vector<cv::Point2f>> mFilter;
-KalmanFilter<int, 2> mFilter;
+KalmanFilter<int> mFilter;
 
 };
 

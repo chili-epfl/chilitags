@@ -252,9 +252,9 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
             }
 
             cv::setIdentity(filter.measurementMatrix);
-            cv::setIdentity(filter.processNoiseCov, cv::Scalar::all(1e-5));
-            cv::setIdentity(filter.measurementNoiseCov, cv::Scalar::all(1e-1));
-            cv::setIdentity(filter.errorCovPost, cv::Scalar::all(1));
+            //cv::setIdentity(filter.processNoiseCov, cv::Scalar::all(1e-5));
+            //cv::setIdentity(filter.measurementNoiseCov, cv::Scalar::all(1e-1));
+            //cv::setIdentity(filter.errorCovPost, cv::Scalar::all(1));
 
             // Initialize the filter with the current position
             // The rest (speeds) is already initialised to 0 by default.
@@ -286,18 +286,18 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
 
 template class FindOutdated<int>;
 template class SimpleFilter<int, std::vector<cv::Point2f>>;
-template class KalmanFilter<int, 2>;
+template class KalmanFilter<int, 1>;
 template
     std::map<int, std::vector<cv::Point2f>>
-    KalmanFilter<int, 2>::operator()(
+    KalmanFilter<int, 1>::operator()(
         const std::map<int, std::vector<cv::Point2f>> &tags);
 
 template class FindOutdated<std::string>;
 template class SimpleFilter<std::string, cv::Matx44d>;
-template class KalmanFilter<std::string, 2>;
+template class KalmanFilter<std::string, 1>;
 template
     std::map<std::string, cv::Matx44d>
-    KalmanFilter<std::string, 2>::operator()(
+    KalmanFilter<std::string, 1>::operator()(
         const std::map<std::string, cv::Matx44d> &tags);
 
 }
