@@ -211,23 +211,27 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
             std::cout << "update front" << std::endl;
             filteredTags[filterIt->first] =
                 filterIt->second.predict()
-                (cv::Rect(0,0,1,Info<Coordinates>::elements))
-                .reshape(Info<Coordinates>::channels,
-                         Info<Coordinates>::rows);
+                    .rowRange(0,Info<Coordinates>::elements)
+                    .reshape(Info<Coordinates>::channels,
+                             Info<Coordinates>::rows);
             ++filterIt;
         }
 
         if (filterIt != mFilters.end() && filterIt->first == tagIt->first) {
             std::cout << "update measurement" << std::endl;
+
             filterIt->second.predict();
 
-            cv::Mat measurement = cv::Mat(tagIt->second)
-                .reshape(1, Info<Coordinates>::elements);
+            cv::Mat measurement =
+                cv::Mat(tagIt->second)
+                    .reshape(1, Info<Coordinates>::elements);
 
             //TODO avoid lookup
-            filteredTags[tagIt->first] = filterIt->second.correct(measurement)
-                (cv::Rect(0,0,1,Info<Coordinates>::elements))
-                .reshape(Info<Coordinates>::channels, Info<Coordinates>::rows);
+            filteredTags[tagIt->first] =
+                filterIt->second.correct(measurement)
+                    .rowRange(0,Info<Coordinates>::elements)
+                    .reshape(Info<Coordinates>::channels,
+                             Info<Coordinates>::rows);
 
         } else {
             std::cout << "new" << std::endl;
@@ -240,29 +244,25 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
                     0,
                     Info<Coordinates>::type)));
 
-
             auto &filter = filterIt->second;
-            //for (int d = 0;
-            //     d < Info<Coordinates>::elements*NORDERS;
-            //     d += Info<Coordinates>::elements) {
-            //    filter.transitionMatrix.diag(d) = 1.f;
-            //}
 
-            //cv::setIdentity(filter.measurementMatrix);
-            //cv::setIdentity(filter.processNoiseCov, cv::Scalar::all(1e-5));
-            //cv::setIdentity(filter.measurementNoiseCov, cv::Scalar::all(1e-1));
-            //cv::setIdentity(filter.errorCovPost, cv::Scalar::all(1));
+            filter.transitionMatrix.diag(Info<Coordinates>::elements) = 1.f;
+            cv::setIdentity(filter.measurementMatrix);
+            cv::setIdentity(filter.processNoiseCov, cv::Scalar::all(1e-5));
+            cv::setIdentity(filter.measurementNoiseCov, cv::Scalar::all(1e-1));
+            cv::setIdentity(filter.errorCovPost, cv::Scalar::all(1));
 
             // Initialize the filter with the current position
-            // The rest (speeds) is already initialised to 0 by default.
-            filter.statePost(cv::Rect(0,0,1,Info<Coordinates>::elements)) =
-                cv::Mat(tagIt->second).reshape(1, Info<Coordinates>::elements);
+            // The rest (speeds, ..) is already initialised to 0 by openCV.
+            cv::Mat(tagIt->second)
+                .reshape(1, Info<Coordinates>::elements)
+                .copyTo(filter.statePost.rowRange(0,
+                                                  Info<Coordinates>::elements));
 
-            filter.predict();
             filteredTags[tagIt->first] = tagIt->second;
         }
 
-        ++filterIt; //FIXME: iterator after inster
+        ++filterIt;
         ++tagIt;
     }
 
@@ -270,9 +270,9 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
         std::cout << "update tail" << std::endl;
         filteredTags[filterIt->first] =
             filterIt->second.predict()
-            (cv::Rect(0,0,1,Info<Coordinates>::elements))
-            .reshape(Info<Coordinates>::channels,
-                     Info<Coordinates>::rows);
+                .rowRange(0,Info<Coordinates>::elements)
+                .reshape(Info<Coordinates>::channels,
+                         Info<Coordinates>::rows);
 
         ++filterIt;
     }
