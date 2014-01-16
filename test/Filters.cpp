@@ -130,30 +130,33 @@ TEST(KalmanFilter2D, ConstantPosition) {
     Kalman2D filter(findOutdated);
     
     auto result = filter(ONLY_TAG_42_1);
-    const auto &expected = ONLY_TAG_42_1;
+    auto expected = ONLY_TAG_42_1;
     ASSERT_EQ(expected.size(), result.size());
     auto resultIt = result.cbegin();
     for (const auto &expectedElem : expected) {
         EXPECT_EQ(expectedElem.first, resultIt->first);
-        EXPECT_EQ(expectedElem.second, resultIt->second);
+        EXPECT_EQ(expectedElem.second, resultIt->second)
+            << "For " << resultIt->first << std::endl;
         ++resultIt;
     }
 
-    filter(ONLY_TAG_42_1);
+    result = filter(ONLY_TAG_42_1);
     ASSERT_EQ(expected.size(), result.size());
     resultIt = result.cbegin();
     for (const auto &expectedElem : expected) {
         EXPECT_EQ(expectedElem.first, resultIt->first);
-        EXPECT_EQ(expectedElem.second, resultIt->second);
+        EXPECT_EQ(expectedElem.second, resultIt->second)
+            << "For " << resultIt->first << std::endl;
         ++resultIt;
     }
 
-    filter(EMPTY_TAG_LIST);
+    result = filter(EMPTY_TAG_LIST);
     ASSERT_EQ(expected.size(), result.size());
     resultIt = result.cbegin();
     for (const auto &expectedElem : expected) {
         EXPECT_EQ(expectedElem.first, resultIt->first);
-        EXPECT_EQ(expectedElem.second, resultIt->second);
+        EXPECT_EQ(expectedElem.second, resultIt->second)
+            << "For " << resultIt->first << std::endl;
         ++resultIt;
     }
 }
@@ -162,31 +165,34 @@ TEST(KalmanFilter3D, ConstantPosition) {
     FindOutdated3D findOutdated(2);
     Kalman3D filter(findOutdated);
     
-    const auto result = filter(ONLY_OBJECT_42_1);
-    const auto &expected = ONLY_OBJECT_42_1;
+    auto result = filter(ONLY_OBJECT_42_1);
+    auto expected = ONLY_OBJECT_42_1;
     ASSERT_EQ(expected.size(), result.size());
     auto resultIt = result.cbegin();
     for (const auto &expectedElem : expected) {
         EXPECT_EQ(expectedElem.first, resultIt->first);
-        EXPECT_EQ(expectedElem.second, resultIt->second);
+        EXPECT_EQ(expectedElem.second, resultIt->second)
+            << "For " << resultIt->first << std::endl;
         ++resultIt;
     }
 
-    filter(ONLY_OBJECT_42_1);
+    result = filter(ONLY_OBJECT_42_1);
     ASSERT_EQ(expected.size(), result.size());
     resultIt = result.cbegin();
     for (const auto &expectedElem : expected) {
         EXPECT_EQ(expectedElem.first, resultIt->first);
-        EXPECT_EQ(expectedElem.second, resultIt->second);
+        EXPECT_EQ(expectedElem.second, resultIt->second)
+            << "For " << resultIt->first << std::endl;
         ++resultIt;
     }
     
-    filter(EMPTY_OBJECT_LIST);
+    result = filter(EMPTY_OBJECT_LIST);
     ASSERT_EQ(expected.size(), result.size());
     resultIt = result.cbegin();
     for (const auto &expectedElem : expected) {
         EXPECT_EQ(expectedElem.first, resultIt->first);
-        EXPECT_EQ(expectedElem.second, resultIt->second);
+        EXPECT_EQ(expectedElem.second, resultIt->second)
+            << "For " << resultIt->first << std::endl;
         ++resultIt;
     }
 }
