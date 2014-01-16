@@ -180,6 +180,7 @@ namespace {
         static const int cols = 1;
         static const int channels = 2;
         static const int elements = rows*cols*channels;
+        static const int type = CV_32F;
     };
 
     template<> struct Info <cv::Matx44d> {
@@ -187,6 +188,7 @@ namespace {
         static const int cols = 4;
         static const int channels = 1;
         static const int elements = rows*cols*channels;
+        static const int type = CV_64F;
     };
 }
 
@@ -219,10 +221,8 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
             std::cout << "update measurement" << std::endl;
             filterIt->second.predict();
 
-            cv::Mat measurement;
-            cv::Mat(tagIt->second)
-                .reshape(1, Info<Coordinates>::elements)
-                .convertTo(measurement, CV_32F);
+            cv::Mat measurement = cv::Mat(tagIt->second)
+                .reshape(1, Info<Coordinates>::elements);
 
             //TODO avoid lookup
             filteredTags[tagIt->first] = filterIt->second.correct(measurement)
@@ -237,21 +237,18 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
                 cv::KalmanFilter(
                     Info<Coordinates>::elements*NORDERS,
                     Info<Coordinates>::elements,
-                    0)));
+                    0,
+                    Info<Coordinates>::type)));
 
 
             auto &filter = filterIt->second;
-            filter.transitionMatrix = cv::Mat::zeros(
-                Info<Coordinates>::elements*NORDERS,
-                Info<Coordinates>::elements*NORDERS,
-                CV_32F);
-            for (int d = 0;
-                 d < Info<Coordinates>::elements*NORDERS;
-                 d += Info<Coordinates>::elements) {
-                filter.transitionMatrix.diag(d) = 1.f;
-            }
+            //for (int d = 0;
+            //     d < Info<Coordinates>::elements*NORDERS;
+            //     d += Info<Coordinates>::elements) {
+            //    filter.transitionMatrix.diag(d) = 1.f;
+            //}
 
-            cv::setIdentity(filter.measurementMatrix);
+            //cv::setIdentity(filter.measurementMatrix);
             //cv::setIdentity(filter.processNoiseCov, cv::Scalar::all(1e-5));
             //cv::setIdentity(filter.measurementNoiseCov, cv::Scalar::all(1e-1));
             //cv::setIdentity(filter.errorCovPost, cv::Scalar::all(1));
