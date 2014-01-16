@@ -113,13 +113,13 @@ namespace {
         {1.f, 2.f},
         {3.f, 4.f},
         {5.f, 6.f},
-        {6.f, 8.f},
+        {7.f, 8.f},
     }}};
     const std::map<int, std::vector<cv::Point2f>> ONLY_TAG_43_1 = {{43, {
         {11.f, 12.f},
         {13.f, 14.f},
         {15.f, 16.f},
-        {16.f, 18.f},
+        {17.f, 18.f},
     }}};
 
     const std::map<std::string, cv::Matx44d> ONLY_OBJECT_42_1 = {{"42", {
@@ -140,7 +140,7 @@ namespace {
 TEST(KalmanFilter2D, ConstantPosition) {
     FindOutdated2D findOutdated(2);
     Kalman2D filter(findOutdated);
-    
+
     auto result = filter(ONLY_TAG_42_1);
     auto expected = ONLY_TAG_42_1;
     ASSERT_EQ(expected.size(), result.size());
@@ -172,7 +172,7 @@ TEST(KalmanFilter2D, ConstantPosition) {
             << "For " << resultIt->first << std::endl;
         ++resultIt;
     }
-    
+
     result = filter(EMPTY_TAG_LIST);
     ASSERT_EQ(expected.size(), result.size());
     resultIt = result.cbegin();
@@ -187,7 +187,7 @@ TEST(KalmanFilter2D, ConstantPosition) {
 TEST(KalmanFilter3D, ConstantPosition) {
     FindOutdated3D findOutdated(2);
     Kalman3D filter(findOutdated);
-    
+
     auto result = filter(ONLY_OBJECT_42_1);
     auto expected = ONLY_OBJECT_42_1;
     ASSERT_EQ(expected.size(), result.size());
@@ -219,7 +219,7 @@ TEST(KalmanFilter3D, ConstantPosition) {
             << "For " << resultIt->first << std::endl;
         ++resultIt;
     }
-    
+
     result = filter(EMPTY_OBJECT_LIST);
     ASSERT_EQ(expected.size(), result.size());
     resultIt = result.cbegin();
