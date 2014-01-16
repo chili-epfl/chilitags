@@ -147,6 +147,15 @@ TEST(KalmanFilter2D, ConstantPosition) {
         EXPECT_EQ(expectedElem.second, resultIt->second);
         ++resultIt;
     }
+
+    filter(EMPTY_TAG_LIST);
+    ASSERT_EQ(expected.size(), result.size());
+    resultIt = result.cbegin();
+    for (const auto &expectedElem : expected) {
+        EXPECT_EQ(expectedElem.first, resultIt->first);
+        EXPECT_EQ(expectedElem.second, resultIt->second);
+        ++resultIt;
+    }
 }
 
 TEST(KalmanFilter3D, ConstantPosition) {
@@ -164,6 +173,15 @@ TEST(KalmanFilter3D, ConstantPosition) {
     }
 
     filter(ONLY_OBJECT_42_1);
+    ASSERT_EQ(expected.size(), result.size());
+    resultIt = result.cbegin();
+    for (const auto &expectedElem : expected) {
+        EXPECT_EQ(expectedElem.first, resultIt->first);
+        EXPECT_EQ(expectedElem.second, resultIt->second);
+        ++resultIt;
+    }
+    
+    filter(EMPTY_OBJECT_LIST);
     ASSERT_EQ(expected.size(), result.size());
     resultIt = result.cbegin();
     for (const auto &expectedElem : expected) {

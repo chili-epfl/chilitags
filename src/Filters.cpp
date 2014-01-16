@@ -170,6 +170,26 @@ mFindOutdated(findOutdated),
 mFilters() {
 }
 
+namespace {
+    template <typename Coordinates>
+    struct Info {
+    };
+
+    template<> struct Info <std::vector<cv::Point2f> > {
+        static const int rows = 4;
+        static const int cols = 1;
+        static const int channels = 2;
+        static const int elements = rows*cols*channels;
+    };
+
+    template<> struct Info <cv::Matx44d> {
+        static const int rows = 4;
+        static const int cols = 4;
+        static const int channels = 1;
+        static const int elements = rows*cols*channels;
+    };
+}
+
 template<typename Id, int NORDERS>
 template<typename Coordinates>
 std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
@@ -185,51 +205,49 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
     std::map<Id, Coordinates> filteredTags;
 
     while (tagIt != tags.end()) {
-        while (filterIt != mFilters.end()
-                && filterIt->first < tagIt->first) {
-
-            auto & filter = filterIt->second;
-
-            filteredTags[filterIt->first] = filterIt->second.predict()(cv::Rect(0,0,1,filter.measurementMatrix.cols));
-
+        while (filterIt != mFilters.end() && filterIt->first < tagIt->first) {
+            std::cout << "update front" << std::endl;
+            filteredTags[filterIt->first] =
+                filterIt->second.predict()
+                (cv::Rect(0,0,1,Info<Coordinates>::elements))
+                .reshape(Info<Coordinates>::channels,
+                         Info<Coordinates>::rows);
             ++filterIt;
         }
 
         if (filterIt != mFilters.end() && filterIt->first == tagIt->first) {
+            std::cout << "update measurement" << std::endl;
             filterIt->second.predict();
 
             cv::Mat measurement;
-            cv::Mat coordinates(tagIt->second);
-            int nChannels = coordinates.channels();
-            int nRows = coordinates.rows;
-            coordinates
-                .reshape(1, coordinates.total()*coordinates.channels())
+            cv::Mat(tagIt->second)
+                .reshape(1, Info<Coordinates>::elements)
                 .convertTo(measurement, CV_32F);
 
             //TODO avoid lookup
             filteredTags[tagIt->first] = filterIt->second.correct(measurement)
-                (cv::Rect(0,0,1,measurement.total()))
-                .reshape(nChannels, nRows);
+                (cv::Rect(0,0,1,Info<Coordinates>::elements))
+                .reshape(Info<Coordinates>::channels, Info<Coordinates>::rows);
+
         } else {
-            cv::Mat firstMeasurement(tagIt->second);
-            const int NDIMS = firstMeasurement.total()*firstMeasurement.channels();
+            std::cout << "new" << std::endl;
 
             filterIt = mFilters.insert(filterIt, std::make_pair(
                 tagIt->first,
-                cv::KalmanFilter(NORDERS*NDIMS, NDIMS, 0)));
+                cv::KalmanFilter(
+                    Info<Coordinates>::elements*NORDERS,
+                    Info<Coordinates>::elements,
+                    0)));
 
 
             auto &filter = filterIt->second;
-            // transitionMatrix<NDIMS=3, NORDERS=2> =
-            // 1 0 0 1 0 0
-            // 0 1 0 0 1 0
-            // 0 0 1 0 0 1
-            // 0 0 0 1 0 0
-            // 0 0 0 0 1 0
-            // 0 0 0 0 0 1
             filter.transitionMatrix = cv::Mat::zeros(
-                    NORDERS*NDIMS, NORDERS*NDIMS, CV_32F);
-            for (int d = 0; d<NDIMS*NORDERS; d+=NDIMS) {
+                Info<Coordinates>::elements*NORDERS,
+                Info<Coordinates>::elements*NORDERS,
+                CV_32F);
+            for (int d = 0;
+                 d < Info<Coordinates>::elements*NORDERS;
+                 d += Info<Coordinates>::elements) {
                 filter.transitionMatrix.diag(d) = 1.f;
             }
 
@@ -240,7 +258,8 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
 
             // Initialize the filter with the current position
             // The rest (speeds) is already initialised to 0 by default.
-            filter.statePost(cv::Rect(0,0,1,NDIMS)) = firstMeasurement.reshape(1, NDIMS);
+            filter.statePost(cv::Rect(0,0,1,Info<Coordinates>::elements)) =
+                cv::Mat(tagIt->second).reshape(1, Info<Coordinates>::elements);
 
             filter.predict();
             filteredTags[tagIt->first] = tagIt->second;
@@ -248,11 +267,16 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
 
         ++filterIt; //FIXME: iterator after inster
         ++tagIt;
-
     }
 
     while (filterIt != mFilters.end()) {
-        filteredTags[filterIt->first] = filterIt->second.predict().col(0);
+        std::cout << "update tail" << std::endl;
+        filteredTags[filterIt->first] =
+            filterIt->second.predict()
+            (cv::Rect(0,0,1,Info<Coordinates>::elements))
+            .reshape(Info<Coordinates>::channels,
+                     Info<Coordinates>::rows);
+
         ++filterIt;
     }
 
