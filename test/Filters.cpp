@@ -137,7 +137,7 @@ namespace {
 }
 
 
-TEST(KalmanFilter2D, ConstantPosition) {
+TEST(KalmanFilter2D, Coverage) {
     FindOutdated2D findOutdated(2);
     Kalman2D filter(findOutdated);
 
@@ -184,7 +184,7 @@ TEST(KalmanFilter2D, ConstantPosition) {
     }
 }
 
-TEST(KalmanFilter3D, ConstantPosition) {
+TEST(KalmanFilter3D, Coverage) {
     FindOutdated3D findOutdated(2);
     Kalman3D filter(findOutdated);
 
@@ -229,6 +229,75 @@ TEST(KalmanFilter3D, ConstantPosition) {
             << "For " << resultIt->first << std::endl;
         ++resultIt;
     }
+}
+
+TEST(KalmanFilter, Noise) {
+    chilitags::FindOutdated<int> findOutdated(100);
+    chilitags::KalmanFilter<int> filter(findOutdated);
+
+    std::vector<cv::Point2f> expected = {
+        {1.f, 2.f},
+        {3.f, 4.f},
+        {5.f, 6.f},
+        {7.f, 8.f},
+    };
+
+    auto coordinates = expected;
+
+    std::map<int, std::vector<cv::Point2f>> tags;
+    std::vector<cv::Point2f> result;
+
+    cv::RNG rng;
+    float noise = .1f;
+    for (int i = 0; i < 10; ++i) {
+        float delta = rng.uniform(-noise,noise);
+        coordinates = cv::Mat(cv::Mat(expected) + delta);
+        tags = {{0, coordinates}};
+        result = filter(tags)[0];
+        EXPECT_GT(2*noise, cv::norm(cv::Mat(result)-cv::Mat(expected)));
+    }
+
+}
+
+TEST(KalmanFilter, Extrapolate) {
+    chilitags::FindOutdated<int> findOutdated(100);
+    chilitags::KalmanFilter<int, 2> filter(findOutdated);
+
+    std::vector<cv::Point2f> coordinates = {
+        {1.f, 2.f},
+        {3.f, 4.f},
+        {5.f, 6.f},
+        {7.f, 8.f},
+    };
+
+    std::map<int, std::vector<cv::Point2f>> tags;
+    std::vector<cv::Point2f> result;
+
+    float delta = 10.f;
+
+    tags = {{0, coordinates}};
+    result = filter(tags)[0];
+    //EXPECT_GT(1e-6, cv::norm(cv::Mat(result)-cv::Mat(coordinates)));
+
+    coordinates = cv::Mat(cv::Mat(coordinates) + delta); 
+
+    tags = {{0, coordinates}};
+    result = filter(tags)[0];
+    //EXPECT_GT(1e-6, cv::norm(cv::Mat(result)-cv::Mat(coordinates)));
+
+    coordinates = cv::Mat(cv::Mat(coordinates) + delta); 
+
+    //tags = {};
+    tags = {{0, coordinates}};
+    result = filter(tags)[0];
+    //EXPECT_GT(1e-6, cv::norm(cv::Mat(result)-cv::Mat(coordinates)));
+
+    coordinates = cv::Mat(cv::Mat(coordinates) + delta); 
+
+    //tags = {};
+    tags = {{0, coordinates}};
+    result = filter(tags)[0];
+    //EXPECT_GT(1e-6, cv::norm(cv::Mat(result)-cv::Mat(coordinates)));
 }
 
 CV_TEST_MAIN(".")

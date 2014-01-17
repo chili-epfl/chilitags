@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     /*****************************/
     /*    Init camera capture    */
     /*****************************/
-    int cameraIndex = 0;
+    int cameraIndex = 1;
     cv::VideoCapture capture(cameraIndex);
     if (!capture.isOpened())
     {

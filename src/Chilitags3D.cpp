@@ -109,7 +109,7 @@ Impl(cv::Size cameraSize) :
     mId2Configuration(),
 
     mFindOutdated(5),
-    mFilter(mFindOutdated, 5)
+    mFilter(mFindOutdated, 1)
 {
     double focalLength = 700.;
     mCameraMatrix = (cv::Mat_<double>(3,3) <<

@@ -66,7 +66,7 @@ protected:
     std::map<Id, std::deque<Coordinates>> mCoordinates;
 };
 
-template<typename Id, int NORDERS = 1>
+template<typename Id, int NORDERS = 0>
 class KalmanFilter {
 public:
     KalmanFilter(FindOutdated<Id> &findOutdated);

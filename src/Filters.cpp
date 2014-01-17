@@ -200,6 +200,7 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
     for(const auto &tagToForget : mFindOutdated(tags)) {
         //TODO lookup can be avoided if Ids are sorted
         mFilters.erase(tagToForget);
+std::cout << "remove" << std::endl;
     }
 
     auto tagIt = tags.cbegin();
@@ -208,17 +209,18 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
 
     while (tagIt != tags.end()) {
         while (filterIt != mFilters.end() && filterIt->first < tagIt->first) {
-            std::cout << "update front" << std::endl;
+std::cout << "update front" << std::endl;
             filteredTags[filterIt->first] =
                 filterIt->second.predict()
                     .rowRange(0,Info<Coordinates>::elements)
                     .reshape(Info<Coordinates>::channels,
                              Info<Coordinates>::rows);
+std::cout << filterIt->second.statePost << std::endl;
             ++filterIt;
         }
 
         if (filterIt != mFilters.end() && filterIt->first == tagIt->first) {
-            std::cout << "update measurement" << std::endl;
+std::cout << "update measurement" << std::endl;
 
             filterIt->second.predict();
 
@@ -233,33 +235,88 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
                     .reshape(Info<Coordinates>::channels,
                              Info<Coordinates>::rows);
 
+std::cout << filterIt->second.statePost << std::endl;
         } else {
-            std::cout << "new" << std::endl;
+std::cout << "new" << std::endl;
 
+//TODO manage elements filters that will have 1+2*NORDERS x 1+2*NORDERS matrices
+// instead of the current 1 filter that has a
+// elements*(1+2*NORDERS) x elements*(1+2*NORDERS) matrix
+// or at least use sparsemat
             filterIt = mFilters.insert(filterIt, std::make_pair(
                 tagIt->first,
                 cv::KalmanFilter(
-                    Info<Coordinates>::elements*NORDERS,
+                    Info<Coordinates>::elements*(1+2*NORDERS),
                     Info<Coordinates>::elements,
                     0,
                     Info<Coordinates>::type)));
 
             auto &filter = filterIt->second;
 
-            filter.transitionMatrix.diag(Info<Coordinates>::elements) = 1.f;
+            static const cv::Mat plusBlock = cv::Mat::eye(Info<Coordinates>::elements,
+                                    Info<Coordinates>::elements,
+                                    Info<Coordinates>::type);
+            static const cv::Mat zeroBlock = 0*plusBlock;
+            static const cv::Mat minusBlock = -plusBlock;
+            for (int order = 0; order < NORDERS; ++order) {
+                plusBlock.copyTo(filter.transitionMatrix(cv::Rect(
+                    Info<Coordinates>::elements*(1+2*order-1),
+                    Info<Coordinates>::elements*(1+2*order),
+                    Info<Coordinates>::elements,
+                    Info<Coordinates>::elements
+                )));
+                zeroBlock.copyTo(filter.transitionMatrix(cv::Rect(
+                    Info<Coordinates>::elements*(1+2*order),
+                    Info<Coordinates>::elements*(1+2*order),
+                    Info<Coordinates>::elements,
+                    Info<Coordinates>::elements
+                )));
+
+                plusBlock.copyTo(filter.transitionMatrix(cv::Rect(
+                    Info<Coordinates>::elements*(1+2*order+1-2),
+                    Info<Coordinates>::elements*(1+2*order+1),
+                    Info<Coordinates>::elements,
+                    Info<Coordinates>::elements
+                )));
+                minusBlock.copyTo(filter.transitionMatrix(cv::Rect(
+                    Info<Coordinates>::elements*(1+2*order+1-1),
+                    Info<Coordinates>::elements*(1+2*order+1),
+                    Info<Coordinates>::elements,
+                    Info<Coordinates>::elements
+                )));
+
+                if (order+1 < NORDERS)
+                    plusBlock.copyTo(filter.transitionMatrix(cv::Rect(
+                        Info<Coordinates>::elements*(1+2*(order+1)+1),
+                        Info<Coordinates>::elements*(1+2*order+1),
+                        Info<Coordinates>::elements,
+                        Info<Coordinates>::elements
+                    )));
+
+            }
+
             cv::setIdentity(filter.measurementMatrix);
             cv::setIdentity(filter.processNoiseCov, cv::Scalar::all(1e-5));
             cv::setIdentity(filter.measurementNoiseCov, cv::Scalar::all(1e-1));
-            cv::setIdentity(filter.errorCovPost, cv::Scalar::all(1));
+            cv::setIdentity(filter.errorCovPost);
 
             // Initialize the filter with the current position
             // The rest (speeds, ..) is already initialised to 0 by openCV.
             cv::Mat(tagIt->second)
                 .reshape(1, Info<Coordinates>::elements)
-                .copyTo(filter.statePost.rowRange(0,
-                                                  Info<Coordinates>::elements));
+                .copyTo(filter.statePost.rowRange(
+                    0,
+                    Info<Coordinates>::elements));
+            if (NORDERS > 0)
+                cv::Mat(tagIt->second)
+                    .reshape(1, Info<Coordinates>::elements)
+                    .copyTo(filter.statePost.rowRange(
+                        Info<Coordinates>::elements,
+                        2*Info<Coordinates>::elements));
+
 
             filteredTags[tagIt->first] = tagIt->second;
+std::cout << filterIt->second.statePost << std::endl;
         }
 
         ++filterIt;
@@ -267,13 +324,14 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
     }
 
     while (filterIt != mFilters.end()) {
-        std::cout << "update tail" << std::endl;
+std::cout << "update tail" << std::endl;
         filteredTags[filterIt->first] =
             filterIt->second.predict()
                 .rowRange(0,Info<Coordinates>::elements)
                 .reshape(Info<Coordinates>::channels,
                          Info<Coordinates>::rows);
 
+std::cout << filterIt->second.statePost << std::endl;
         ++filterIt;
     }
 
@@ -283,18 +341,23 @@ std::map<Id, Coordinates> KalmanFilter<Id, NORDERS>::operator()(
 
 template class FindOutdated<int>;
 template class SimpleFilter<int, std::vector<cv::Point2f>>;
-template class KalmanFilter<int, 1>;
+template class KalmanFilter<int, 0>;
 template
     std::map<int, std::vector<cv::Point2f>>
-    KalmanFilter<int, 1>::operator()(
+    KalmanFilter<int, 0>::operator()(
+        const std::map<int, std::vector<cv::Point2f>> &tags);
+template class KalmanFilter<int, 2>;
+template
+    std::map<int, std::vector<cv::Point2f>>
+    KalmanFilter<int, 2>::operator()(
         const std::map<int, std::vector<cv::Point2f>> &tags);
 
 template class FindOutdated<std::string>;
 template class SimpleFilter<std::string, cv::Matx44d>;
-template class KalmanFilter<std::string, 1>;
+template class KalmanFilter<std::string, 0>;
 template
     std::map<std::string, cv::Matx44d>
-    KalmanFilter<std::string, 1>::operator()(
+    KalmanFilter<std::string, 0>::operator()(
         const std::map<std::string, cv::Matx44d> &tags);
 
 }
