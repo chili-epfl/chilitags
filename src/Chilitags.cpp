@@ -63,7 +63,7 @@ std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage){
     for (const auto & quad : mFindQuads(greyscaleImage)) {
         auto refinedQuad = mRefine(greyscaleImage, quad);
         auto &tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
-        if (tag.first != Decode::INVALID_TAG) tags.insert(tag);
+        if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
     }
     return mFilter(tags);
 };
