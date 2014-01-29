@@ -65,11 +65,11 @@ TEST(Integration, Minimal) {
 
     float close = zoom*2.0f;
     float far   = zoom*12.0f;
-    std::vector<cv::Point2f> expectedCorners = {
-        cv::Point2f(close, close),
-        cv::Point2f(far, close),
-        cv::Point2f(far, far),
-        cv::Point2f(close, far),
+    chilitags::Quad expectedCorners = {
+        close, close,
+        far  , close,
+        far  , far  ,
+        close, far
     };
 
     // A pixel is a 1x1 square around its center
@@ -77,7 +77,7 @@ TEST(Integration, Minimal) {
 
     auto actualCorners = tags.cbegin()->second;
     for (int i : {0,1,2,3}) {
-        EXPECT_GT(0.1, cv::norm(actualCorners[i] - expectedCorners[i]))
+        EXPECT_GT(0.1, cv::norm(actualCorners.row(i) - expectedCorners.row(i)))
         << "with i=" << i;
     }
 }
@@ -118,7 +118,7 @@ TEST(Integration, Snapshots) {
         cv::Mat image = cv::imread(path);
 
         if(image.data) {
-            std::map<int, std::vector<cv::Point2f> > tags;
+            std::map<int, chilitags::Quad> tags;
             for (int i = 0; i < ITERATIONS; i++) {
                 int64 startCount = cv::getTickCount();
                 tags = chilitags.find(image);

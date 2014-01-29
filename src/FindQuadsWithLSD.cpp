@@ -149,11 +149,11 @@ chilitags::FindQuads::FindQuads() :
 #endif
 }
 
-std::vector<std::vector<cv::Point2f> > chilitags::FindQuads::operator()(const cv::Mat &binaryImage)
+std::vector<Quad> chilitags::FindQuads::operator()(const cv::Mat &binaryImage)
 {
     //TODO function too long, split it
 
-    std::vector<std::vector<cv::Point2f> > quads;
+    std::vector<Quad> quads;
 
     vector<Vec4f> lines;
     lsd->detect(binaryImage, lines);

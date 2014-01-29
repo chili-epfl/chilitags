@@ -27,16 +27,20 @@
 #endif
 
 namespace {
+
 static const int DATA_SIZE = 6;
 static const int TAG_MARGIN = 2;
 static const int TAG_SIZE = 2*TAG_MARGIN+DATA_SIZE;
+static const chilitags::Quad NORMALIZED_CORNERS = {
+           0,        0,
+    TAG_SIZE,        0,
+    TAG_SIZE, TAG_SIZE,
+           0, TAG_SIZE
+};
+
 }
 
 chilitags::ReadBits::ReadBits() :
-    mDstBoundaries({{       0,        0},
-                    {TAG_SIZE,        0},
-                    {TAG_SIZE, TAG_SIZE},
-                    {       0, TAG_SIZE}}),
     mSamplePoints(),
     mTransformedSamplePoints(DATA_SIZE*DATA_SIZE),
     mSamples(1, DATA_SIZE*DATA_SIZE, CV_8U),
@@ -59,11 +63,11 @@ chilitags::ReadBits::ReadBits() :
 }
 
 
-const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat &inputImage, const std::vector<cv::Point2f> &corners)
+const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat &inputImage, const Quad &corners)
 {
-    auto cornersCopy = corners;
+    cv::Mat_<cv::Point2f> cornersCopy(corners);
 
-    auto roi = cv::boundingRect(corners);
+    auto roi = cv::boundingRect(cornersCopy);
 
     // Refine can actually provide corners outside the image
     roi.x = cv::max(roi.x, 0);
@@ -72,9 +76,9 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
     roi.height = cv::min(roi.height, inputImage.rows-roi.y);
 
     cv::Point2f origin = roi.tl();
-    for (auto& p : cornersCopy) p -= origin;
+    for (int i : {0,1,2,3}) cornersCopy(i) -= origin;
 
-    cv::Matx33f transformation = cv::getPerspectiveTransform(mDstBoundaries, cornersCopy);
+    cv::Matx33f transformation = cv::getPerspectiveTransform(NORMALIZED_CORNERS, cornersCopy);
 
     cv::perspectiveTransform(mSamplePoints, mTransformedSamplePoints, transformation);
 
@@ -85,7 +89,6 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
         *sampleData++ = inputRoi.at<uchar>(transformedSamplePoint);
     }
 
-    //cv::Mat binarizedImage(cv::Size(DATA_SIZE*DATA_SIZE, 1), CV_8U, mMatrix);
     cv::threshold(mSamples, mBits, -1, 1, cv::THRESH_BINARY | cv::THRESH_OTSU);
 
 #ifdef DEBUG_ReadBits
