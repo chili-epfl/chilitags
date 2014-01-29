@@ -29,6 +29,18 @@
 namespace chilitags {
 
 /**
+    The location of the detected chilitags are stored in a 4x2 matrix
+    corresponding to the outside corners of its black border. The rows
+    correspond to the 2D coordinates of the corners. The corners are
+    consistenly stored clockwise, starting from top-left, i.e.
+    {    top-left.x  ,    top-left.y  ,
+         top-right.x ,    top-right.y ,
+      bottom-right.x , bottom-left.y  ,
+      bottom-left.x  , bottom-left.y  }
+ */
+typedef cv::Matx<float, 4, 2> Quad;
+
+/**
     This class is the core of detection of chilitags.
 
     Its main function is to find tags in an image, i.e. return the id and the
@@ -70,7 +82,7 @@ void setFilter(int persistence, double gain);
 
     \param inputImage an OpenCV image (gray or BGR)
  */
-std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage);
+std::map<int, Quad> find(const cv::Mat &inputImage);
 
 /**
     Finds the black and white, 6x6 matrix corresponding to the given id.
@@ -184,7 +196,7 @@ Chilitags &getChilitags();
     \param tags a list of tags, as returned by Chilitags::find().
  */
 std::map<std::string, cv::Matx44d> estimate(
-    std::map<int, std::vector<cv::Point2f> > tags);
+    std::map<int, Quad> tags);
 
 /**
     This is a convenience variant of estimate() which also takes care of the

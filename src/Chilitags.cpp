@@ -55,14 +55,14 @@ void setFilter(int persistence, double gain) {
     mFilter.setGain(gain);
 }
 
-std::map<int, std::vector<cv::Point2f> > find(const cv::Mat &inputImage){
+std::map<int, Quad> find(const cv::Mat &inputImage){
     auto greyscaleImage = mEnsureGreyscale(inputImage);
 
-    std::map<int, std::vector<cv::Point2f> > tags;
+    std::map<int, Quad> tags;
 
     for (const auto & quad : mFindQuads(greyscaleImage)) {
         auto refinedQuad = mRefine(greyscaleImage, quad);
-        auto &tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
+        auto tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
         if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
     }
     return mFilter(tags);
@@ -123,7 +123,7 @@ Refine mRefine;
 ReadBits mReadBits;
 Decode mDecode;
 
-Filter<int, std::vector<cv::Point2f>> mFilter;
+Filter<int, Quad> mFilter;
 
 };
 
@@ -137,7 +137,7 @@ void Chilitags::setFilter(int persistence, double gain) {
     mImpl->setFilter(persistence, gain);
 }
 
-std::map<int, std::vector<cv::Point2f> > Chilitags::find(
+std::map<int, Quad> Chilitags::find(
     const cv::Mat &inputImage) {
     return mImpl->find(inputImage);
 }

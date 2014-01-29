@@ -133,7 +133,7 @@ const Chilitags &getChilitags() const {
 }
 
 std::map<std::string, cv::Matx44d> estimate(
-    std::map<int, std::vector<cv::Point2f> > tags) {
+    std::map<int, Quad> tags) {
 
     std::map<std::string, cv::Matx44d> objects;
 
@@ -149,6 +149,8 @@ std::map<std::string, cv::Matx44d> estimate(
     auto configurationEnd = mId2Configuration.end();
     for (const auto &tag : tags) {
         int tagId = tag.first;
+        const cv::Mat_<cv::Point2f> corners(tag.second);
+
         while (configurationIt != configurationEnd
                && configurationIt->first < tagId)
             ++configurationIt;
@@ -159,7 +161,7 @@ std::map<std::string, cv::Matx44d> estimate(
                 if (configuration.second.mKeep) {
                     computeTransformation(cv::format("tag_%d", tagId),
                                           configuration.second.mLocalcorners,
-                                          tag.second,
+                                          corners,
                                           objects);
                 }
                 auto & pointMapping = objectToPointMapping[configuration.first];
@@ -169,29 +171,28 @@ std::map<std::string, cv::Matx44d> estimate(
                     configuration.second.mCorners.end());
                 pointMapping.second.insert(
                     pointMapping.second.end(),
-                    tag.second.begin(),
-                    tag.second.end());
+                    corners.begin(),
+                    corners.end());
             } else if (!mOmitOtherTags) {
                 computeTransformation(cv::format("tag_%d", tagId),
                                       mDefaultTagCorners,
-                                      tag.second,
+                                      corners,
                                       objects);
             }
 
         } else if (!mOmitOtherTags) {
             computeTransformation(cv::format("tag_%d", tagId),
                                   mDefaultTagCorners,
-                                  tag.second,
+                                  corners,
                                   objects);
         }
     }
 
     for (auto& objectToPoints : objectToPointMapping) {
-        computeTransformation(
-            objectToPoints.first,
-            objectToPoints.second.first,
-            objectToPoints.second.second,
-            objects);
+        computeTransformation(objectToPoints.first,
+                              objectToPoints.second.first,
+                              cv::Mat_<cv::Point2f>(objectToPoints.second.second),
+                              objects);
     }
 
     return mFilter(objects);
@@ -273,15 +274,15 @@ const cv::Mat &getDistortionCoeffs() const{return mDistCoeffs;}
 
 private:
 void computeTransformation(const std::string& name,
-                           const std::vector<cv::Point3f>& corners,
-                           const std::vector<cv::Point2f>& imagePoints,
+                           const std::vector<cv::Point3f>& objectPoints,
+                           const cv::Mat_<cv::Point2f>& imagePoints,
                            std::map<std::string, cv::Matx44d>& objects) const
 {
     // Rotation & translation vectors, computed by cv::solvePnP
     cv::Mat rotation, translation;
 
     // Find the 3D pose of our tag
-    cv::solvePnP(corners,
+    cv::solvePnP(objectPoints,
                  imagePoints,
                  mCameraMatrix, mDistCoeffs,
                  rotation, translation, false,
@@ -329,7 +330,7 @@ chilitags::Chilitags &chilitags::Chilitags3D::getChilitags(){
 }
 
 std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::estimate(
-    std::map<int, std::vector<cv::Point2f> > tags) {
+    std::map<int, Quad> tags) {
     return mImpl->estimate(tags);
 }
 

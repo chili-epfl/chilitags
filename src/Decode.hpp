@@ -26,6 +26,8 @@
 
 namespace chilitags {
 
+typedef cv::Matx<float, 4, 2> Quad;
+
 class Decode
 {
 public:
@@ -33,9 +35,9 @@ static const int INVALID_TAG;
 
 Decode();
 
-const std::pair<int, std::vector<cv::Point2f> > &operator()(
+std::pair<int, Quad> operator()(
     const std::vector<unsigned char> &bits,
-    const std::vector<cv::Point2f> &corners);
+    const Quad &corners);
 
 const Codec &getCodec() const {
     return mCodec;
@@ -51,7 +53,6 @@ unsigned char *mMatrix180;
 unsigned char *mMatrix270;
 
 Codec mCodec;
-std::pair<int, std::vector<cv::Point2f> > mDecodedTag;
 
 private:
 Decode(const Decode&);

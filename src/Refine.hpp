@@ -25,13 +25,15 @@
 
 namespace chilitags {
 
+typedef cv::Matx<float, 4, 2> Quad;
+
 class Refine
 {
 public:
 
 Refine();
 
-std::vector<cv::Point2f> operator()(const cv::Mat &inputImage, const std::vector<cv::Point2f> &quad);
+Quad operator()(const cv::Mat &inputImage, const Quad &quad);
 
 };
 

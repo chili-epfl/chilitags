@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
         // The resulting map associates tag ids (between 0 and 1023)
         // to four 2D points corresponding to the corners positions
         // in the picture.
-        std::map<int, std::vector<cv::Point2f> > tags = chilitags.find(inputImage);
+        std::map<int, chilitags::Quad> tags = chilitags.find(inputImage);
 
         // Measure the processing time needed for the detection
         int64 endTime = cv::getTickCount();
@@ -109,17 +109,19 @@ int main(int argc, char* argv[])
         // We dont want to draw directly on the input image, so we clone it
         cv::Mat outputImage = inputImage.clone();
 
-        for (const std::pair<int, std::vector<cv::Point2f> > & tag : tags) {
+        for (const std::pair<int, chilitags::Quad> & tag : tags) {
 
             int id = tag.first;
-            const std::vector<cv::Point2f> &corners = tag.second;
+            // We wrap the corner matrix into a datastructure that allows an
+            // easy access to the coordinates
+            const cv::Mat_<cv::Point2f> corners(tag.second);
 
             // We start by drawing the borders of the tag
             for (size_t i = 0; i < 4; ++i) {
                 cv::line(
                     outputImage,
-                    PRECISION*corners[i],
-                    PRECISION*corners[(i+1)%4],
+                    PRECISION*corners(i),
+                    PRECISION*corners((i+1)%4),
                     COLOR, 1, CV_AA, SHIFT);
             }
 
@@ -130,7 +132,7 @@ int main(int argc, char* argv[])
             // (i.e. clockwise, starting from top-left)
             // Using this, we can compute (an approximation of) the center of
             // tag.
-            cv::Point2f center = 0.5*(corners[0] + corners[2]);
+            cv::Point2f center = 0.5*(corners(0) + corners(2));
             cv::putText(outputImage, cv::format("%d", id), center,
                         cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
         }

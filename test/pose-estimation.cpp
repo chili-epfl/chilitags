@@ -10,7 +10,16 @@
 
 namespace {
 
-cv::Size CAMERA_SIZE(640,480);
+//As assumed by Chilitags3D
+const cv::Size CAMERA_SIZE(640,480);
+const double FOCAL_LENGTH = 700.;
+
+const cv::Matx44d projectionMatrix = {
+    FOCAL_LENGTH ,            0 , (double) CAMERA_SIZE.width/2 , 0 , 
+               0 , FOCAL_LENGTH , (double) CAMERA_SIZE.height/2, 0 , 
+               0 ,            0 , 1                            , 0 ,
+               0 ,            0 , 1                            , 0 ,
+};
 
 cv::Matx44d makeTransformation(
     float rx, float ry, float rz,
@@ -32,23 +41,28 @@ cv::Matx44d makeTransformation(
     };
 }
 
-cv::Point2f applyTransform(cv::Matx44d transformation, cv::Point2f point) {
-    cv::Vec4d homogenousPoint = {point.x, point.y, 0.f, 1.f};
+chilitags::Quad makeTransformedCorners(cv::Matx44d transformation, float size) {
 
-    //As assumed by Chilitags3D
-    double FOCAL_LENGTH = 700.;
+    cv::Vec4d homogenousPoint0 = {   0,    0, 0.f, 1.f};
+    cv::Vec4d homogenousPoint1 = {size,    0, 0.f, 1.f};
+    cv::Vec4d homogenousPoint2 = {size, size, 0.f, 1.f};
+    cv::Vec4d homogenousPoint3 = {   0, size, 0.f, 1.f};
 
-    static const cv::Matx44d projectionMatrix = {
-        FOCAL_LENGTH ,            0 , (double) CAMERA_SIZE.width/2 , 0 , 
-                   0 , FOCAL_LENGTH , (double) CAMERA_SIZE.height/2, 0 , 
-                   0 ,            0 , 1                            , 0 ,
-                   0 ,            0 , 1                            , 0 ,
+    cv::Vec4d transformedPoint0 = projectionMatrix*transformation*homogenousPoint0;
+    cv::Vec4d transformedPoint1 = projectionMatrix*transformation*homogenousPoint1;
+    cv::Vec4d transformedPoint2 = projectionMatrix*transformation*homogenousPoint2;
+    cv::Vec4d transformedPoint3 = projectionMatrix*transformation*homogenousPoint3;
+
+    transformedPoint0 /= transformedPoint0(3);
+    transformedPoint1 /= transformedPoint1(3);
+    transformedPoint2 /= transformedPoint2(3);
+    transformedPoint3 /= transformedPoint3(3);
+    return {
+        (float) transformedPoint0(0), (float) transformedPoint0(1),
+        (float) transformedPoint1(0), (float) transformedPoint1(1),
+        (float) transformedPoint2(0), (float) transformedPoint2(1),
+        (float) transformedPoint3(0), (float) transformedPoint3(1),
     };
-    cv::Vec4d transformedPoint = projectionMatrix*transformation*homogenousPoint;
-
-    return cv::Point2f(
-        transformedPoint[0]/transformedPoint[3],
-        transformedPoint[1]/transformedPoint[3]);
 }
 
 }
@@ -66,12 +80,7 @@ TEST(Estimate3dPose, FreeTags) {
     auto expectedTransformation = makeTransformation(35,45,65,20,40,60);
 
     float size = 37;
-    std::vector<cv::Point2f> corners = {
-        applyTransform(expectedTransformation, cv::Point2f(0.f, 0.f   )),
-        applyTransform(expectedTransformation, cv::Point2f(size, 0.f   )),
-        applyTransform(expectedTransformation, cv::Point2f(size, size )),
-        applyTransform(expectedTransformation, cv::Point2f(0.f, size )),
-    };
+    chilitags::Quad corners = makeTransformedCorners(expectedTransformation, size);
 
     chilitags::Chilitags3D chilitags3D(CAMERA_SIZE);
     chilitags3D.setDefaultTagSize(size);
@@ -84,8 +93,8 @@ TEST(Estimate3dPose, FreeTags) {
     EXPECT_EQ(cv::format("tag_%d", tagId), actualID);
     cv::Matx44d actualTransformation = result.cbegin()->second;
     EXPECT_GT(1e-3, cv::norm(actualTransformation-expectedTransformation))
-    << "\nExpected:\n" << cv::Mat(expectedTransformation)
-    << "\nActual:\n" << cv::Mat(actualTransformation);
+        << "\nExpected:\n" << cv::Mat(expectedTransformation)
+        << "\nActual:\n" << cv::Mat(actualTransformation);
 }
 
 TEST(Estimate3dPose, Configurations) {
@@ -98,14 +107,9 @@ TEST(Estimate3dPose, Configurations) {
         objectTransformation*makeTransformation(0, 0, 0, +50, -100, 0),
     };
 
-    std::map<int, std::vector<cv::Point2f> > tags;
+    std::map<int, chilitags::Quad> tags;
     for (std::size_t i = 0; i<ids.size(); ++i) {
-        tags[ids[i]] = {
-            applyTransform(tagTransformations[i], cv::Point2f(0.f, 0.f      )),
-            applyTransform(tagTransformations[i], cv::Point2f(sizes[i], 0.f      )),
-            applyTransform(tagTransformations[i], cv::Point2f(sizes[i], sizes[i])),
-            applyTransform(tagTransformations[i], cv::Point2f(0.f, sizes[i])),
-        };
+        tags[ids[i]] = makeTransformedCorners(tagTransformations[i], sizes[i]);
     }
 
     chilitags::Chilitags3D chilitags3D(CAMERA_SIZE);

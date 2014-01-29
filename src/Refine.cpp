@@ -34,9 +34,9 @@ chilitags::Refine::Refine()
 #endif
 }
 
-std::vector<cv::Point2f> chilitags::Refine::operator()(const cv::Mat &inputImage, const std::vector<cv::Point2f> &quad)
+chilitags::Quad chilitags::Refine::operator()(const cv::Mat &inputImage, const Quad &quad)
 {
-    auto refinedQuad = quad;
+    cv::Mat_<cv::Point2f> refinedQuad(quad);
 
     // Taking a ROI around the raw corners with some margin
     static const float GROWTH_RATIO = 2.0f/10.0f;
@@ -62,10 +62,7 @@ std::vector<cv::Point2f> chilitags::Refine::operator()(const cv::Mat &inputImage
     if (roi.width < MIN_ROI_SIZE || roi.height < MIN_ROI_SIZE) return quad;
 
     cv::Point2f roiOffset = roi.tl();
-    refinedQuad[0] -= roiOffset;
-    refinedQuad[1] -= roiOffset;
-    refinedQuad[2] -= roiOffset;
-    refinedQuad[3] -= roiOffset;
+    for (int i : {0,1,2,3}) refinedQuad(i) -= roiOffset;
 
     static const double PROXIMITYRATIO = 1.5/10.0;
     double averageSideLength = cv::arcLength(refinedQuad, true) / 4.0;
@@ -81,10 +78,7 @@ std::vector<cv::Point2f> chilitags::Refine::operator()(const cv::Mat &inputImage
                          cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS,
                          5, 0.01));
 
-    refinedQuad[0] += roiOffset;
-    refinedQuad[1] += roiOffset;
-    refinedQuad[2] += roiOffset;
-    refinedQuad[3] += roiOffset;
+    for (int i : {0,1,2,3}) refinedQuad(i) += roiOffset;
 
 #ifdef DEBUG_Refine
     cv::Mat debugImage = inputImage(roi).clone();
@@ -104,9 +98,9 @@ std::vector<cv::Point2f> chilitags::Refine::operator()(const cv::Mat &inputImage
 
     // Sometimes, the corners are refined into a concave quadrilateral
     // which makes ReadBits crash
-    std::vector<cv::Point2f> convexHull;
+    cv::Mat convexHull;
     cv::convexHull(refinedQuad, convexHull, false);
-    if (convexHull.size() == 4) return convexHull;
+    if (convexHull.rows == 4) return convexHull.reshape(1);
 
     return quad;
 }

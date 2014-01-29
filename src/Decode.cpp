@@ -30,8 +30,7 @@ chilitags::Decode::Decode() :
     mMatrix90 (new unsigned char[DATA_SIZE*DATA_SIZE]),
     mMatrix180(new unsigned char[DATA_SIZE*DATA_SIZE]),
     mMatrix270(new unsigned char[DATA_SIZE*DATA_SIZE]),
-    mCodec(),
-    mDecodedTag(std::make_pair(INVALID_TAG, std::vector<cv::Point2f>(4)))
+    mCodec()
 {
 }
 
@@ -44,7 +43,7 @@ chilitags::Decode::~Decode()
 }
 
 
-const std::pair<int, std::vector<cv::Point2f> > &chilitags::Decode::operator()(const std::vector<unsigned char> &bits, const std::vector<cv::Point2f> &corners)
+std::pair<int, chilitags::Quad> chilitags::Decode::operator()(const std::vector<unsigned char> &bits, const Quad &corners)
 {
     for (int i = 0; i < DATA_SIZE; ++i)
     {
@@ -59,8 +58,7 @@ const std::pair<int, std::vector<cv::Point2f> > &chilitags::Decode::operator()(c
     }
 
     int orientation = -1;
-    int &id = mDecodedTag.first;
-    id = INVALID_TAG;
+    int id = INVALID_TAG;
          if (mCodec.decode(mMatrix   , id)) orientation = 0;
     else if (mCodec.decode(mMatrix90 , id)) orientation = 1;
     else if (mCodec.decode(mMatrix180, id)) orientation = 2;
@@ -69,12 +67,15 @@ const std::pair<int, std::vector<cv::Point2f> > &chilitags::Decode::operator()(c
     //The dreadful Black Tag!
     if (id == 682) id = INVALID_TAG;
 
+    cv::Mat_<cv::Point2f> originalCorners(corners, false);
+    Quad orderedQuad;
+    cv::Mat_<cv::Point2f> orderedCorners(orderedQuad, false);
     if (id != INVALID_TAG)
     {
         for (size_t i = 0; i < 4; ++i) {
-            mDecodedTag.second[i] = corners[(i+orientation) % 4];
+            orderedCorners(i) = originalCorners((i+orientation) % 4);
         }
     }
 
-    return mDecodedTag;
+    return std::make_pair(id, orderedQuad);
 }

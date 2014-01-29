@@ -29,12 +29,14 @@
 
 namespace chilitags {
 
+typedef cv::Matx<float, 4, 2> Quad;
+
 class FindQuads
 {
 public:
 FindQuads();
 
-std::vector<std::vector<cv::Point2f> > operator()(const cv::Mat &greyscaleImage);
+std::vector<Quad> operator()(const cv::Mat &greyscaleImage);
 
 protected:
 

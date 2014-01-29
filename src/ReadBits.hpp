@@ -25,16 +25,17 @@
 
 namespace chilitags {
 
+typedef cv::Matx<float, 4, 2> Quad;
+
 class ReadBits
 {
 public:
 ReadBits();
 
-const std::vector<unsigned char> &operator()(const cv::Mat &inputImage, const std::vector<cv::Point2f> &corners);
+const std::vector<unsigned char> &operator()(const cv::Mat &inputImage, const Quad &corners);
 
 protected:
 
-std::vector<cv::Point2f> mDstBoundaries;
 std::vector<cv::Point2f> mSamplePoints;
 std::vector<cv::Point2f> mTransformedSamplePoints;
 cv::Mat mSamples;
