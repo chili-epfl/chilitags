@@ -90,21 +90,21 @@ std::map<int, Quad> find(const cv::Mat &inputImage);
     \param id the id of the tag to encode, between  0 (included) and 1024
     (excluded).
 
-    \returns the 36-element bit matrix coding the given id (black is false,
-    white is true)
+    \returns the 36-element bit matrix coding the given id (black is 0,
+    white is 1)
  */
-std::vector<bool> encode(int id) const;
+cv::Matx<unsigned char, 6, 6> encode(int id) const;
 
 /**
-    Finds the tag id corresponding given the  black and white, 6x6 matrix.
+    Finds the tag id corresponding given the black and white, 6x6 matrix.
 
     \returns the id decoded from the bit matrix, between  0 (included) and 1024
     (excluded). If the bit matrix did not code a valid id, -1 is returned.
 
-    \param bits the 36-element bit matrix coding the given id (black is false,
-    white is true)
+    \param bits the 36-element bit matrix coding the given id (black is 0,
+    white is 1)
  */
-int decode(const std::vector<bool> &bits) const;
+int decode(const cv::Matx<unsigned char, 6, 6> &bits) const;
 
 /**
     \returns an OpenCV image of a given tag.
