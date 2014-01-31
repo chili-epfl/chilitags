@@ -5,6 +5,7 @@
 #endif
 
 #include <Codec.hpp>
+#include <chilitags.hpp>
 
 #include "HardcodedIds.hpp"
 
@@ -42,7 +43,6 @@ TEST(Codec, DecodeNoError) {
         ASSERT_TRUE(codec.decode(bits, decodedId));
         ASSERT_EQ(i, decodedId);
     }
-    std::cout << "\n";
 }
 
 TEST(Codec, Decode1Error) {
@@ -95,6 +95,12 @@ TEST(Codec, Decode2Errors) {
             bits[error1] = 1-bits[error1];
         }
     }
+}
+
+TEST(Codec, InterfaceWrapper) {
+    chilitags::Chilitags chilitags;
+    cv::Matx<unsigned char, 6, 6> matrix = chilitags.encode(42);
+    EXPECT_EQ(42, chilitags.decode(matrix));
 }
 
 CV_TEST_MAIN(".")

@@ -68,23 +68,15 @@ std::map<int, Quad> find(const cv::Mat &inputImage){
     return mFilter(tags);
 };
 
-std::vector<bool> encode(int id) const {
-    unsigned char data[36];
-    mDecode.getCodec().getTagEncodedId(id, data);
-    std::vector<bool> bits(36);
-    for (int i = 0; i<36; ++i) {
-        bits[i] = data[i];
-    }
-    return bits;
+cv::Matx<unsigned char, 6, 6> encode(int id) const {
+    cv::Matx<unsigned char, 6, 6> encodedId;
+    mDecode.getCodec().getTagEncodedId(id, encodedId.val);
+    return encodedId;
 }
 
-int decode(const std::vector<bool> &bits) const {
-    unsigned char data[36];
-    for (int i = 0; i<36; ++i) {
-        data[i] = bits[i] ? 1 : 0;
-    }
+int decode(const cv::Matx<unsigned char, 6, 6> &bits) const {
     int id = -1;
-    mDecode.getCodec().decode(data, id);
+    mDecode.getCodec().decode(bits.val, id);
     return id;
 }
 
@@ -142,11 +134,11 @@ std::map<int, Quad> Chilitags::find(
     return mImpl->find(inputImage);
 }
 
-std::vector<bool> Chilitags::encode(int id) const {
+cv::Matx<unsigned char, 6, 6> Chilitags::encode(int id) const {
     return mImpl->encode(id);
 }
 
-int Chilitags::decode(const std::vector<bool> & bits) const {
+int Chilitags::decode(const cv::Matx<unsigned char, 6, 6> & bits) const {
     return mImpl->decode(bits);
 }
 
