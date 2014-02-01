@@ -49,8 +49,7 @@ int main(int argc, char* argv[])
 #endif
 
     chilitags::Chilitags3D chilitags3D(Size(inputWidth, inputHeight));
-    static const float DEFAULT_SIZE = 20.f;
-    chilitags3D.setDefaultTagSize(DEFAULT_SIZE);
+
     if (configFilename) chilitags3D.readTagConfiguration(configFilename);
 
     if (intrinsicsFilename) {
@@ -81,6 +80,7 @@ int main(int argc, char* argv[])
 
         for (auto& kv : chilitags3D.estimate(inputImage)) {
 
+            static const float DEFAULT_SIZE = 20.f;
             static const cv::Vec4d UNITS[4] {
                 {0.f, 0.f, 0.f, 1.f},
                 {DEFAULT_SIZE, 0.f, 0.f, 1.f},

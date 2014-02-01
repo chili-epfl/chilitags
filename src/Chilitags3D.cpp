@@ -100,7 +100,7 @@ struct TagConfig {
 class chilitags::Chilitags3D::Impl {
 
 public:
-Impl(cv::Size cameraSize) :
+Impl(cv::Size cameraResolution) :
     mChilitags(),
     mOmitOtherTags(false),
     mCameraMatrix(),
@@ -112,11 +112,11 @@ Impl(cv::Size cameraSize) :
 {
     double focalLength = 700.;
     mCameraMatrix = (cv::Mat_<double>(3,3) <<
-        focalLength ,            0 , cameraSize.width /2,
-                   0 , focalLength , cameraSize.height/2,
+        focalLength ,            0 , cameraResolution.width /2,
+                   0 , focalLength , cameraResolution.height/2,
                    0,             0 , 1
     );
-    setDefaultTagSize(1.f);
+    setDefaultTagSize(20.f);
     mChilitags.setFilter(0, 0.);
 }
 
@@ -132,8 +132,7 @@ const Chilitags &getChilitags() const {
     return mChilitags;
 }
 
-std::map<std::string, cv::Matx44d> estimate(
-    std::map<int, Quad> tags) {
+std::map<std::string, cv::Matx44d> estimate(const std::map<int, Quad> &tags) {
 
     std::map<std::string, cv::Matx44d> objects;
 
@@ -318,8 +317,8 @@ void chilitags::Chilitags3D::setFilter(int persistence, double gain) {
     mImpl->setFilter(persistence, gain);
 }
 
-chilitags::Chilitags3D::Chilitags3D(cv::Size cameraSize) :
-    mImpl(new chilitags::Chilitags3D::Impl(cameraSize)){
+chilitags::Chilitags3D::Chilitags3D(cv::Size cameraResolution) :
+    mImpl(new chilitags::Chilitags3D::Impl(cameraResolution)){
 }
 
 const chilitags::Chilitags &chilitags::Chilitags3D::getChilitags() const {
@@ -330,7 +329,7 @@ chilitags::Chilitags &chilitags::Chilitags3D::getChilitags(){
 }
 
 std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::estimate(
-    std::map<int, Quad> tags) {
+    const std::map<int, Quad> &tags) {
     return mImpl->estimate(tags);
 }
 

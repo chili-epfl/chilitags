@@ -80,7 +80,7 @@ int decode(const cv::Matx<unsigned char, 6, 6> &bits) const {
     return id;
 }
 
-cv::Mat draw(int id, int zoom, bool withMargin) const {
+cv::Mat draw(int id, int cellSize, bool withMargin) const {
     // Creating the image of the bit matrix
     static const int DATA_SIZE = 6;
     cv::Size dataDim(DATA_SIZE,DATA_SIZE);
@@ -100,8 +100,8 @@ cv::Mat draw(int id, int zoom, bool withMargin) const {
     cv::Mat outlinedImage(tagImage.size()+marginSize*2, CV_8U, cv::Scalar(255));
     tagImage.copyTo(outlinedImage(cv::Rect(marginSize, tagImage.size())));
 
-    // Resizing to specified zoom
-    cv::Mat outputImage(outlinedImage.size()*zoom, CV_8U);
+    // Resizing to specified cellSize
+    cv::Mat outputImage(outlinedImage.size()*cellSize, CV_8U);
     cv::resize(outlinedImage, outputImage, outputImage.size(), 0, 0, cv::INTER_NEAREST);
     return outputImage;
 }
@@ -142,8 +142,8 @@ int Chilitags::decode(const cv::Matx<unsigned char, 6, 6> & bits) const {
     return mImpl->decode(bits);
 }
 
-cv::Mat Chilitags::draw(int id, int zoom, bool withMargin) const {
-    return mImpl->draw(id, zoom, withMargin);
+cv::Mat Chilitags::draw(int id, int cellSize, bool withMargin) const {
+    return mImpl->draw(id, cellSize, withMargin);
 }
 
 Chilitags::~Chilitags() = default;

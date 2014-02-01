@@ -33,10 +33,12 @@ namespace chilitags {
     corresponding to the outside corners of its black border. The rows
     correspond to the 2D coordinates of the corners. The corners are
     consistenly stored clockwise, starting from top-left, i.e.
+    \verbatim
     {    top-left.x  ,    top-left.y  ,
          top-right.x ,    top-right.y ,
       bottom-right.x , bottom-left.y  ,
       bottom-left.x  , bottom-left.y  }
+    \endverbatim
  */
 typedef cv::Matx<float, 4, 2> Quad;
 
@@ -111,14 +113,14 @@ int decode(const cv::Matx<unsigned char, 6, 6> &bits) const;
 
     \param id the id of the tag to draw, between [0,1024)
 
-    \param zoom the (integer) zoom factor with which to draw the tag. In other
-    words, every bit of the data matrix of the tag will be zoom large.
+    \param cellSize the (integer) scale factor with which to draw the tag. In other
+    words, every bit of the data matrix of the tag will be `cellSize` large.
 
     \param withMargin a boolean coding whether the returned image of the tag
     should be surrounded by a white frame, ensuring that the edges of the tag
     will contrast with the background.
  */
-cv::Mat draw(int id, int zoom = 1, bool withMargin = false) const;
+cv::Mat draw(int id, int cellSize = 1, bool withMargin = false) const;
 
 ~Chilitags();
 
@@ -140,27 +142,43 @@ class Chilitags3D
 
 public:
 /**
-    Creates a object ready to find the 3D pose of chilitags.
+    Creates an object ready to find the 3D pose of chilitags.
 
-    To do so, Chilitags3D assumes an arbitrary, but reasonnable focal length
+    By default, Chilitags3D assumes an arbitrary, but reasonnable focal length
     (700), and expects the dimensions of the captured images. In this
-    configuration, the depth estimation makes sense, but it is wrong. In order
-    to correctly estimate the 3D pose, the calibration data needs to be
-    provided. To do so, use the readCalibration() or setCalibration() methods.
+    configuration, the depth estimation makes sense, but it is not accurate. In
+    order to correctly estimate the 3D pose, the intrinsic calibration
+    parameters of your camera needs to be provided. To do so, use the
+    readCalibration() or setCalibration() methods.
 
-    Chilitags3D also assumes that the 3D pose of any detected tag is expected,
-    and that every tag is independent from the others. The method
-    read3DConfiguration() can be used to specify which tags are of interest,
-    and how they are arranged on a rigid object.
+    Chilitags3D also assumes by default that the 3D pose of every detected tag
+    is expected, and that every tag is independent from the others, and that
+    they are 20 millimetres wide. The method read3DConfiguration() can be used
+    to specify which tags are of interest, and how they are arranged on a rigid
+    object, and how big they are.
 
-    Chilitags3D creates a Chilitags instance, which can be accessed through the
-    getChilitags() accessors. This Chilitags instance is set to have a
-    persistence of 0, but Chilitags3D sets a default persistence of 5 frames
-    for poses it estimates. It also sets a gain of .5 to avoid the detected
-    objects to "shake". Please refer to the documentation of
-    Chilitags3D::setFilter() for more detail.
+    To first detect th tags in the image, Chilitags3D creates a Chilitags
+    instance, which can be accessed through the getChilitags() accessors. This
+    Chilitags instance is set to have a persistence of 0, but Chilitags3D sets
+    a default persistence of 5 frames for poses it estimates. It also sets a
+    gain of .5 to avoid the detected objects to "shake". Please refer to the
+    documentation of Chilitags3D::setFilter() for more detail.
+
+    You can also create yourself a separate instance of Chilitagsfor the 2D
+    detection of tags and use it by calling
+    Chilitags3D::estimate(const std::map<int, Quad> &tags)
+    with the output of
+    Chilitags::find(const cv::Mat &inputImage)
+    instead of calling directly
+    Chilitags3D::estimate(const cv::Mat &inputImage).
+
+    \param cameraResolution Resolution of the camera used as input (640x480 by
+    default). This parameter is only used to provide meaningful pose
+    estimation. Input images of different resolution can be provided to the
+    detection anyway. This parameter is overridden by readCalibration() or
+    setCalibration().
  */
-Chilitags3D(cv::Size cameraSize);
+Chilitags3D(cv::Size cameraResolution = cv::Size(640, 480));
 
 /**
     Parameters to paliate with the imperfections of the detection.
@@ -192,18 +210,33 @@ Chilitags &getChilitags();
 
 /**
     \returns a mapping of the detected objects to their transformation
-    matrices.
+    matrices. Transformation matrices are row-major and follow the standard
+    convention to code the rotation and translation parameters in homogeneous
+    coordinates:
+    \verbatim
+    { r11 , r12 , r13 , tx 
+      r21 , r22 , r23 , ty 
+      r31 , r32 , r33 , tz 
+        0 ,   0 ,   0 ,  1 }
+    \endverbatim
     \param tags a list of tags, as returned by Chilitags::find().
  */
-std::map<std::string, cv::Matx44d> estimate(
-    std::map<int, Quad> tags);
+std::map<std::string, cv::Matx44d> estimate(const std::map<int, Quad> & tags);
 
 /**
     This is a convenience variant of estimate() which also takes care of the
     detection.
 
     \returns a mapping of the detected objects to their transformation
-    matrices.
+    matrices. Transformation matrices are row-major and follow the standard
+    convention to code the rotation and translation parameters in homogeneous
+    coordinates:
+    \verbatim
+    { r11 , r12 , r13 , tx 
+      r21 , r22 , r23 , ty 
+      r31 , r32 , r33 , tz 
+        0 ,   0 ,   0 ,  1 }
+    \endverbatim
     \param inputImage the image to feed to Chilitags::find().
  */
 std::map<std::string, cv::Matx44d> estimate(const cv::Mat &inputImage);
@@ -211,35 +244,47 @@ std::map<std::string, cv::Matx44d> estimate(const cv::Mat &inputImage);
 /**
     Chilitags3D can also detect rigid assemblies of tags. This allows for a
     more precise estimation of the object holding the tag, and for a graceful
-    degradation of the estimation, should some of the tag be misdetected.
+    degradation of the estimation, should some of the tag be misdetected or
+    occluded.
 
-    \param filename: The filename of the  configuration file describing rigid
+    \param filename The name of the YAML configuration file describing rigid
     clusters of tags. The library is distributed with a sample
     configuration file documenting the expected format.
 
-    \param omitOtherTags: if true, the pose of tags not specified in the
-    configuration file will not be returned by estimate(). If false,
-    setDefaultTagSize() can be used to set a coherent unit length among the
-    tags.
+    \param omitOtherTags If true, ignore the tags that are not explicitly
+    listed in the configuration file. If false (default),
+    Chilitags3D::estimate() estimates the 3D pose of all the detected tags. You
+    can set the size of tags not described in the configuration file with
+    setDefaultTagSize(). 
  */
 void readTagConfiguration(
     const std::string &filename,
     bool omitOtherTags = false);
 
 /**
-    Sets the size of tags. By default, the result of estimate() uses the
-    side length of a tag a unit. In other words, the side length if tags is 1.
-    When using another unit in the 3D configuration (given to
-    read3DConfiguration()), e.g. if tags have a length of 20 (millimeters),
-    this methods allows to remain coherent with tags that are not specified in
-    the configuration file.
+    Sets the default size of tags (used to compute their 3D pose) when not
+    explicitly specified with read3DConfiguration(). To be accurate, the unit
+    must match the unit used for the camera calibration (usually, millimetres).
+
+    Note that is assumes all the tags have the same size. If tags have
+    different size, you may want to list them in the configuration file (see
+    read3DConfiguration()).
+
+    The default value of the default tag size is 20 millimetres.
  */
 void setDefaultTagSize(float defaultSize);
 
 /**
     For accurate results, Chilitags3D can be provided the calibration data of
-    the camera detecting the chilitags.
-    \param newCameraMatrix the 3x3 camera matrix.
+    the camera detecting the chilitags.  See
+    https://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+    for background on this topic.
+
+    Note that this method can be called as often as needed with a new calibration
+    configuration (for instance if the user switched to another camera).
+
+    \param newCameraMatrix the 3x3 matrix of the camera intrinsics (see
+    https://en.wikipedia.org/wiki/Camera_resectioning#Intrinsic_parameters).
     \param newDistCoeffs a vector containing the distortion coefficients.
  */
 void setCalibration(cv::InputArray newCameraMatrix,
@@ -247,9 +292,17 @@ void setCalibration(cv::InputArray newCameraMatrix,
 
 /**
     For accurate results, Chilitags3D can be provided the calibration data of
-    the camera detecting the chilitags. This method is similar to
-    setCalibration, but reads the camera calibration information directly from
-    a file, as generated by OpenCV's 'calibration' sample.
+    the camera detecting the chilitags.  See
+    http://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+    for background on this topic.
+
+    Note that this method can be called as often as needed with a new calibration
+    configuration (for instance if the user switched to another camera).
+
+    This method is similar to setCalibration, but reads the camera calibration
+    information directly from a file, as generated by OpenCV's 'calibration'
+    sample.
+
     \param filename the path to a file containing the calibration data
     \returns the size of the images used to generate the calibration data.
  */
@@ -268,7 +321,7 @@ const cv::Mat &getDistortionCoeffs() const;
 ~Chilitags3D();
 
 private:
-/** The actual implementation is hidden from the compiler. */
+/** Internal implementation */
 class Impl;
 std::unique_ptr<Impl> mImpl;
 
