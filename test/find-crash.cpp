@@ -58,6 +58,10 @@ int main(int argc, char* argv[])
 
     cv::Mat inputImage;
     chilitags::Chilitags chilitags;
+    std::cout
+        << "The input of Chilitags::find() is saved as ./lastimage.png\n"
+        << "If the program crashes, it can be used to reproduce the crash\n."
+        << "Hit Ctrl-C to stop the program." << std::endl;
     for (;;) {
         capture.read(inputImage);
         cv::imwrite("lastimage.png", inputImage);
