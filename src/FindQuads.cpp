@@ -73,6 +73,7 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
         int scale = 1 << i;
 #ifdef DEBUG_FindQuads
         cv::Point offset(debugImage.cols-2*mScaledCopies[i].cols,0);
+        cv::rectangle(debugImage, cv::Rect(offset.x, offset.y, greyscaleImage.cols/scale, greyscaleImage.rows/scale), cv::Scalar::all(255));
 #endif
         std::vector<std::vector<cv::Point> > contours;
         cv::findContours(mScaledCopies[i], contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
@@ -94,11 +95,11 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
 
                 if (normalisedContour.rows == 4)
                 {
-                    normalisedContour *= scale;
-                    quads.push_back(normalisedContour.reshape(1));
 #ifdef DEBUG_FindQuads
                     drawContour(debugImage, normalisedContour, cv::Scalar(0,255,0), offset);
 #endif
+                    normalisedContour *= scale;
+                    quads.push_back(normalisedContour.reshape(1));
                 }
 #ifdef DEBUG_FindQuads
                 else // not quadrilaterals
@@ -110,12 +111,12 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
 #ifdef DEBUG_FindQuads
             else // too small
             {
-                drawContour(debugImage, *contour, cv::Scalar(128,128,128), offset);
+                //drawContour(debugImage, *contour, cv::Scalar(128,128,128), offset);
             }
 #endif
         }
 #ifdef DEBUG_FindQuads
-        cv::putText(debugImage, cv::format("%d", contours.size()), offset+cv::Point(32,32),
+        cv::putText(debugImage, cv::format("%d, %d", quads.size(), contours.size()), offset+cv::Point(32,32),
                     cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(255));
 #endif
     }

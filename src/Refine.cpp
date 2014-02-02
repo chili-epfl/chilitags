@@ -84,12 +84,15 @@ chilitags::Quad chilitags::Refine::operator()(const cv::Mat &inputImage, const Q
     cv::Mat debugImage = inputImage(roi).clone();
     for(int i=0; i<4; ++i)
     {
-        cv::circle(debugImage, refinedQuad[i]-roiOffset,
+        cv::circle(debugImage, refinedQuad(i)-roiOffset,
                    3, cv::Scalar::all(128), 2);
         cv::line(debugImage,
-                 refinedQuad[i]-roiOffset, refinedQuad[i]-roiOffset,
+                 refinedQuad(i)-roiOffset, refinedQuad(i)-roiOffset,
                  cv::Scalar::all(255), 5);
-        printf("%1.1f  %1.1f        ", refinedQuad[i].x, refinedQuad[i].y);
+        cv::rectangle(debugImage,
+                 refinedQuad(i)-roiOffset-cv::Point2f(cornerNeighbourhood, cornerNeighbourhood), refinedQuad(i)-roiOffset+cv::Point2f(cornerNeighbourhood, cornerNeighbourhood),
+                 cv::Scalar::all(255));
+        printf("%1.1f  %1.1f        ", refinedQuad(i).x, refinedQuad(i).y);
     }
     printf("\n");
     cv::imshow("Refine", debugImage);
