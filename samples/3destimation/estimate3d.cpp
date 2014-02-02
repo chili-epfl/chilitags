@@ -11,11 +11,11 @@ using namespace cv;
 int main(int argc, char* argv[])
 {
     cout
-       << "Usage: "<< argv[0]
-       << " [-c <tag configuration (YAML)>] [-i <camera calibration (YAML)>]\n";
+        << "Usage: "<< argv[0]
+        << " [-c <tag configuration (YAML)>] [-i <camera calibration (YAML)>]\n";
 
     const char* intrinsicsFilename = 0;
-    const char* configFilename = "";
+    const char* configFilename = 0;
 
     for( int i = 1; i < argc; i++ )
     {
@@ -36,11 +36,9 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-
     /******************************/
     /* Setting up pose estimation */
     /******************************/
-
 #ifdef OPENCV3
     double inputWidth  = capture.get(cv::CAP_PROP_FRAME_WIDTH);
     double inputHeight = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
@@ -50,8 +48,8 @@ int main(int argc, char* argv[])
 #endif
 
     chilitags::Chilitags3D chilitags3D(Size(inputWidth, inputHeight));
-    chilitags3D.setDefaultTagSize(30.f);
-    chilitags3D.readTagConfiguration(configFilename);
+
+    if (configFilename) chilitags3D.readTagConfiguration(configFilename);
 
     if (intrinsicsFilename) {
         Size calibratedImageSize = chilitags3D.readCalibration(intrinsicsFilename);
