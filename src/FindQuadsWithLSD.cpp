@@ -149,7 +149,7 @@ chilitags::FindQuads::FindQuads() :
 #endif
 }
 
-std::vector<Quad> chilitags::FindQuads::operator()(const cv::Mat &binaryImage)
+std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &binaryImage)
 {
     //TODO function too long, split it
 
@@ -233,7 +233,7 @@ std::vector<Quad> chilitags::FindQuads::operator()(const cv::Mat &binaryImage)
                                    points[quad[2]]};
         convexHull(rawquad,
                    hull, false);
-        if (hull.size() == 4) quads.push_back(hull);
+        if (hull.size() == 4) quads.push_back(cv::Mat(hull).reshape(1));
 
     }
 
