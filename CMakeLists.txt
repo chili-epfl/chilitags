@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 project(chilitags CXX)
 
-set(CPACK_PACKAGE_VERSION_MAJOR "1")
-set(CPACK_PACKAGE_VERSION_MINOR "3")
-set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_PACKAGE_VERSION_MAJOR "2")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
 
 add_definitions(-std=c++11)
 find_package(OpenCV REQUIRED )
