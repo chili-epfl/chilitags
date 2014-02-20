@@ -5,6 +5,7 @@
 #include <opencv2/core/core.hpp> // for cv::Mat
 #include <opencv2/core/core_c.h> // CV_AA
 #include <opencv2/highgui/highgui.hpp> // for camera capture
+#include <opencv2/imgproc/imgproc.hpp> // for camera capture
 
 using namespace std;
 using namespace cv;
@@ -76,7 +77,7 @@ int main(int argc, char* argv[])
     for (; 'q' != (char) cv::waitKey(10); ) {
         cv::Mat inputImage;
         capture.read(inputImage);
-        cv::Mat outputImage(inputImage.size(), CV_8UC3, cv::Scalar(0,0,0));
+        cv::Mat outputImage = inputImage.clone();
 
         for (auto& kv : chilitags3D.estimate(inputImage)) {
 
