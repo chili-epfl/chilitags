@@ -43,7 +43,7 @@ Usage of `creator`
 
 ### Synopsis
 
-    creator tagId [zoom [margin]]
+    creator tagId [zoom [margin [red green blue]]]
 
 ### Description
 
@@ -58,6 +58,9 @@ It does not disturb the detection, as long as the outside, black border remains 
 
 *margin* is n if and only if no white rectangle should be drawn around the tag.
 Make sure to follow the design and printing guidelines then.
+
+*red green blue* are integers within [0,255] which define the color with which
+to draw the tag. The darker, the better. Black is default and optimal.
 
 ### Examples
 

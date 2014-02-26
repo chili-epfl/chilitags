@@ -28,13 +28,15 @@
 int main(int argc, char **argv)
 {
     if (argc <= 1) {
-        std::cout << "Usage: " << argv[0] << " tagID [zoom [margin]]\n";
+        std::cout << "Usage: " << argv[0] << " tagID [zoom [margin [red green blue]]]\n";
         std::cout << " - tagId is the id of the tag to draw, between 0 and 1023,\n";
         std::cout << " - zoom is a non null integer indicating the length in pixel\n";
         std::cout << "   of each bit of the tag matrix (default: 1).\n";
         std::cout << " - margin is n if no white rectangle should be drawn around the tag,\n";
         std::cout << "   (make sure the black borders of the tag\n";
         std::cout << "   still contrast with where it is placed),\n";
+        std::cout << " - red, green and blue define the color with which to draw the tag.\n";
+        std::cout << "   The darker, the better. Black is default and optimal.\n";
         return 1;
     }
 
@@ -42,10 +44,9 @@ int main(int argc, char **argv)
     int tagId = std::atoi(argv[1]);
     int zoom = (argc > 2) ? std::atoi(argv[2]) : 1;
     bool noMargin = (argc > 3 && argv[3][0] == 'n');
+    cv::Scalar color = (argc > 6 ? cv::Scalar(std::atoi(argv[4]), std::atoi(argv[5]), std::atoi(argv[6])) : cv::Scalar(0,0,0));
 
-    chilitags::Chilitags chilitags;
-
-    cv::imwrite(outputFilename, chilitags.draw(tagId, zoom, !noMargin));
+    cv::imwrite(outputFilename, chilitags::Chilitags().draw(tagId, zoom, !noMargin, color));
 
     return 0;
 }
