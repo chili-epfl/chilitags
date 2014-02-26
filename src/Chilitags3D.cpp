@@ -227,7 +227,7 @@ void read3DConfiguration(const std::string &filename, bool omitOtherTags) {
             tagConfig["tag"] >> id;
             float size;
             tagConfig["size"] >> size;
-            bool keep;
+            int keep;
             tagConfig["keep"] >> keep;
             cv::Vec3f translation;
             cv::Vec3f rotation;

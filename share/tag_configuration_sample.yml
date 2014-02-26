@@ -31,16 +31,18 @@ myobject2:
 
 # The third object features 3 tags, of various size, and at various positions.
 # Here, the rotation is omitted (defaults to [0.,0.,0.]).
-# If a tag sets the option 'keep' to 'true', the tag 3D position is
-# returned besides the object.
+# If a tag sets the option 'keep' to '1', the tag 3D position is
+# returned besides the object. By default, object components are not kept, but
+# you can explicitely set keep to '0'.
 myobject3:
     - tag: 2
       size: 20
       translation: [-50., -100., 0.0]
-      keep: true
+      keep: 1
     - tag: 3
       size: 30
       translation: [50., -100., 0.0]
+      keep: 0
     - tag: 4
       size: 30
       translation: [50., 100., 0.0]
