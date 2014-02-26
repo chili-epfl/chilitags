@@ -119,8 +119,11 @@ int decode(const cv::Matx<unsigned char, 6, 6> &bits) const;
     \param withMargin a boolean coding whether the returned image of the tag
     should be surrounded by a white frame, ensuring that the edges of the tag
     will contrast with the background.
+
+    \param color the RGB color with which to draw the tag. Values are integers
+    within [0,255]. The darker, the better. Black is default and optimal.
  */
-cv::Mat draw(int id, int cellSize = 1, bool withMargin = false) const;
+cv::Mat draw(int id, int cellSize = 1, bool withMargin = false, cv::Scalar color = cv::Scalar(0,0,0)) const;
 
 ~Chilitags();
 

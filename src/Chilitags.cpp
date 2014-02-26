@@ -80,14 +80,13 @@ int decode(const cv::Matx<unsigned char, 6, 6> &bits) const {
     return id;
 }
 
-cv::Mat draw(int id, int cellSize, bool withMargin) const {
+cv::Mat draw(int id, int cellSize, bool withMargin, cv::Scalar color) const {
     // Creating the image of the bit matrix
     static const int DATA_SIZE = 6;
     cv::Size dataDim(DATA_SIZE,DATA_SIZE);
     unsigned char dataMatrix[DATA_SIZE*DATA_SIZE];
     mDecode.getCodec().getTagEncodedId(id, dataMatrix);
     cv::Mat dataImage(dataDim, CV_8U, dataMatrix);
-    dataImage *= 255;
 
     // Adding the black border arounf the bit matrix
     cv::Size borderSize(2,2);
@@ -97,13 +96,21 @@ cv::Mat draw(int id, int cellSize, bool withMargin) const {
     // Adding the optionnal white margin
     cv::Size marginSize(0,0);
     if (withMargin) marginSize += borderSize;
-    cv::Mat outlinedImage(tagImage.size()+marginSize*2, CV_8U, cv::Scalar(255));
+    cv::Mat outlinedImage(tagImage.size()+marginSize*2, CV_8U, cv::Scalar(1));
     tagImage.copyTo(outlinedImage(cv::Rect(marginSize, tagImage.size())));
 
     // Resizing to specified cellSize
-    cv::Mat outputImage(outlinedImage.size()*cellSize, CV_8U);
-    cv::resize(outlinedImage, outputImage, outputImage.size(), 0, 0, cv::INTER_NEAREST);
-    return outputImage;
+    cv::Mat sizedImage(outlinedImage.size()*cellSize, CV_8U);
+    cv::resize(outlinedImage, sizedImage, sizedImage.size(), 0, 0, cv::INTER_NEAREST);
+
+    // Coloring
+    cv::Mat   redImage = (1-sizedImage)*color[0]+sizedImage*255;
+    cv::Mat greenImage = (1-sizedImage)*color[1]+sizedImage*255;
+    cv::Mat  blueImage = (1-sizedImage)*color[2]+sizedImage*255;
+    cv::Mat colorImage(sizedImage.size(), CV_8UC3);
+    cv::merge(std::vector<cv::Mat>{blueImage, greenImage, redImage}, colorImage);
+
+    return colorImage;
 }
 
 protected:
@@ -142,8 +149,8 @@ int Chilitags::decode(const cv::Matx<unsigned char, 6, 6> & bits) const {
     return mImpl->decode(bits);
 }
 
-cv::Mat Chilitags::draw(int id, int cellSize, bool withMargin) const {
-    return mImpl->draw(id, cellSize, withMargin);
+cv::Mat Chilitags::draw(int id, int cellSize, bool withMargin, cv::Scalar color) const {
+    return mImpl->draw(id, cellSize, withMargin, color);
 }
 
 Chilitags::~Chilitags() = default;
