@@ -8,10 +8,15 @@
 
 #include "HardcodedIds.hpp"
 
+namespace {
+    cv::Vec3b WHITE(255,255,255);
+    cv::Vec3b BLACK(0,0,0);
+}
+
 TEST(Drawer, Defaults) {
     chilitags::Chilitags chilitags;
     cv::Mat image = chilitags.draw(0);
-    ASSERT_EQ(CV_8U, image.type());
+    ASSERT_EQ(CV_8UC3, image.type());
     ASSERT_EQ(10,image.cols);
     ASSERT_EQ(10,image.rows);
 }
@@ -22,7 +27,7 @@ TEST(Drawer, DrawCode) {
 
     for (int t = 0; t<1024; ++t) {
         cv::Mat image = chilitags.draw(t);
-        ASSERT_EQ(CV_8U, image.type());
+        ASSERT_EQ(CV_8UC3, image.type());
         ASSERT_EQ(10,image.cols);
         ASSERT_EQ(10,image.rows);
 
@@ -32,7 +37,7 @@ TEST(Drawer, DrawCode) {
 
                 if (x < contentStart || x >= image.cols-contentStart
                     || y < contentStart || y >= image.rows-contentStart) {
-                    ASSERT_EQ(0, image.at<unsigned char>(y,x));
+                    ASSERT_EQ(BLACK, image.at<cv::Vec3b>(y,x));
                 }
             }
         }
@@ -40,8 +45,8 @@ TEST(Drawer, DrawCode) {
         for (int i = 0; i<6; ++i) {
             for (int j = 0; j<6; ++j) {
                 ASSERT_EQ(
-                    hardcodedIds.id[t][6*i+j]*255,
-                    image.at<unsigned char>(2+i,2+j));
+                    hardcodedIds.id[t][6*i+j]?WHITE:BLACK,
+                    image.at<cv::Vec3b>(2+i,2+j));
             }
         }
     }
@@ -53,15 +58,15 @@ TEST(Drawer, WithMargin) {
 
     for (int t = 0; t<1024; ++t) {
         cv::Mat image = chilitags.draw(t,1,true);
-        ASSERT_EQ(CV_8U, image.type());
+        ASSERT_EQ(CV_8UC3, image.type());
         ASSERT_EQ(14,image.cols);
         ASSERT_EQ(14,image.rows);
 
         for (int i = 0; i<6; ++i) {
             for (int j = 0; j<6; ++j) {
                 ASSERT_EQ(
-                    hardcodedIds.id[t][6*i+j]*255,
-                    image.at<unsigned char>(4+i,4+j));
+                    hardcodedIds.id[t][6*i+j]?WHITE:BLACK,
+                    image.at<cv::Vec3b>(4+i,4+j));
             }
         }
     }
@@ -74,7 +79,7 @@ TEST(Drawer, Zoom) {
     int zoom = 10;
     for (int t = 0; t<1024; ++t) {
         cv::Mat image = chilitags.draw(t, zoom);
-        ASSERT_EQ(CV_8U, image.type());
+        ASSERT_EQ(CV_8UC3, image.type());
         ASSERT_EQ(100,image.cols);
         ASSERT_EQ(100,image.rows);
 
@@ -84,7 +89,7 @@ TEST(Drawer, Zoom) {
 
                 if (x < contentStart || x >= image.cols-contentStart
                     || y < contentStart || y >= image.rows-contentStart) {
-                    ASSERT_EQ(0, image.at<unsigned char>(y,x));
+                    ASSERT_EQ(BLACK, image.at<cv::Vec3b>(y,x));
                 }
             }
         }
@@ -94,8 +99,8 @@ TEST(Drawer, Zoom) {
                 for (int y = zoom*(2+i); y<zoom*(2+i+1); ++y) {
                     for (int x = zoom*(2+j); x<zoom*(2+j+1); ++x) {
                         ASSERT_EQ(
-                            hardcodedIds.id[t][6*i+j]*255,
-                            image.at<unsigned char>(y,x));
+                            hardcodedIds.id[t][6*i+j]?WHITE:BLACK,
+                            image.at<cv::Vec3b>(y,x));
                     }
                 }
             }
@@ -110,7 +115,7 @@ TEST(Drawer, ZoomWithMargin) {
     int zoom = 10;
     for (int t = 0; t<1024; ++t) {
         cv::Mat image = chilitags.draw(t, zoom, true);
-        ASSERT_EQ(CV_8U, image.type());
+        ASSERT_EQ(CV_8UC3, image.type());
         ASSERT_EQ(140,image.cols);
         ASSERT_EQ(140,image.rows);
         for (int i = 0; i<6; ++i) {
@@ -118,8 +123,8 @@ TEST(Drawer, ZoomWithMargin) {
                 for (int y = zoom*(4+i); y<zoom*(4+i+1); ++y) {
                     for (int x = zoom*(4+j); x<zoom*(4+j+1); ++x) {
                         ASSERT_EQ(
-                            hardcodedIds.id[t][6*i+j]*255,
-                            image.at<unsigned char>(y,x));
+                            hardcodedIds.id[t][6*i+j]?WHITE:BLACK,
+                            image.at<cv::Vec3b>(y,x));
                     }
                 }
             }
