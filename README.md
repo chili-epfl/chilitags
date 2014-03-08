@@ -144,6 +144,11 @@ The documentation regarding the usage of `chilitags` is provided under the form
 of the sample code `detect-live`.  Please refer to its `README` file and comments
 in its source code.
 
+### Platforms
+
+Specific instructions for building Chilitags for Android can be found under 
+[README-ANDROID.md](README-ANDROID.md).
+
 Licence
 -------
 

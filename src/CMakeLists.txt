@@ -34,6 +34,13 @@ install (TARGETS chilitags
 #	PUBLIC_HEADER DESTINATION include/chilitags
 )
 
+if(ANDROID_INSTALL_LIBRARIES)
+    #We do not use install(TARGET chilitags... here because it doesn't show up during make install
+    install (FILES ${CMAKE_INSTALL_PREFIX}/lib/libchilitags.so  
+        DESTINATION ${LIBRARY_OUTPUT_PATH}
+    ) 
+endif()
+
 file(GLOB_RECURSE chilitags_headers ../include/*)
 
 install(FILES

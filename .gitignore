@@ -1,1 +1,7 @@
 build*/
+/libs
+/bin
+.cproject
+.project
+.settings/
+
