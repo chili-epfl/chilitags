@@ -32,12 +32,27 @@ static int Chilitags3D_height = -1;
 static int Chilitags3D_width = -1;
 static int Chilitags3D_processingHeight = -1;
 static int Chilitags3D_processingWidth = -1;
+static int Chilitags3D_inputType = -1;
+static cv::Mat Chilitags3D_grayscale;
+static cv::Mat Chilitags3D_downsampled;
 
-JNI(jlong,alloc)(JNIEnv* env, jclass* class_, jint width, jint height, jint processingWidth, jint processingHeight){
+JNI(jlong,alloc)(JNIEnv* env, jclass* class_, jint width, jint height, jint processingWidth, jint processingHeight, jint inputType){
 	Chilitags3D_height = height;
 	Chilitags3D_width = width;
 	Chilitags3D_processingHeight = processingHeight;
 	Chilitags3D_processingWidth = processingWidth;
+	Chilitags3D_inputType = inputType;
+	switch(inputType){
+	case 0: //YUV_NV21
+	case 1: //RGB565
+		Chilitags3D_grayscale = cv::Mat(Chilitags3D_height,Chilitags3D_width,CV_8UC1);
+		Chilitags3D_downsampled = cv::Mat(Chilitags3D_processingHeight,Chilitags3D_processingWidth,CV_8UC1);
+		break;
+
+	default:
+		env->ThrowNew(env->FindClass("java/lang/Exception"), "Chilitags3D: inputType not supported.");
+		return 0;
+	}
 	return GET_PTR(new chilitags::Chilitags3D(cv::Size(processingWidth,processingHeight)));
 }
 
@@ -84,9 +99,9 @@ JNI(void,setCalibrationImpl)(JNIEnv* env, jclass* class_, jlong ptr, jdoubleArra
 	//transform. For example, cv::Mat cammat(3,3,CV_64F,cammatBuffer) doesn't work, even though all entries, type and sizes
 	//are the same with the original camera matrix, I really don't know why.
 	cv::Mat cammat = (cv::Mat_<double>(3,3) <<
-	        cammatBuffer[0], cammatBuffer[1], cammatBuffer[2],
-	        cammatBuffer[3], cammatBuffer[4], cammatBuffer[5],
-	        cammatBuffer[6], cammatBuffer[7], cammatBuffer[8]);
+			cammatBuffer[0], cammatBuffer[1], cammatBuffer[2],
+			cammatBuffer[3], cammatBuffer[4], cammatBuffer[5],
+			cammatBuffer[6], cammatBuffer[7], cammatBuffer[8]);
 	cv::InputArray cammatArray(cammat);
 
 	//Get distortion coefficients from parameters
@@ -120,16 +135,27 @@ JNI(jobjectArray,estimateImpl)(JNIEnv* env, jclass* class_, jlong ptr, jbyteArra
 	jbyte* buffer = env->GetByteArrayElements(imageData,0);
 	unsigned char* ubuffer = reinterpret_cast<unsigned char*>(buffer);
 
-	//Convert image from Android camera's YUV_NV21 color space to grayscale
-	//YUV_NV21 image contains 12 bits per pixel, hence the weird resolution
-	cv::Mat original(Chilitags3D_height + Chilitags3D_height/2, Chilitags3D_width, CV_8UC1, ubuffer);
-	cv::Mat grayscale(Chilitags3D_height,Chilitags3D_width,CV_8UC1);
-	cv::Mat downsampled(Chilitags3D_processingHeight,Chilitags3D_processingWidth,CV_8UC1);
-	cv::cvtColor(original,grayscale,CV_YUV2GRAY_NV21);
-	cv::resize(grayscale,downsampled,cv::Size(Chilitags3D_processingWidth,Chilitags3D_processingHeight));
+	//Do color space conversion and downsampling
+	switch(Chilitags3D_inputType){
+	case 0:{ //YUV_NV21
+
+		//YUV_NV21 image contains 12 bits per pixel, hence the weird resolution
+		cv::Mat original(Chilitags3D_height + Chilitags3D_height/2, Chilitags3D_width, CV_8UC1, ubuffer);
+		cv::cvtColor(original,Chilitags3D_grayscale,CV_YUV2GRAY_NV21);
+		cv::resize(Chilitags3D_grayscale,Chilitags3D_downsampled,cv::Size(Chilitags3D_processingWidth,Chilitags3D_processingHeight));
+		break;
+	}
+
+	case 1: //RGB565
+
+		cv::Mat original(Chilitags3D_height, Chilitags3D_width, CV_8UC2, ubuffer);
+		cv::cvtColor(original,Chilitags3D_grayscale,CV_BGR5652GRAY); //We are actually sending RGB565 but since it's going to be grayscaled, it shouldn't be a problem
+		cv::resize(Chilitags3D_grayscale,Chilitags3D_downsampled,cv::Size(Chilitags3D_processingWidth,Chilitags3D_processingHeight));
+		break;
+	}
 
 	//Call Chilitags' estimate on the grayscale image
-	auto result = GET_OBJ(ptr)->estimate(downsampled);
+	auto result = GET_OBJ(ptr)->estimate(Chilitags3D_downsampled);
 
 	//Unpin the image data buffer inside the JVM
 	env->ReleaseByteArrayElements(imageData,buffer,0);

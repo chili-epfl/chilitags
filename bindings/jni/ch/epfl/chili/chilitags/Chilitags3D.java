@@ -28,6 +28,14 @@ package ch.epfl.chili.chilitags;
 public class Chilitags3D {
 	
 	/**
+	 * The allowed input types/color spaces.
+	 */
+	public enum InputType{
+		YUV_NV21,
+		RGB565
+	}
+	
+	/**
 	 * Load the necessary libraries in the order of dependency.
 	 */
 	static {
@@ -47,7 +55,7 @@ public class Chilitags3D {
 	/*
 	 * Prototypes for the actual native functions.
 	 */
-	private native long alloc(int width, int height, int processingWidth, int processingHeight);
+	private native long alloc(int width, int height, int processingWidth, int processingHeight, int inputType);
 	private native void free(long ptr);
 	private native void readTagConfigurationImpl(long ptr, String filename, boolean omitOtherTags);
 	private native CVSize readCalibrationImpl(long ptr, String filename);
@@ -61,9 +69,10 @@ public class Chilitags3D {
 	 * @param height Camera image height
 	 * @param processingWidth The camera image will be downsampled to this width before tag pose estimation
 	 * @param processingHeight The camera image will be downsampled to this height before tag pose estimation
+	 * @param inputType The type/color space of the input
 	 */
-	public Chilitags3D(int width, int height, int processingWidth, int processingHeight){
-		ptr = alloc(width, height, processingWidth, processingHeight);
+	public Chilitags3D(int width, int height, int processingWidth, int processingHeight, InputType inputType){
+		ptr = alloc(width, height, processingWidth, processingHeight, inputType.ordinal());
 	}
 	
 	/**
