@@ -64,12 +64,16 @@ large scene. The detection has been improved since this video was made.
 
 This release of Chilitags consists of four components:
 
+ * `bindings`, the source code to expose the Chilitags API in various languages,
+
  * `include` and `src`, the library itself,
 
  * `tools`, containing a utility to generate tags,
 
  * `samples`, sample programs illustrating how to use the library,
 
+ * `samples-android`, sample programs for the Android platform,
+ 
  * `test`, a suite of automated tests.
 
 

@@ -122,6 +122,11 @@ Now all you have to do is include the `chilitags-jni-wrapper.jar` file that is i
 
 Currently, a small bu essential portion of the original Chilitags functionality is wrapped for Java/Android. Within the Java code, you can create a Chilitags3D object, feed it a tag configuration file (which must be put under the assets/ directory of your Android project) and estimate object positions by passing it an image in a `byte[]`. This image must be in the YUV-NV21 color space, which is the default Android camera preview color format. 
 
+Building and running samples
+----------------------------
+
+Inside the samples-android/ directory, there are a number of samples to get you started with Chilitags on Android. Please see the [README.md](samples-android/README.md) file for more information on building and running them. 
+
 Building any CMake-enabled project for Android
 ----------------------------------------------
 
