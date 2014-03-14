@@ -36,15 +36,16 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 ##           Options                   ###
 ##########################################
 
-option(WITH_TOOLS        "provides the marker generation tool" ON)
-option(WITH_SAMPLES      "compile misc demos" OFF)
-option(WITH_TESTS        "build tests" OFF)
+option(WITH_SAMPLES			"compile misc demos" OFF)
+option(WITH_TESTS			"build tests" OFF)
 if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider using it. 
-    option(WITH_JNI_BINDINGS "JNI bindings compatible with ordinary Java and Android" ON)
-    option(ANDROID_INSTALL_LIBRARIES "Whether to install the chilitag libraries inside LIBRARY_OUTPUT_PATH_ROOT (e.g under libs/armeabi-v7a/)" ON)
+	option(WITH_TOOLS			        "provides the marker generation tool" OFF)
+	option(WITH_JNI_BINDINGS		    "JNI bindings compatible with ordinary Java and Android" ON)
+	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside LIBRARY_OUTPUT_PATH_ROOT (e.g under libs/armeabi-v7a/)" ON)
 else()
-    option(WITH_JNI_BINDINGS "JNI bindings compatible with ordinary Java and Android" OFF)
-    option(ANDROID_INSTALL_LIBRARIES "Whether to install the chilitag libraries inside LIBRARY_OUTPUT_PATH_ROOT (e.g under libs/armeabi-v7a/)" OFF)
+	option(WITH_TOOLS			        "provides the marker generation tool" ON)
+	option(WITH_JNI_BINDINGS		    "JNI bindings compatible with ordinary Java and Android" OFF)
+	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside LIBRARY_OUTPUT_PATH_ROOT (e.g under libs/armeabi-v7a/)" OFF)
 endif()
 
 

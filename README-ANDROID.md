@@ -1,19 +1,16 @@
 Building the Chilitags library for Android
 ==========================================
 
-This document gives the complete instructions on cross-compiling OpenCV and consequently Chilitags for Android. It was tested with android-ndk-r9c and OpenCV 2.4.8.2 under Ubuntu 12.04 64-bits.
+This document gives the complete instructions on cross-compiling OpenCV and consequently Chilitags for Android. It was tested with android-ndk-r9c, Android SDK Tools revision 22.3 and OpenCV 2.4.8.2 under Ubuntu 12.04 64-bits.
 
-The goal of this guide is to also provide a clean build environment that is suitable for cross-compiling at least OpenCV and Chilitags modularly. This means that we aim to be able to reuse 
-the libraries we built in any Android project with the least effort possible and also to build other projects using the environment we set up. 
-
-The default method of building native code with the Android NDK, i.e the ndk-build system doesn't integrate well with CMake, which is arguably the modern standard for open-source building. 
-Many open-source projects are designed to be built using CMake, including OpenCV and Chilitags. Therefore, this guide is CMake-exclusive and uses the standalone NDK toolchain method. 
+The build is CMake exclusive and does not rely on ndk-build and on the OpenCV Android SDK for relying on ndk-build. In the end, it relies on the developer bundling cross-compiled dynamic libraries (such as OpenCV and Chilitags) with the application's apk. The discussion on these choices is at the very end of this guide. 
 
 Setting up a standalone NDK toolchain
 -------------------------------------
 
-First, you need a working Android SDK installation, but it is not covered in this guide. In the end, you will definitely need a SDK to build and deploy Android projects anyway. When you have a SDK installation, 
-get the [Android NDK](http://developer.android.com/tools/sdk/ndk/index.html) and set it up. It should be as simple as extracting the compressed archive somewhere, e.g `/usr/local/share/`. 
+First, you need a working Android SDK installation, but it is not covered in this guide. In the end, you will definitely need a SDK to build and deploy Android projects anyway. Just don't forget to add
+`ANDROID_SDK_DIR/tools/` and `ANDROID_SDK_DIR/platform-tools/` to your `PATH`. When you have a SDK installation, get the [Android NDK](http://developer.android.com/tools/sdk/ndk/index.html) and set it up. 
+It should be as simple as extracting the compressed archive somewhere, e.g `/usr/local/share/`. 
 
 
 Now, go to the NDK directory (`/usr/local/share/android-ndk-r9c/` in this example) and run the following:
@@ -160,3 +157,18 @@ Problems that occur in your build from here on are exclusive to the compatibilit
 If your project depends on other projects, build them first using this guide and put their libraries/executables/headers under appropriate directories in `/opt/android-toolchain`. 
 
 PS: This method also works for OpenCV (and for Chilitags) but you have to write your own FindOpenCV.cmake script. 
+
+Why CMake and why not ndk-build?
+--------------------------------
+
+The true goal of this guide is to provide a clean build environment that is suitable for cross-compiling at least OpenCV and Chilitags modularly. This means that we aim to be able to reuse 
+the libraries we built in any Android project with the least effort possible and also to build other projects using the environment we set up. 
+
+The default method of building native code with the Android NDK, i.e the ndk-build system is unintuitive and it doesn't integrate well with CMake, which is arguably the modern standard for open-source building. 
+Many open-source projects are designed to be built using CMake (at least when the target is the host system, i.e regular build), including OpenCV and Chilitags. Therefore, this guide is CMake-exclusive and uses the standalone NDK toolchain method. 
+
+This guide doesn't use the OpenCV Android SDK either. While it's useful to note that it contains JNI wrappers for many OpenCV objects, it still relies on the undesirable ndk-build. Furthermore, 
+it relies on making you install the OpenCV Manager whose goal is to keep all native OpenCV libraries in one place and to update them. While this is useful for storage space concerns and keeping the libraries 
+up to date, it is still a workaround for making the Android system architecture more Linux-like in terms of package management, where shared libraries are found in one place and they are updated through 
+the common system update procedure. This is simply not worth doing since you would have to implement such a manager for every single native library used. It is much more intuitive and manageable to cross-compile
+each native library (such as OpenCV, Chilitags etc.) into shared libraries with a single toolchain and bundle the resulting shared libraries with the apk. This is the method used in this guide. 
