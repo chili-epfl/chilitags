@@ -62,7 +62,7 @@ large scene. The detection has been improved since this video was made.
 
 ### Content
 
-This release of Chilitags consists of four components:
+This release of Chilitags consists of five components:
 
  * `bindings`, the source code to expose the Chilitags API in various languages,
 
@@ -70,9 +70,7 @@ This release of Chilitags consists of four components:
 
  * `tools`, containing a utility to generate tags,
 
- * `samples`, sample programs illustrating how to use the library,
-
- * `samples-android`, sample programs for the Android platform,
+ * `samples` and `samples-android`, sample programs illustrating how to use the library,
  
  * `test`, a suite of automated tests.
 

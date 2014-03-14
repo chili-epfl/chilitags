@@ -120,7 +120,7 @@ cp libopencv_calib3d.so libopencv_core.so libopencv_features2d.so libopencv_flan
 
 Now all you have to do is include the `chilitags-jni-wrapper.jar` file that is installed under your Android project's libs/ directory in your project's library definitions (usually done in Eclipse). The rest (building/deploying the Android application) should work automatically. Another jar named `chilitags-jni-wrapper-sources.jar` is installed under your Android project's libs/ directory, it can be linked to the `chilitags-jni-wrapper.jar` library as source archive for autocompletion and on-the-fly documentation in Eclipse. 
 
-Currently, a small bu essential portion of the original Chilitags functionality is wrapped for Java/Android. Within the Java code, you can create a Chilitags3D object, feed it a tag configuration file (which must be put under the assets/ directory of your Android project) and estimate object positions by passing it an image in a `byte[]`. This image must be in the YUV-NV21 color space, which is the default Android camera preview color format. 
+Currently, a small bu essential portion of the original Chilitags functionality is wrapped for Java/Android. Within the Java code, you can create a Chilitags3D object, feed it a tag configuration file (which must be inside the local storage of the app in order to be accessible by the native code) and estimate object positions by passing it an image in a `byte[]`. 
 
 Building and running samples
 ----------------------------
