@@ -96,12 +96,12 @@ Building Chilitags
 ------------------
 
 Assuming that your standalone toolchain resides in `/opt/android-toolchain/` and your Android project that calls native code is in `~/workspace/my-android-project/`, 
-run the following inside your local copy of Chilitags (if you do not want to install Chilitags libraries inside an Android project, you can replace `-DLIBRARY_OUTPUT_PATH_ROOT=~/workspace/my-android-project/` with `-DANDROID_INSTALL_LIBRARIES=OFF`):
+run the following inside your local copy of Chilitags (if you do not want to install Chilitags libraries inside an Android project, you can replace `-DANDROID_PROJECT_ROOT=~/workspace/my-android-project/` with `-DANDROID_INSTALL_LIBRARIES=OFF`):
 
 ```
 mkdir build-android
 cd build-android
-cmake .. -DCMAKE_TOOLCHAIN_FILE=$OpenCV_DIR/android.toolchain.cmake -DLIBRARY_OUTPUT_PATH_ROOT=~/workspace/my-android-project/ -DCMAKE_INSTALL_PREFIX=/opt/android-toolchain/sysroot/usr/
+cmake .. -DCMAKE_TOOLCHAIN_FILE=$OpenCV_DIR/android.toolchain.cmake -DANDROID_PROJECT_ROOT=~/workspace/my-android-project/ -DCMAKE_INSTALL_PREFIX=/opt/android-toolchain/sysroot/usr/
 make -j 5
 make install
 ```
@@ -177,3 +177,5 @@ it relies on making you install the OpenCV Manager whose goal is to keep all nat
 up to date, it is still a workaround for making the Android system architecture more Linux-like in terms of package management, where shared libraries are found in one place and they are updated through 
 the common system update procedure. This is simply not worth doing since you would have to implement such a manager for every single native library used. It is much more intuitive and manageable to cross-compile
 each native library (such as OpenCV, Chilitags etc.) into shared libraries with a single toolchain and bundle the resulting shared libraries with the apk. This is the method used in this guide. 
+
+Unless someday OpenCV becomes part of AOSP...

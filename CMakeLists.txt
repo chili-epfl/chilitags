@@ -41,11 +41,11 @@ option(WITH_TESTS			"build tests" OFF)
 if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider using it. 
 	option(WITH_TOOLS			        "provides the marker generation tool" OFF)
 	option(WITH_JNI_BINDINGS		    "JNI bindings compatible with ordinary Java and Android" ON)
-	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside LIBRARY_OUTPUT_PATH_ROOT (e.g under libs/armeabi-v7a/)" ON)
+	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside ANDROID_PROJECT_ROOT (e.g under libs/armeabi-v7a/)" ON)
 else()
 	option(WITH_TOOLS			        "provides the marker generation tool" ON)
 	option(WITH_JNI_BINDINGS		    "JNI bindings compatible with ordinary Java and Android" OFF)
-	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside LIBRARY_OUTPUT_PATH_ROOT (e.g under libs/armeabi-v7a/)" OFF)
+	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside ANDROID_PROJECT_ROOT (e.g under libs/armeabi-v7a/)" OFF)
 endif()
 
 
@@ -95,4 +95,15 @@ endif()
 if(WITH_JNI_BINDINGS)
 
     add_subdirectory(bindings/jni)
+endif()
+
+if(ANDROID_INSTALL_LIBRARIES)
+    
+    if(NOT DEFINED ENV{ANDROID_ABI})
+        message(FATAL_ERROR "Please define the ANDROID_ABI environment variable first, e.g armeabi-v7a")
+    endif()
+    
+    if(NOT ANDROID_PROJECT_ROOT)
+        message(FATAL_ERROR "ANDROID_PROJECT_ROOT undefined, can't install libraries inside Android project.")
+    endif()
 endif()

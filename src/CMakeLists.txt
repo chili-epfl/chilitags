@@ -35,10 +35,10 @@ install (TARGETS chilitags
 )
 
 if(ANDROID_INSTALL_LIBRARIES)
-    #We do not use install(TARGET chilitags... here because it doesn't show up during make install
-    install (FILES ${CMAKE_INSTALL_PREFIX}/lib/libchilitags.so  
-        DESTINATION ${LIBRARY_OUTPUT_PATH}
-    ) 
+    install(TARGETS chilitags
+        LIBRARY DESTINATION ${ANDROID_PROJECT_ROOT}/libs/$ENV{ANDROID_ABI}/
+        ARCHIVE DESTINATION ${ANDROID_PROJECT_ROOT}/libs/$ENV{ANDROID_ABI}/
+    )
 endif()
 
 file(GLOB_RECURSE chilitags_headers ../include/*)

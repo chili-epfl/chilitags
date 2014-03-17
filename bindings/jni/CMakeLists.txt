@@ -25,12 +25,12 @@ add_jar(chilitags-jni-wrapper ${chilitags_jni_wrapper_source})
 add_jar_no_compile(chilitags-jni-wrapper-sources ${chilitags_jni_wrapper_source})
 
 if(ANDROID_INSTALL_LIBRARIES)
-
-    #We do not use install(TARGET chilitags_jni_bindings... here because it doesn't show up during make install
-    install (FILES ${CMAKE_INSTALL_PREFIX}/lib/libchilitags_jni_bindings.so  
-        DESTINATION ${LIBRARY_OUTPUT_PATH}
-    ) 
     
-    install_jar(chilitags-jni-wrapper ${LIBRARY_OUTPUT_PATH}/../)
-    install_jar(chilitags-jni-wrapper-sources ${LIBRARY_OUTPUT_PATH}/../)
+    install(TARGETS chilitags_jni_bindings 
+        LIBRARY DESTINATION ${ANDROID_PROJECT_ROOT}/libs/$ENV{ANDROID_ABI}/
+        ARCHIVE DESTINATION ${ANDROID_PROJECT_ROOT}/libs/$ENV{ANDROID_ABI}/
+    )
+    
+    install_jar(chilitags-jni-wrapper ${ANDROID_PROJECT_ROOT}/libs/)
+    install_jar(chilitags-jni-wrapper-sources ${ANDROID_PROJECT_ROOT}/libs/)
 endif()
