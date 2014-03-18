@@ -7,6 +7,6 @@ build*/
 .directory
 samples-android/estimate3d/bin/
 samples-android/estimate3d/gen/
-samples-android/estimate3d/libs/*.jar
-samples-android/estimate3d/libs/armeabi-v7a/*.so
-.README-ANDROID.md.html
+samples-android/estimate3d/libs/
+*.md.html
+

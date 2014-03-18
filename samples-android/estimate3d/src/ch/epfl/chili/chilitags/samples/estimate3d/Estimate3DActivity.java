@@ -58,7 +58,7 @@ public class Estimate3DActivity extends Activity implements Camera.PreviewCallba
 		//A simple camera calibration based on a lot of assumptions
 		double[] cc = {
 				540*processingWidth/preferredSize.width,	0,											processingWidth/2,
-				0,											540*processingWidth/preferredSize.width,	processingHeight/2,
+				0,											540*processingHeight/preferredSize.height,	processingHeight/2,
 				0,											0,											1}; 
 		double[] dc = {};
 		chilitags.setCalibration(cc,dc);

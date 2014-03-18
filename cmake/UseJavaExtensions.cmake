@@ -28,6 +28,7 @@ function(add_jar_no_compile _TARGET_NAME)
     set(CMAKE_JAVA_TARGET_OUTPUT_NAME)
 
     #Prepare source files
+    add_custom_target("${_TARGET_NAME}_COPY")
     set(_JAVA_RESOURCE_FILES)
     foreach(_JAVA_SOURCE_FILE ${_JAVA_SOURCE_FILES})
     
@@ -37,9 +38,12 @@ function(add_jar_no_compile _TARGET_NAME)
         SET(_JAVA_RESOURCE_FILES ${_JAVA_RESOURCE_FILES} ${_JAVA_SOURCE_FILE_RELATIVE})
     
         #Copy source files to build directory so that they can be found during creation of jar
-        __java_copy_file(${CMAKE_CURRENT_SOURCE_DIR}/${_JAVA_SOURCE_FILE_RELATIVE}
-                             ${CMAKE_CURRENT_BINARY_DIR}/${_JAVA_SOURCE_FILE_RELATIVE}
-                             "Copying ${_JAVA_SOURCE_FILE_RELATIVE} to the build directory")
+        #They need to be in the local directory to be put inside the correct directories in the jar
+        add_custom_command(TARGET "${_TARGET_NAME}_COPY" PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy 
+            ${CMAKE_CURRENT_SOURCE_DIR}/${_JAVA_SOURCE_FILE_RELATIVE} 
+            ${CMAKE_CURRENT_BINARY_DIR}/${_JAVA_SOURCE_FILE_RELATIVE}
+        )
     endforeach(_JAVA_SOURCE_FILE)
 
     # create the jar file
@@ -55,7 +59,7 @@ function(add_jar_no_compile _TARGET_NAME)
             -D_JAVA_TARGET_OUTPUT_LINK=${_JAVA_TARGET_OUTPUT_LINK}
             -P ${_JAVA_SYMLINK_SCRIPT}
         WORKING_DIRECTORY ${CMAKE_JAVA_CLASS_OUTPUT_PATH}
-        DEPENDS ${_JAVA_RESOURCE_FILES}
+        DEPENDS "${_TARGET_NAME}_COPY"
         COMMENT "Creating Java archive ${_JAVA_TARGET_OUTPUT_NAME}"
     )
 
