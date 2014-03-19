@@ -93,10 +93,13 @@ something on.
 
 - `CameraPreviewRenderer.java` - Contains all the GLES specific code that does
 image rendering, including the YUV-RGB conversion code and the tag frame arrow
-calculations. 
+calculations. Based on the following code: 
+[YUV to RGB conversion by fragment shader](http://stackoverflow.com/questions/12130790/yuv-to-rgb-conversion-by-fragment-shader/17615696#17615696)
 
 - `Estimate3DGUIActivity.java` - The main Activity, initializes all objects.
 
-- `GLESLine.java` - Contains all the code specific to line rendering. 
+- `GLESLine.java` - Contains all the code specific to line rendering. Based
+on the following code: [What is the easiest way to draw line using OpenGL-ES 
+(android)](http://stackoverflow.com/questions/16027455/what-is-the-easiest-way-to-draw-line-using-opengl-es-android/16223456#16223456)
 
 

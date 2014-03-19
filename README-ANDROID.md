@@ -3,7 +3,8 @@ Building the Chilitags library for Android
 
 This document gives the complete instructions on cross-compiling OpenCV and
 consequently Chilitags for Android. It was tested with android-ndk-r9c, Android
-SDK Tools revision 22.3 and OpenCV 2.4.8.2 under Ubuntu 12.04 64-bits.
+SDK Tools revision 22.3 and both with OpenCV 2.4.8.2 and 3.0-ocl-tp2 under 
+Ubuntu 12.04 64-bits.
 
 The build is CMake exclusive and does not rely on ndk-build and on the OpenCV
 Android SDK for relying on ndk-build. In the end, it relies on the developer
