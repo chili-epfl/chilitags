@@ -141,7 +141,7 @@ JNI(jobjectArray,estimateImpl)(JNIEnv* env, jclass* class_, jlong ptr, jbyteArra
 
 		//YUV_NV21 image contains 12 bits per pixel, hence the weird resolution
 		cv::Mat original(Chilitags3D_height + Chilitags3D_height/2, Chilitags3D_width, CV_8UC1, ubuffer);
-		cv::cvtColor(original,Chilitags3D_grayscale,CV_YUV2GRAY_NV21);
+		cv::cvtColor(original,Chilitags3D_grayscale,cv::COLOR_YUV2GRAY_NV21);
 		cv::resize(Chilitags3D_grayscale,Chilitags3D_downsampled,cv::Size(Chilitags3D_processingWidth,Chilitags3D_processingHeight));
 		break;
 	}
@@ -149,7 +149,7 @@ JNI(jobjectArray,estimateImpl)(JNIEnv* env, jclass* class_, jlong ptr, jbyteArra
 	case 1: //RGB565
 
 		cv::Mat original(Chilitags3D_height, Chilitags3D_width, CV_8UC2, ubuffer);
-		cv::cvtColor(original,Chilitags3D_grayscale,CV_BGR5652GRAY); //We are actually sending RGB565 but since it's going to be grayscaled, it shouldn't be a problem
+		cv::cvtColor(original,Chilitags3D_grayscale,cv::COLOR_BGR5652GRAY); //We are actually sending RGB565 but since it's going to be grayscaled, it shouldn't be a problem
 		cv::resize(Chilitags3D_grayscale,Chilitags3D_downsampled,cv::Size(Chilitags3D_processingWidth,Chilitags3D_processingHeight));
 		break;
 	}
