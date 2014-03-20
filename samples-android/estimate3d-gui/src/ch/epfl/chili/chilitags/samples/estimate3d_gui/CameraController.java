@@ -2,7 +2,6 @@ package ch.epfl.chili.chilitags.samples.estimate3d_gui;
 
 import java.util.List;
 
-import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 
