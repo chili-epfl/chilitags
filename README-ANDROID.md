@@ -184,7 +184,7 @@ following command takes care of it:
 cd $OpenCV_DIR/../libs/armeabi-v7a/
 cp libopencv_calib3d.so libopencv_core.so libopencv_features2d.so \
 	libopencv_flann.so libopencv_highgui.so libopencv_imgproc.so \
-	libopencv_info.so <YOUR_ANDROID_PROJECT>/libs/armeabi-v7a/
+	<YOUR_ANDROID_PROJECT>/libs/armeabi-v7a/
 ```
 
 After this, your Android project should contain a `libs` directory that looks
@@ -201,8 +201,7 @@ like the following:
 │   │   ├── libopencv_features2d.so
 │   │   ├── libopencv_flann.so
 │   │   ├── libopencv_highgui.so
-│   │   ├── libopencv_imgproc.so
-│   │   └── libopencv_info.so
+│   │   └── libopencv_imgproc.so
 │   ├── chilitags-jni-wrapper.jar
 │   └── chilitags-jni-wrapper-sources.jar
 ...

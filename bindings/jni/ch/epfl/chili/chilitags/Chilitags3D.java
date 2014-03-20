@@ -32,7 +32,8 @@ public class Chilitags3D {
 	 */
 	public enum InputType{
 		YUV_NV21,
-		RGB565
+		RGB565,
+		RGB888
 	}
 	
 	/**
@@ -45,7 +46,6 @@ public class Chilitags3D {
 		System.loadLibrary("opencv_flann");
 		System.loadLibrary("opencv_features2d");
 		System.loadLibrary("opencv_calib3d");
-		System.loadLibrary("opencv_info");
 		System.loadLibrary("chilitags");
 		System.loadLibrary("chilitags_jni_bindings");
 	}
@@ -123,31 +123,3 @@ public class Chilitags3D {
 		return estimateImpl(ptr,imageData);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

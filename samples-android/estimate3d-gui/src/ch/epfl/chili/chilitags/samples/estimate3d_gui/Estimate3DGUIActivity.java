@@ -24,9 +24,9 @@ public class Estimate3DGUIActivity extends Activity {
 		
 		//A simple camera calibration based on a lot of assumptions
 		double[] cc = {
-				540*camController.processingWidth/camController.cameraWidth,	0,																camController.processingWidth/2,
-				0,																540*camController.processingHeight/camController.cameraHeight,	camController.processingHeight/2,
-				0,																0,																1}; 
+				270,	0,		camController.processingWidth/2,
+				0,		270,	camController.processingHeight/2,
+				0,		0,		1}; 
 		double[] dc = {};
 		chilitags.setCalibration(cc,dc);
 	

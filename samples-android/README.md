@@ -26,7 +26,6 @@ is inside the Chilitags project directory. Then, adapt the following line:
 ```
 cp libopencv_calib3d.so libopencv_core.so libopencv_features2d.so \
 	libopencv_flann.so libopencv_highgui.so libopencv_imgproc.so \
-	libopencv_info.so \
 	<CHILITAGS_PROJECT_DIR>/samples-android/estimate3d/libs/armeabi-v7a/
 ```
 
@@ -45,8 +44,7 @@ the following:
 │   │   ├── libopencv_features2d.so
 │   │   ├── libopencv_flann.so
 │   │   ├── libopencv_highgui.so
-│   │   ├── libopencv_imgproc.so
-│   │   └── libopencv_info.so
+│   │   └── libopencv_imgproc.so
 │   ├── chilitags-jni-wrapper.jar
 │   └── chilitags-jni-wrapper-sources.jar
 ...

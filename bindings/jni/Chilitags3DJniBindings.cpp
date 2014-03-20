@@ -45,6 +45,7 @@ JNI(jlong,alloc)(JNIEnv* env, jclass* class_, jint width, jint height, jint proc
 	switch(inputType){
 	case 0: //YUV_NV21
 	case 1: //RGB565
+	case 2: //RGB888
 		Chilitags3D_grayscale = cv::Mat(Chilitags3D_height,Chilitags3D_width,CV_8UC1);
 		Chilitags3D_downsampled = cv::Mat(Chilitags3D_processingHeight,Chilitags3D_processingWidth,CV_8UC1);
 		break;
@@ -145,13 +146,20 @@ JNI(jobjectArray,estimateImpl)(JNIEnv* env, jclass* class_, jlong ptr, jbyteArra
 		cv::resize(Chilitags3D_grayscale,Chilitags3D_downsampled,cv::Size(Chilitags3D_processingWidth,Chilitags3D_processingHeight));
 		break;
 	}
-
-	case 1: //RGB565
+	case 1:{ //RGB565
 
 		cv::Mat original(Chilitags3D_height, Chilitags3D_width, CV_8UC2, ubuffer);
 		cv::cvtColor(original,Chilitags3D_grayscale,cv::COLOR_BGR5652GRAY); //We are actually sending RGB565 but since it's going to be grayscaled, it shouldn't be a problem
 		cv::resize(Chilitags3D_grayscale,Chilitags3D_downsampled,cv::Size(Chilitags3D_processingWidth,Chilitags3D_processingHeight));
 		break;
+	}
+	case 2:{ //RGB888
+
+		cv::Mat original(Chilitags3D_height, Chilitags3D_width, CV_8UC3, ubuffer);
+		cv::cvtColor(original,Chilitags3D_grayscale,cv::COLOR_RGB2GRAY);
+		cv::resize(Chilitags3D_grayscale,Chilitags3D_downsampled,cv::Size(Chilitags3D_processingWidth,Chilitags3D_processingHeight));
+		break;
+	}
 	}
 
 	//Call Chilitags' estimate on the grayscale image
