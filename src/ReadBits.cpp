@@ -97,46 +97,45 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
     {
         for (int j = 0; j < DATA_SIZE; ++j)
         {
-            std::cout << (int) mMatrix[i*DATA_SIZE + j];
+            std::cout << (int) mBits[i*DATA_SIZE + j];
         }
         std::cout << "\n";
     }
     std::cout << std::endl;
-
 #define ZOOM_FACTOR 10
 
     cv::Mat debugImage = inputImage.clone();
 
     cv::Mat tag;
-    cv::resize(inputImage(boundingRect(mCorners->toVector())), tag, cv::Size(0,0), ZOOM_FACTOR, ZOOM_FACTOR, cv::INTER_NEAREST);
+    cv::resize(inputRoi, tag, cv::Size(0,0), ZOOM_FACTOR, ZOOM_FACTOR, cv::INTER_NEAREST);
     cv::cvtColor(tag, tag, cv::COLOR_GRAY2BGR);
 
     for (int i = 0; i < DATA_SIZE; ++i)
     {
         for (int j = 0; j < DATA_SIZE; ++j)
         {
-            cv::Point2f position = transformedSamplePoints[i*DATA_SIZE + j];
+            cv::Point2f position = mTransformedSamplePoints[i*DATA_SIZE + j];
             cv::circle(tag, position * ZOOM_FACTOR, 1,
                        cv::Scalar(0,255,0),2);
             cv::circle(tag, position * ZOOM_FACTOR, 3,
-                       cv::Scalar::all(mMatrix[i*DATA_SIZE + j]*255),2);
+                       cv::Scalar::all(mBits[i*DATA_SIZE + j]*255),2);
         }
     }
 
-    cv::circle(tag, cornersCopy[0] * ZOOM_FACTOR, 3, cv::Scalar(255,0,0),2);
+    cv::circle(tag, *cornersCopy[0] * ZOOM_FACTOR, 3, cv::Scalar(255,0,0),2);
 
-    cv::line(tag, cornersCopy[0]*ZOOM_FACTOR, cornersCopy[1]*ZOOM_FACTOR,cv::Scalar(255,0,0));
-    cv::line(tag, cornersCopy[1]*ZOOM_FACTOR, cornersCopy[2]*ZOOM_FACTOR,cv::Scalar(255,0,255));
-    cv::line(tag, cornersCopy[2]*ZOOM_FACTOR, cornersCopy[3]*ZOOM_FACTOR,cv::Scalar(255,0,255));
-    cv::line(tag, cornersCopy[3]*ZOOM_FACTOR, cornersCopy[0]*ZOOM_FACTOR,cv::Scalar(255,0,255));
+    cv::line(tag, *cornersCopy[0]*ZOOM_FACTOR, *cornersCopy[1]*ZOOM_FACTOR,cv::Scalar(255,0,0));
+    cv::line(tag, *cornersCopy[1]*ZOOM_FACTOR, *cornersCopy[2]*ZOOM_FACTOR,cv::Scalar(255,0,255));
+    cv::line(tag, *cornersCopy[2]*ZOOM_FACTOR, *cornersCopy[3]*ZOOM_FACTOR,cv::Scalar(255,0,255));
+    cv::line(tag, *cornersCopy[3]*ZOOM_FACTOR, *cornersCopy[0]*ZOOM_FACTOR,cv::Scalar(255,0,255));
 
-    cv::line(tag, cornersCopy[2]*ZOOM_FACTOR, cornersCopy[0]*ZOOM_FACTOR,cv::Scalar(255,0,255));
-    cv::line(tag, cornersCopy[3]*ZOOM_FACTOR, cornersCopy[1]*ZOOM_FACTOR,cv::Scalar(255,0,255));
+    cv::line(tag, *cornersCopy[2]*ZOOM_FACTOR, *cornersCopy[0]*ZOOM_FACTOR,cv::Scalar(255,0,255));
+    cv::line(tag, *cornersCopy[3]*ZOOM_FACTOR, *cornersCopy[1]*ZOOM_FACTOR,cv::Scalar(255,0,255));
 
-    cv::line(debugImage, cornersCopy[0]+origin, cornersCopy[1]+origin,cv::Scalar(255,0,255));
-    cv::line(debugImage, cornersCopy[1]+origin, cornersCopy[2]+origin,cv::Scalar(255,0,255));
-    cv::line(debugImage, cornersCopy[2]+origin, cornersCopy[3]+origin,cv::Scalar(255,0,255));
-    cv::line(debugImage, cornersCopy[3]+origin, cornersCopy[0]+origin,cv::Scalar(255,0,255));
+    cv::line(debugImage, *cornersCopy[0]+origin, *cornersCopy[1]+origin,cv::Scalar(255,0,255));
+    cv::line(debugImage, *cornersCopy[1]+origin, *cornersCopy[2]+origin,cv::Scalar(255,0,255));
+    cv::line(debugImage, *cornersCopy[2]+origin, *cornersCopy[3]+origin,cv::Scalar(255,0,255));
+    cv::line(debugImage, *cornersCopy[3]+origin, *cornersCopy[0]+origin,cv::Scalar(255,0,255));
 
 
     cv::imshow("ReadBits-full", debugImage);
