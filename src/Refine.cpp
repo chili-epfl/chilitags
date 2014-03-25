@@ -39,7 +39,7 @@ chilitags::Quad chilitags::Refine::operator()(const cv::Mat &inputImage, const Q
     cv::Mat_<cv::Point2f> refinedQuad(quad);
 
     // Taking a ROI around the raw corners with some margin
-    static const float GROWTH_RATIO = 2.0f/10.0f;
+    static const float GROWTH_RATIO = 1.2f/10.0f;
     cv::Rect roi = cv::boundingRect(refinedQuad);
     int xGrowth = (int)(GROWTH_RATIO*roi.width);
     int yGrowth = (int)(GROWTH_RATIO*roi.height);
