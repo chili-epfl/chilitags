@@ -70,6 +70,13 @@ std::vector< TestCase > all = {
     {"stills/1600x1200/thesis04.jpg",
         {573,574,575,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597,598,599,1022},
         {}},
+    {"stills/640x480/issue22.jpg",
+        {51},
+#ifdef EXPERIMENTAL_LSD
+        {51}},
+#else
+        {}},
+#endif
     {"stills/640x480/severin01.jpg",
         {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19},
 #ifdef EXPERIMENTAL_LSD
