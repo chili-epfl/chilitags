@@ -18,16 +18,9 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 option(WITH_TOOLS       "provides the marker generation tool" ON)
 option(WITH_SAMPLES     "compile misc demos" OFF)
 option(WITH_TESTS       "build tests" OFF)
-option(EXPERIMENTAL_LSD "Detects quad with the LineSegmentDetector algorithm (requires OpenCV3)" OFF)
 
 if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
     add_definitions(-DOPENCV3)
-else()
-    set(EXPERIMENTAL_LSD OFF)
-endif()
-
-if (EXPERIMENTAL_LSD)
-    add_definitions(-DEXPERIMENTAL_LSD)
 endif()
 
 include_directories(include)

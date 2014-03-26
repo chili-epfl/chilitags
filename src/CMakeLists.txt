@@ -1,17 +1,5 @@
 file(GLOB_RECURSE chilitags_source *.cpp)
 
-if (EXPERIMENTAL_LSD)
-    list(REMOVE_ITEM
-		chilitags_source
-		${CMAKE_CURRENT_SOURCE_DIR}/FindQuads.cpp
-	)
-else ()
-    list(REMOVE_ITEM
-		chilitags_source
-		${CMAKE_CURRENT_SOURCE_DIR}/FindQuadsWithLSD.cpp
-	)
-endif()
-
 add_library(
         chilitags
         SHARED

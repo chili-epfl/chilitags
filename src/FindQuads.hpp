@@ -23,10 +23,6 @@
 #include <vector>
 #include <opencv2/core/core.hpp>
 
-#ifdef EXPERIMENTAL_LSD
-#include <opencv2/imgproc/imgproc.hpp> // LineSegmentDetector
-#endif
-
 namespace chilitags {
 
 typedef cv::Matx<float, 4, 2> Quad;
@@ -40,14 +36,8 @@ std::vector<Quad> operator()(const cv::Mat &greyscaleImage);
 
 protected:
 
-#ifndef EXPERIMENTAL_LSD
 std::vector<cv::Mat> mGrayPyramid;
 std::vector<cv::Mat> mBinaryPyramid;
-#else
-cv::Ptr<cv::LineSegmentDetector> lsd;
-#endif
-
-
 
 };
 
