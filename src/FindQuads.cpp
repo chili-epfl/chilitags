@@ -44,7 +44,8 @@ void drawContour(cv::Mat &image, cv::Mat &contour, cv::Scalar color, cv::Point o
 }
 
 chilitags::FindQuads::FindQuads() :
-    mBinaryImage()
+    mGrayPyramid(),
+    mBinaryPyramid()
 {
 #ifdef DEBUG_FindQuads
     cv::namedWindow("FindQuads");
@@ -53,30 +54,49 @@ chilitags::FindQuads::FindQuads() :
 
 std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &greyscaleImage)
 {
-    cv::Canny(greyscaleImage, mBinaryImage, 100, 200, 3);
-
     //TODO function too long, split it
 
     std::vector<Quad> quads;
 #ifdef DEBUG_FindQuads
     cv::RNG rNG( 0xFFFFFFFF );
-    cv::Mat debugImage = cv::Mat::zeros(cv::Size(2*mBinaryImage.cols, mBinaryImage.rows), CV_8UC3);
+    cv::Mat debugImage = cv::Mat::zeros(
+        cv::Size(2*greyscaleImage.cols, greyscaleImage.rows),
+        CV_8UC3);
 #endif
 
-    mScaledCopies[0] = mBinaryImage;
-    for (int i = 1; i < SCALED_COPIES_COUNT; ++i) {
-        cv::pyrDown(mScaledCopies[i-1], mScaledCopies[i]);
+    int nPyramidLevel = 0;
+    //TODO make 320 a parameter. This could be part of a set of parameters
+    // controlled by a tradeoff between speed and detection specified by the
+    // users
+    // Not that it would be a micro optimisation to be honnest... what takes
+    // times is the bigger images in the pyramid obviously
+    while ((greyscaleImage.cols >> nPyramidLevel) > 320) {
+        ++nPyramidLevel;
+    }
+    ++nPyramidLevel;
+
+    while (mGrayPyramid.size() < nPyramidLevel) mGrayPyramid.push_back(cv::Mat());
+    mGrayPyramid[0] = greyscaleImage;
+    for (int i = 1; i < nPyramidLevel; ++i) {
+        cv::pyrDown(mGrayPyramid[i-1], mGrayPyramid[i]);
     }
 
-    for (int i = SCALED_COPIES_COUNT-1; i>=0; --i) //starting with the lowest definition, so the highest definition are last, and can simply override the first ones.
+    while (mBinaryPyramid.size() < nPyramidLevel) mBinaryPyramid.push_back(cv::Mat());
+    for (int i = 0; i < nPyramidLevel; ++i) {
+        cv::Canny(mGrayPyramid[i], mBinaryPyramid[i], 100, 200, 3);
+        // Better, but 2x slower:
+        //cv::Canny(mGrayPyramid[i], mBinaryPyramid[i], 1000, 500, 5);
+    }
+
+    for (int i = nPyramidLevel-1; i>=0; --i) //starting with the lowest definition, so the highest definition are last, and can simply override the first ones.
     {
         int scale = 1 << i;
 #ifdef DEBUG_FindQuads
-        cv::Point offset(debugImage.cols-2*mScaledCopies[i].cols,0);
+        cv::Point offset(debugImage.cols-2*mBinaryPyramid[i].cols,0);
         cv::rectangle(debugImage, cv::Rect(offset.x, offset.y, greyscaleImage.cols/scale, greyscaleImage.rows/scale), cv::Scalar::all(255));
 #endif
         std::vector<std::vector<cv::Point> > contours;
-        cv::findContours(mScaledCopies[i], contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+        cv::findContours(mBinaryPyramid[i], contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
         for (std::vector<std::vector<cv::Point> >::iterator contour = contours.begin();
              contour != contours.end();

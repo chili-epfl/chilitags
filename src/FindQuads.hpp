@@ -41,9 +41,8 @@ std::vector<Quad> operator()(const cv::Mat &greyscaleImage);
 protected:
 
 #ifndef EXPERIMENTAL_LSD
-cv::Mat mBinaryImage;
-static const int SCALED_COPIES_COUNT = 3;
-cv::Mat mScaledCopies[SCALED_COPIES_COUNT];
+std::vector<cv::Mat> mGrayPyramid;
+std::vector<cv::Mat> mBinaryPyramid;
 #else
 cv::Ptr<cv::LineSegmentDetector> lsd;
 #endif
