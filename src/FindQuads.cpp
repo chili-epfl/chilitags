@@ -108,7 +108,7 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
             if (perimeter > 4*MIN_TAG_SIZE && area > MIN_TAG_SIZE*MIN_TAG_SIZE)
             {
                 cv::Mat approxContour;
-                cv::approxPolyDP( *contour, approxContour, perimeter*0.02, true);
+                cv::approxPolyDP( *contour, approxContour, perimeter*0.05, true);
 
                 cv::Mat normalisedContour;
                 cv::convexHull(approxContour, normalisedContour, false);
