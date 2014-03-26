@@ -64,6 +64,10 @@ std::map<int, Quad> find(const cv::Mat &inputImage){
         auto refinedQuad = mRefine(greyscaleImage, quad);
         auto tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
         if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
+        else {
+            tag = mDecode(mReadBits(greyscaleImage, quad), quad);
+            if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
+        }
     }
     return mFilter(tags);
 };
