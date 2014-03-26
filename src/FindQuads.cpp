@@ -28,7 +28,7 @@
 
 namespace {
 const int MATRIX_SIZE = 10;
-const int MIN_TAG_SIZE = 1.2*MATRIX_SIZE;
+const int MIN_TAG_SIZE = 1.1*MATRIX_SIZE;
 
 #ifdef DEBUG_FindQuads
 void drawContour(cv::Mat &image, cv::Mat &contour, cv::Scalar color, cv::Point offset) {
