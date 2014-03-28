@@ -13,19 +13,19 @@ public class GLESLine {
 	//Our vertex shader code, nothing exciting here
 	private final String vertexShaderSource =
 			"attribute vec4 a_position;		\n" +
-			"void main() {					\n" +
-			"  gl_Position = a_position;	\n" +
-			"}								\n";
+					"void main() {					\n" +
+					"  gl_Position = a_position;	\n" +
+					"}								\n";
 
 	//Our fragment shader code, nothing exciting here either
 	private final String fragmentShaderSource =
 			"#ifdef GL_ES					\n" +
-			"precision highp float;			\n" +
-			"#endif							\n" +
-			"uniform vec4 v_color;			\n" +
-			"void main() {					\n" +
-			"  gl_FragColor = v_color;		\n" +
-			"}								\n";
+					"precision highp float;			\n" +
+					"#endif							\n" +
+					"uniform vec4 v_color;			\n" +
+					"void main() {					\n" +
+					"  gl_FragColor = v_color;		\n" +
+					"}								\n";
 
 	protected int shaderProgramHandle; //Our shader program
 	protected int positionHandle; //The handle to the a_position  attribute
@@ -44,7 +44,7 @@ public class GLESLine {
 	 * Creates a new GLES line object.
 	 */
 	public GLESLine(){
-		
+
 		//Allocate space for our line coordinates in native space instead of JVM heap
 		ByteBuffer buf = ByteBuffer.allocateDirect(4*4);
 		buf.order(ByteOrder.nativeOrder());
@@ -53,9 +53,6 @@ public class GLESLine {
 		vertexBuffer = buf.asFloatBuffer();
 		vertexBuffer.put(lineCoords);
 		vertexBuffer.position(0);
-
-		//Compile and load our simple shader
-		shaderProgramHandle = CameraPreviewRenderer.loadProgram(vertexShaderSource, fragmentShaderSource); 
 	}
 
 	/**
@@ -92,10 +89,19 @@ public class GLESLine {
 	}
 
 	/**
+	 * Begins the usage of this line in this frame in time. Call before calling draw().
+	 */
+	public void begin(){
+		
+		//Compile and load our simple shader
+		shaderProgramHandle = CameraPreviewRenderer.loadProgram(vertexShaderSource, fragmentShaderSource);
+	}
+
+	/**
 	 * Draws this line.
 	 */
-	public void draw() {
-		
+	public void draw() { 
+
 		//Use our shader
 		GLES20.glUseProgram(shaderProgramHandle);
 

@@ -36,11 +36,14 @@ public class CameraPreviewRenderer implements GLSurfaceView.Renderer {
 	private IntBuffer parameterBufferWidth;
 	private IntBuffer parameterBufferHeigth;
 
+	//Our line object
+	private GLESLine line;
+	
 	//Our vertex shader code; nothing special
 	private final String vertexShaderSource = 
 			"attribute vec4 a_position;							\n" + 
-					"attribute vec2 a_texCoord;							\n" + 
-					"varying vec2 v_texCoord;							\n" + 
+			"attribute vec2 a_texCoord;							\n" + 
+			"varying vec2 v_texCoord;							\n" + 
 
 			"void main(){										\n" + 
 			"   gl_Position = a_position;						\n" + 
@@ -136,6 +139,9 @@ public class CameraPreviewRenderer implements GLSurfaceView.Renderer {
 		yBuffer = ByteBuffer.allocateDirect(camController.cameraWidth*camController.cameraHeight).order(ByteOrder.nativeOrder());
 		uvBuffer = ByteBuffer.allocateDirect(camController.cameraWidth*camController.cameraHeight/2).order(ByteOrder.nativeOrder()); //We have (width/2*height/2) pixels, each pixel is 2 bytes
 
+		//Allocate our line object
+		line = new GLESLine();
+		
 		/*
 		 * Prepare the transforms we will use
 		 */
@@ -244,6 +250,8 @@ public class CameraPreviewRenderer implements GLSurfaceView.Renderer {
 		final double[] WORLD_ARROW_Y = 		{0.0,			TAG_SIZE,	0.0,		1.0};
 		final double[] WORLD_ARROW_Z = 		{0.0,			0.0,		TAG_SIZE,	1.0};
 		
+		line.begin();
+		
 		for(ObjectTransform tag : tags){
 
 			/*
@@ -279,8 +287,6 @@ public class CameraPreviewRenderer implements GLSurfaceView.Renderer {
 			/*
 			 * Draw the arrows
 			 */
-			
-			GLESLine line = new GLESLine();
 			
 			//Draw the X arrow
 			line.setColor(1.0f, 0.0f, 0.0f, 1.0f);
