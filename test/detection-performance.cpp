@@ -231,6 +231,7 @@ TEST(Integration, Snapshots) {
         
     }
 
+    chilitags.setCornerRefinement(false);
     map<int, vector<double> > perfDurations;
     map<int, int > perfFalseNegatives;
     int perfTotalFalseNegatives = 0;

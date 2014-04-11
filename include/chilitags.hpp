@@ -78,6 +78,14 @@ Chilitags();
 void setFilter(int persistence, double gain);
 
 /**
+    Enable or disable the corner refinement. It is enabled (true) by default.
+    When disabled, the processing time is reduced by ~33%, but the coordinates
+    of the tags lose their sub-pixel precision, and there is a marginally
+    higher level of false negatives.
+ */
+void setCornerRefinement(bool refineCorners);
+
+/**
     This is the main method of Chilitags.
 
     \returns the detected tags, in the form of a mapping between their id's and

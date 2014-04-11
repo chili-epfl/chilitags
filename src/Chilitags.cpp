@@ -31,6 +31,8 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include <iostream>
+
 // The class that takes care of all the detection of Chilitags.
 namespace chilitags {
 
@@ -47,7 +49,9 @@ Impl() :
     mReadBits(),
     mDecode(),
 
-    mFilter(5, 0.)
+    mFilter(5, 0.),
+
+    mRefineCorners(true)
 {
 }
 
@@ -56,17 +60,30 @@ void setFilter(int persistence, double gain) {
     mFilter.setGain(gain);
 }
 
+void setCornerRefinement(bool refineCorners) {
+    mRefineCorners = refineCorners;
+}
+
+
 std::map<int, Quad> find(const cv::Mat &inputImage){
     auto greyscaleImage = mEnsureGreyscale(inputImage);
 
     std::map<int, Quad> tags;
 
-    for (const auto & quad : mFindQuads(greyscaleImage)) {
-        auto refinedQuad = mRefine(greyscaleImage, quad);
-        auto tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
-        if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
-        else {
-            tag = mDecode(mReadBits(greyscaleImage, quad), quad);
+    if (mRefineCorners) {
+        for (const auto & quad : mFindQuads(greyscaleImage)) {
+            auto refinedQuad = mRefine(greyscaleImage, quad);
+            auto tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
+            if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
+            else {
+                tag = mDecode(mReadBits(greyscaleImage, quad), quad);
+                if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
+            }
+        }
+    }
+    else {
+        for (const auto & quad : mFindQuads(greyscaleImage)) {
+            auto tag = mDecode(mReadBits(greyscaleImage, quad), quad);
             if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
         }
     }
@@ -129,8 +146,9 @@ Decode mDecode;
 
 Filter<int, Quad> mFilter;
 
-};
+bool mRefineCorners;
 
+};
 
 Chilitags::Chilitags() :
     mImpl(new Impl())
@@ -139,6 +157,10 @@ Chilitags::Chilitags() :
 
 void Chilitags::setFilter(int persistence, double gain) {
     mImpl->setFilter(persistence, gain);
+}
+
+void Chilitags::setCornerRefinement(bool refineCorners) {
+    mImpl->setCornerRefinement(refineCorners);
 }
 
 std::map<int, Quad> Chilitags::find(
