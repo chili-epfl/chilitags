@@ -1,9 +1,12 @@
 package ch.epfl.chili.chilitags.samples.estimate3d_gui;
 
+import java.io.IOException;
 import java.util.List;
 
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
+import android.opengl.GLES20;
 
 public class CameraController implements Camera.PreviewCallback {
 
@@ -19,6 +22,9 @@ public class CameraController implements Camera.PreviewCallback {
 	public int processingWidth; 
 	public int processingHeight;
 
+	//Dummy surface texture
+	SurfaceTexture surf;
+	
 	/**
 	 * Initializes the camera.
 	 */
@@ -56,12 +62,6 @@ public class CameraController implements Camera.PreviewCallback {
 		//Chilitags is too slow for HD so we downsample the image to a more reasonable size
 		processingWidth = cameraWidth > 640 ? 640 : cameraWidth;
 		processingHeight = cameraHeight * processingWidth / cameraWidth;
-
-		//Start the camera preview
-		camera.startPreview();
-
-		//Set the first buffer, the preview doesn't start unless we set the buffers
-		camera.addCallbackBuffer(image);
 	}
 
 	/**
@@ -73,9 +73,32 @@ public class CameraController implements Camera.PreviewCallback {
 		return image;
 	}
 
+	/**
+	 * Starts the preview; requires an OpenGL context for dummy texture creation
+	 */
+	public void startPreview(){
+
+		//Attach a dummy texture; the preview won't start otherwise on some devices
+		int[] dummyTex = new int[1];
+		GLES20.glGenTextures(1, dummyTex, 0);
+		surf = new SurfaceTexture(dummyTex[0]);
+		try {
+			camera.setPreviewTexture(surf);
+		} catch (IOException e) {e.printStackTrace();}
+
+		//Start the camera preview
+		camera.startPreview();
+
+		//Set the first buffer, the preview doesn't start unless we set the buffers
+		camera.addCallbackBuffer(image);
+	}
+
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera) {
 
+		//Dummy surface texture update
+		surf.updateTexImage();
+		
 		//Send the buffer reference to the next preview so that a new buffer is not allocated and we use the same space
 		camera.addCallbackBuffer(image);
 	}

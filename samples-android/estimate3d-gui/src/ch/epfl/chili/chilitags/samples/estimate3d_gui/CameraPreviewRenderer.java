@@ -3,7 +3,6 @@ package ch.epfl.chili.chilitags.samples.estimate3d_gui;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -181,6 +180,11 @@ public class CameraPreviewRenderer implements GLSurfaceView.Renderer {
 
 		//Clear the screen
 		GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		
+		/*
+		 * Start the camera preview
+		 */
+		camController.startPreview();
 	}
 
 	@Override
