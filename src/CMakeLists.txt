@@ -2,11 +2,11 @@ file(GLOB_RECURSE chilitags_source *.cpp)
 
 add_library(
         chilitags
-        SHARED
         ${chilitags_source}
 )
 
 target_link_libraries(chilitags ${OpenCV_LIBS})
+
 
 install (TARGETS chilitags
 	LIBRARY DESTINATION lib
