@@ -1,14 +1,22 @@
 file(GLOB_RECURSE chilitags_source *.cpp)
 
 add_library(
+        chilitags_static
+        STATIC
+        ${chilitags_source}
+)
+add_library(
         chilitags
+        SHARED
         ${chilitags_source}
 )
 
+
 target_link_libraries(chilitags ${OpenCV_LIBS})
+target_link_libraries(chilitags_static ${OpenCV_LIBS})
 
 
-install (TARGETS chilitags
+install (TARGETS chilitags chilitags_static
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
 #	PUBLIC_HEADER DESTINATION include/chilitags
