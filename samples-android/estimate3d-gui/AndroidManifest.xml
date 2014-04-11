@@ -12,7 +12,7 @@
 
     <application
         android:allowBackup="true"
-        android:label="estimate3d-gui" >
+        android:label="estimate3d-gui" android:icon="@drawable/ic_launcher">
         <activity
             android:name="ch.epfl.chili.chilitags.samples.estimate3d_gui.Estimate3DGUIActivity"
             android:label="Chilitags Samples: estimate3d-gui" 

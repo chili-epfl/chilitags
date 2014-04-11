@@ -11,7 +11,7 @@
 
     <application
         android:allowBackup="true"
-        android:label="Chilitags Samples: estimate3d">
+        android:label="Chilitags Samples: estimate3d" android:icon="@drawable/ic_launcher">
         <activity
             android:name="ch.epfl.chili.chilitags.samples.estimate3d.Estimate3DActivity"
             android:label="Chilitags Samples: estimate3d" >
