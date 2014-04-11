@@ -31,11 +31,6 @@ public class CameraPreviewRenderer implements GLSurfaceView.Renderer {
 	private int[] yTextureNames;
 	private int[] uvTextureNames;
 
-	private IntBuffer frameBuffer; //The frame buffer
-	private IntBuffer renderBuffer; //The render buffer
-	private IntBuffer parameterBufferWidth;
-	private IntBuffer parameterBufferHeigth;
-
 	//Our line object
 	private GLESLine line;
 	
@@ -160,28 +155,6 @@ public class CameraPreviewRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-
-		/*
-		 * Prepare our frame buffer and render buffer
-		 */
-		
-		frameBuffer = IntBuffer.allocate(1);
-		renderBuffer = IntBuffer.allocate(1);
-		GLES20.glEnable(GLES20.GL_TEXTURE_2D);
-		GLES20.glGenFramebuffers(1, frameBuffer);
-		GLES20.glGenRenderbuffers(1, renderBuffer);
-		GLES20.glActiveTexture(GLES20.GL_ACTIVE_TEXTURE);
-		GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer.get(0));
-		GLES20.glClear(0);
-		GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, renderBuffer.get(0));     
-		GLES20.glRenderbufferStorage(GLES20.GL_RENDERBUFFER, GLES20.GL_DEPTH_COMPONENT16, camController.cameraWidth, camController.cameraHeight);
-		parameterBufferHeigth = IntBuffer.allocate(1);
-		parameterBufferWidth = IntBuffer.allocate(1);
-		GLES20.glGetRenderbufferParameteriv(GLES20.GL_RENDERBUFFER, GLES20.GL_RENDERBUFFER_WIDTH, parameterBufferWidth);
-		GLES20.glGetRenderbufferParameteriv(GLES20.GL_RENDERBUFFER, GLES20.GL_RENDERBUFFER_HEIGHT, parameterBufferHeigth);
-		GLES20.glFramebufferRenderbuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_RENDERBUFFER, renderBuffer.get(0));
-		GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-		GLES20.glClear(0);
 
 		/*
 		 * Prepare the shader stuff
