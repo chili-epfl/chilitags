@@ -4,30 +4,16 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import ch.epfl.chili.chilitags.samples.estimate3d_gui.shader.LineShader;
+import ch.epfl.chili.chilitags.samples.estimate3d_gui.shader.Shader;
 import android.opengl.GLES20;
 
 public class GLESLine {
 
 	private FloatBuffer vertexBuffer; //The vertex buffer
 
-	//Our vertex shader code, nothing exciting here
-	private final String vertexShaderSource =
-			"attribute vec4 a_position;		\n" +
-					"void main() {					\n" +
-					"  gl_Position = a_position;	\n" +
-					"}								\n";
-
-	//Our fragment shader code, nothing exciting here either
-	private final String fragmentShaderSource =
-			"#ifdef GL_ES					\n" +
-					"precision highp float;			\n" +
-					"#endif							\n" +
-					"uniform vec4 v_color;			\n" +
-					"void main() {					\n" +
-					"  gl_FragColor = v_color;		\n" +
-					"}								\n";
-
-	protected int shaderProgramHandle; //Our shader program
+	private Shader shader; //Our line shader that paints the pixels on the line
+	
 	protected int positionHandle; //The handle to the a_position  attribute
 	protected int colorHandle; //The handle to the v_color uniform
 
@@ -45,6 +31,9 @@ public class GLESLine {
 	 */
 	public GLESLine(){
 
+		//Create out line shader
+		shader = new LineShader();
+		
 		//Allocate space for our line coordinates in native space instead of JVM heap
 		ByteBuffer buf = ByteBuffer.allocateDirect(4*4);
 		buf.order(ByteOrder.nativeOrder());
@@ -89,12 +78,11 @@ public class GLESLine {
 	}
 
 	/**
-	 * Begins the usage of this line in this frame in time. Call before calling draw().
+	 * Begins the usage of this line in the GL context.
 	 */
-	public void begin(){
+	public void load(){
 		
-		//Compile and load our simple shader
-		shaderProgramHandle = CameraPreviewRenderer.loadProgram(vertexShaderSource, fragmentShaderSource);
+		shader.load();
 	}
 
 	/**
@@ -103,17 +91,17 @@ public class GLESLine {
 	public void draw() { 
 
 		//Use our shader
-		GLES20.glUseProgram(shaderProgramHandle);
+		shader.begin();
 
 		//Get the handle to the a_position attribute of our shader code
-		positionHandle = GLES20.glGetAttribLocation(shaderProgramHandle, "a_position");
+		positionHandle = GLES20.glGetAttribLocation(shader.getHandle(), "a_position");
 
 		//Load our attribute array to the shader
 		GLES20.glEnableVertexAttribArray(positionHandle);
 		GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, 2*4, vertexBuffer);
 
 		//Get the handle to the v_color uniform of our shader code
-		colorHandle = GLES20.glGetUniformLocation(shaderProgramHandle, "v_color");
+		colorHandle = GLES20.glGetUniformLocation(shader.getHandle(), "v_color");
 
 		//Set color to the v_color uniform
 		GLES20.glUniform4fv(colorHandle, 1, color, 0);
