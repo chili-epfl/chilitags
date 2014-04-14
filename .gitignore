@@ -12,3 +12,4 @@ build*/
 /samples-android/estimate3d-gui/gen/
 /samples-android/estimate3d-gui/libs/
 *.md.html
+/Default

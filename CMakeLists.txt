@@ -41,13 +41,29 @@ option(WITH_TESTS			"build tests" OFF)
 if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider using it. 
 	option(WITH_TOOLS			        "provides the marker generation tool" OFF)
 	option(WITH_JNI_BINDINGS		    "JNI bindings compatible with ordinary Java and Android" ON)
-	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside ANDROID_PROJECT_ROOT (e.g under libs/armeabi-v7a/)" ON)
+	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" ON)
+    
+    #Set Android install path
+    set(ANDROID_PROJECT_ROOT "/path/to/android/project" CACHE STRING "The path to the root of the target Android project")
+    
+    #Environment variables required by OpenCV for Android
+    if(NOT DEFINED ENV{ANDROID_STANDALONE_TOOLCHAIN})
+        message(FATAL_ERROR "Please set the ANDROID_STANDALONE_TOOLCHAIN environment variable to your standalone toolchain root first, e.g /opt/android-toolchain")
+    endif()
+    if(NOT DEFINED ENV{ANDROID_NATIVE_API_LEVEL})
+        message(FATAL_ERROR "Please set the ANDROID_NATIVE_API_LEVEL environment variable first, e.g 14")
+    endif()
+    if(NOT DEFINED ENV{ANDROID_ABI})
+        message(FATAL_ERROR "Please define the ANDROID_ABI environment variable first, e.g armeabi-v7a")
+    endif()
+    if(NOT DEFINED ENV{ANDROID_TOOLCHAIN_NAME})
+        message(FATAL_ERROR "Please define the ANDROID_TOOLCHAIN_NAME environment variable first, e.g arm-linux-androideabi-4.8")
+    endif()
 else()
 	option(WITH_TOOLS			        "provides the marker generation tool" ON)
 	option(WITH_JNI_BINDINGS		    "JNI bindings compatible with ordinary Java and Android" OFF)
-	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside ANDROID_PROJECT_ROOT (e.g under libs/armeabi-v7a/)" OFF)
+	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" OFF)
 endif()
-
 
 if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
     add_definitions(-DOPENCV3)
@@ -98,11 +114,7 @@ if(WITH_JNI_BINDINGS)
 endif()
 
 if(ANDROID_INSTALL_LIBRARIES)
-    
-    if(NOT DEFINED ENV{ANDROID_ABI})
-        message(FATAL_ERROR "Please define the ANDROID_ABI environment variable first, e.g armeabi-v7a")
-    endif()
-    
+
     if(NOT ANDROID_PROJECT_ROOT)
         message(FATAL_ERROR "ANDROID_PROJECT_ROOT undefined, can't install libraries inside Android project.")
     endif()
