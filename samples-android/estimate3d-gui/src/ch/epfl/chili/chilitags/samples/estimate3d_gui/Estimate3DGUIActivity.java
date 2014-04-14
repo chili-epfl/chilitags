@@ -15,7 +15,7 @@ public class Estimate3DGUIActivity extends Activity {
 
 		//Create and initialize the camera controller
 		camController = new CameraController();
-		camController.init();
+		camController.onStart();
 
 		//Create the Chilitags object (which also creates its native counterpart)
 		//The default Android camera color space is YUV_NV21
@@ -37,8 +37,26 @@ public class Estimate3DGUIActivity extends Activity {
 	}
 	
 	@Override
-	protected void onDestroy(){
-		super.onDestroy();
-		camController.destroy();
+	protected void onStart(){
+		super.onStart();
+		camController.onStart();
+	}
+	
+	@Override
+	protected void onResume(){
+		super.onResume();
+		camController.onResume();
+	}
+	
+	@Override
+	protected void onPause(){
+		super.onPause();
+		camController.onPause();
+	}
+	
+	@Override
+	protected void onStop(){
+		super.onStop();
+		camController.onStop();
 	}
 }

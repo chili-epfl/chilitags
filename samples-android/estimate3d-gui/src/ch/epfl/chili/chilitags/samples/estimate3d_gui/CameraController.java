@@ -12,24 +12,28 @@ public class CameraController implements Camera.PreviewCallback {
 
 	private static byte[] image = null; //The image buffer that will hold the camera image when preview callback arrives
 
-	private Camera camera; //The camera object
+	private Camera camera = null; //The camera object
 
 	//The camera image size
-	public int cameraWidth;
-	public int cameraHeight;
+	public int cameraWidth = -1;
+	public int cameraHeight = -1;
 
 	//The image size that Chilitags will deal with
-	public int processingWidth; 
-	public int processingHeight;
+	public int processingWidth = -1; 
+	public int processingHeight = -1;
 
 	//Dummy surface texture
 	SurfaceTexture surf;
-	
-	/**
-	 * Initializes the camera.
-	 */
-	public void init(){
 
+	/**
+	 * Initializes the camera
+	 */
+	public void onStart(){
+		
+		//Only open the camera if it's not already open
+		if(camera != null)
+			return;
+		
 		//(Try to) Open the rear camera
 		camera = Camera.open(0);
 
@@ -51,7 +55,8 @@ public class CameraController implements Camera.PreviewCallback {
 		params.setPreviewSize(cameraWidth,cameraHeight); 
 
 		//Our YUV image is 12 bits per pixel
-		image = new byte[cameraHeight*cameraWidth/8*12];
+		if(image == null)
+			image = new byte[cameraHeight*cameraWidth/8*12];
 
 		//Tell camera to autofocus continuously
 		params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
@@ -65,6 +70,29 @@ public class CameraController implements Camera.PreviewCallback {
 	}
 
 	/**
+	 * Starts the preview
+	 */
+	public void onResume() {
+		startPreview();
+	}
+
+	/**
+	 * Stops the preview and detaches the dummy texture
+	 */
+	public void onPause() {
+		detachDummyTexture();
+		stopPreview();
+	}
+
+	/**
+	 * Releases the camera
+	 */
+	public void onStop() {
+		camera.release();
+		camera = null;
+	}
+	
+	/**
 	 * Gets the camera image.
 	 * 
 	 * @return The latest camera image
@@ -73,39 +101,57 @@ public class CameraController implements Camera.PreviewCallback {
 		return image;
 	}
 
+	@Override
+	public void onPreviewFrame(byte[] data, Camera camera) {
+
+		//Dummy surface texture update
+		if(surf != null)
+			surf.updateTexImage();
+
+		//Send the buffer reference to the next preview so that a new buffer is not allocated and we use the same space
+		camera.addCallbackBuffer(image);
+	}
+
 	/**
 	 * Starts the preview; requires an OpenGL context for dummy texture creation
 	 */
 	public void startPreview(){
-
-		//Attach a dummy texture; the preview won't start otherwise on some devices
-		int[] dummyTex = new int[1];
-		GLES20.glGenTextures(1, dummyTex, 0);
-		surf = new SurfaceTexture(dummyTex[0]);
-		try {
-			camera.setPreviewTexture(surf);
-		} catch (IOException e) {e.printStackTrace();}
-
-		//Start the camera preview
 		camera.startPreview();
 
 		//Set the first buffer, the preview doesn't start unless we set the buffers
 		camera.addCallbackBuffer(image);
 	}
 
-	@Override
-	public void onPreviewFrame(byte[] data, Camera camera) {
-
-		//Dummy surface texture update
-		surf.updateTexImage();
-		
-		//Send the buffer reference to the next preview so that a new buffer is not allocated and we use the same space
-		camera.addCallbackBuffer(image);
-	}
-
-	public void destroy() {
+	/**
+	 * Stops the preview and frees the camera
+	 */
+	public void stopPreview(){
 		camera.stopPreview();
 		camera.setPreviewCallbackWithBuffer(null);
-		camera.release();
 	}
+
+	/**
+	 * Attaches a dummy texture to the camera; the preview won't start otherwise on some devices.
+	 * We need a GL context in order to call this!
+	 */
+	public void attachDummyTexture(){
+		if(surf == null){
+			int[] dummyTex = new int[1];
+			GLES20.glGenTextures(1, dummyTex, 0);
+			surf = new SurfaceTexture(dummyTex[0]);
+			try {
+				camera.setPreviewTexture(surf);
+			} catch (IOException e) {e.printStackTrace();}
+		}
+	}
+
+	/**
+	 * Detaches the dummy texture to free GPU memory
+	 */
+	public void detachDummyTexture(){
+		if(surf != null){
+			surf.detachFromGLContext();
+			surf = null;
+		}
+	}	
 }

@@ -182,11 +182,11 @@ public class CameraPreviewRenderer implements GLSurfaceView.Renderer {
 		GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		
 		/*
-		 * Start the camera preview
+		 * Attach the dummy texture to the camera now that we have a GL context
 		 */
-		camController.startPreview();
+		camController.attachDummyTexture();
 	}
-
+	
 	@Override
 	public void onSurfaceChanged(GL10 unused, int width, int height) {
 		GLES20.glActiveTexture(GLES20.GL_ACTIVE_TEXTURE);
