@@ -1,15 +1,17 @@
+#Build caches
 build*/
-/libs
-/bin
+bin/
+gen/
+libs/
+
+#Eclipse files
 /.cproject
 /.project
 .settings
 .directory
-/samples-android/estimate3d/bin/
-/samples-android/estimate3d/gen/
-/samples-android/estimate3d/libs/
-/samples-android/estimate3d-gui/bin/
-/samples-android/estimate3d-gui/gen/
-/samples-android/estimate3d-gui/libs/
+
+#Markdown cache
 *.md.html
+
+#???
 /Default

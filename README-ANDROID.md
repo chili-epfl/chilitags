@@ -229,10 +229,10 @@ object positions by passing it an image in a `byte[]`.
 Building and running samples
 ----------------------------
 
-Inside the samples-android/ directory, there are a number of samples to get you
-started with Chilitags on Android. Please see the
-[README.md](samples-android/README.md) file for more information on building
-and running them. 
+Inside the `bindings/jni/samples/` directory, there are a number of 
+samples to get you started with Chilitags on Android. Please see the
+[README.md](bindings/jni/samples/README.md) file for more information on 
+building and running them. 
 
 Building any CMake-enabled project for Android
 ----------------------------------------------

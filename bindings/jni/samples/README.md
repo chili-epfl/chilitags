@@ -1,5 +1,5 @@
-Chilitags Android Samples
-=========================
+Chilitags JNI Samples
+=====================
 
 These are some samples to get you started with Chilitags on Android. In order 
 to be able to build and run these samples, OpenCV and Chilitags must be built 
