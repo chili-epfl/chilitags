@@ -34,6 +34,13 @@ install (TARGETS chilitags
 #	PUBLIC_HEADER DESTINATION include/chilitags
 )
 
+if(ANDROID_INSTALL_LIBRARIES)
+    install(TARGETS chilitags
+        LIBRARY DESTINATION ${ANDROID_PROJECT_ROOT}/libs/$ENV{ANDROID_ABI}/
+        ARCHIVE DESTINATION ${ANDROID_PROJECT_ROOT}/libs/$ENV{ANDROID_ABI}/
+    )
+endif()
+
 file(GLOB_RECURSE chilitags_headers ../include/*)
 
 install(FILES

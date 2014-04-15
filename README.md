@@ -62,14 +62,16 @@ large scene. The detection has been improved since this video was made.
 
 ### Content
 
-This release of Chilitags consists of four components:
+This release of Chilitags consists of five components:
+
+ * `bindings`, the source code to expose the Chilitags API in various languages,
 
  * `include` and `src`, the library itself,
 
  * `tools`, containing a utility to generate tags,
 
- * `samples`, sample programs illustrating how to use the library,
-
+ * `samples` and `samples-android`, sample programs illustrating how to use the library,
+ 
  * `test`, a suite of automated tests.
 
 
@@ -143,6 +145,11 @@ The main design principles for tags are summarized below:
 The documentation regarding the usage of `chilitags` is provided under the form
 of the sample code `detect-live`.  Please refer to its `README` file and comments
 in its source code.
+
+### Platforms
+
+Specific instructions for building Chilitags for Android can be found under 
+[README-ANDROID.md](README-ANDROID.md).
 
 Licence
 -------
