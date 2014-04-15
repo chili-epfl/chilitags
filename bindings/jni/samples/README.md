@@ -1,6 +1,9 @@
 Chilitags JNI Samples
 =====================
 
+Android samples
+---------------
+
 These are some samples to get you started with Chilitags on Android. In order 
 to be able to build and run these samples, OpenCV and Chilitags must be built 
 first and then, their resulting dynamic libraries must be put inside the 
@@ -16,7 +19,7 @@ these samples. In other words, assuming that you want to build and run the
 
 ```
 cmake .. -DCMAKE_TOOLCHAIN_FILE=$OpenCV_DIR/android.toolchain.cmake \
-	-DANDROID_PROJECT_ROOT=<CHILITAGS_PROJECT_DIR>/samples-android/estimate3d/ \
+	-DANDROID_PROJECT_ROOT=<CHILITAGS_PROJECT_DIR>/bindings/jni/samples/android-estimate3d/ \
 	-DCMAKE_INSTALL_PREFIX=$ANDROID_STANDALONE_TOOLCHAIN/sysroot/usr/
 ```
 
@@ -26,7 +29,7 @@ is inside the Chilitags project directory. Then, adapt the following line:
 ```
 cp libopencv_calib3d.so libopencv_core.so libopencv_features2d.so \
 	libopencv_flann.so libopencv_highgui.so libopencv_imgproc.so \
-	<CHILITAGS_PROJECT_DIR>/samples-android/estimate3d/libs/armeabi-v7a/
+	<CHILITAGS_PROJECT_DIR>/bindings/jni/samples/android-estimate3d/libs/armeabi-v7a/
 ```
 
 in the guide. The rest should be common for all Android projects. In the end,
@@ -53,15 +56,15 @@ the following:
 To build and run any sample, simply import it in Eclipse and run it as an
 Android Application as usual (you need the Android SDK for this). 
 
-estimate3d
-----------
+### estimate3d
+--------------
 
 This is the barebone sample that takes the camera image, feeds it into
 Chilitags3D.estimate and prints the results on the screen. No camera preview is
 implemented.
 
-estimate3d-gui
---------------
+### estimate3d-gui
+------------------
 
 This is a bit more advanced sample that takes the camera image, and feeds it 
 into Chilitags3D.estimate, while drawing the live camera image to the screen
@@ -84,20 +87,31 @@ colored in a uniform color.
 Here are the source files:
 
 - `CameraController.java` - Contains all the code that is specific to the
-interacting with the device camera.
+interacting with the device camera. Also contains a  dummy `SurfaceTexture`
+object that is attached to the camera preview. This is not fundamentally
+necessary but preview does not start without this on some devices.
 
 - `CameraPreviewGLSurfaceView.java` - The surface that GLES requires to draw
 something on.
 
 - `CameraPreviewRenderer.java` - Contains all the GLES specific code that does
-image rendering, including the YUV-RGB conversion code and the tag frame arrow
-calculations. Based on the following code: 
-[YUV to RGB conversion by fragment shader](http://stackoverflow.com/questions/12130790/yuv-to-rgb-conversion-by-fragment-shader/17615696#17615696)
+image rendering. Loads the shaders that do YUV-RGB conversion and line
+painting, calls Chilitags methods, does 3D transform and draws the lines.
 
 - `Estimate3DGUIActivity.java` - The main Activity, initializes all objects.
 
-- `GLESLine.java` - Contains all the code specific to line rendering. Based
-on the following code: [What is the easiest way to draw line using OpenGL-ES 
-(android)](http://stackoverflow.com/questions/16027455/what-is-the-easiest-way-to-draw-line-using-opengl-es-android/16223456#16223456)
+- `GLESLine.java` - Contains all the code specific to line rendering. 
 
+- `shader.Shader.java` - The base shader object.
 
+- `shader.LineShader.java` - The shader that paints all pixels between two
+pixels a single color.
+
+- `shader.YUV2RGBShader.java` - The shader that does the YUV-RGB conversion. 
+Takes Y and UV planes as separate textures and draws the RGB image onto the 
+target. 
+
+Desktop samples
+---------------
+
+Coming soon...
