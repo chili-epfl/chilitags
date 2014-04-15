@@ -110,7 +110,7 @@ endif()
 
 if(WITH_JNI_BINDINGS)
 
-    add_subdirectory(bindings/jni/src)
+    add_subdirectory(platforms/jni/src)
 endif()
 
 if(ANDROID_INSTALL_LIBRARIES)

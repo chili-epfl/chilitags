@@ -19,7 +19,7 @@ these samples. In other words, assuming that you want to build and run the
 
 ```
 cmake .. -DCMAKE_TOOLCHAIN_FILE=$OpenCV_DIR/android.toolchain.cmake \
-	-DANDROID_PROJECT_ROOT=<CHILITAGS_PROJECT_DIR>/bindings/jni/samples/android-estimate3d/ \
+	-DANDROID_PROJECT_ROOT=<CHILITAGS_PROJECT_DIR>/platforms/jni/samples/android-estimate3d/ \
 	-DCMAKE_INSTALL_PREFIX=$ANDROID_STANDALONE_TOOLCHAIN/sysroot/usr/
 ```
 
@@ -29,7 +29,7 @@ is inside the Chilitags project directory. Then, adapt the following line:
 ```
 cp libopencv_calib3d.so libopencv_core.so libopencv_features2d.so \
 	libopencv_flann.so libopencv_highgui.so libopencv_imgproc.so \
-	<CHILITAGS_PROJECT_DIR>/bindings/jni/samples/android-estimate3d/libs/armeabi-v7a/
+	<CHILITAGS_PROJECT_DIR>/platforms/jni/samples/android-estimate3d/libs/armeabi-v7a/
 ```
 
 in the guide. The rest should be common for all Android projects. In the end,

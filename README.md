@@ -64,7 +64,7 @@ large scene. The detection has been improved since this video was made.
 
 This release of Chilitags consists of five components:
 
- * `bindings`, the source code to expose the Chilitags API in various languages,
+ * `platforms`, the source code to expose the Chilitags API in various languages,
 
  * `include` and `src`, the library itself,
 
