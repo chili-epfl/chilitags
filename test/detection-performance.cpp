@@ -128,6 +128,7 @@ TEST(Integration, Snapshots) {
 
     int newFalseNegatives = 0;
     int newTruePositives = 0;
+    int totalFalsePositives = 0;
     int totalFalseNegatives = 0;
     int total = 0;
 
@@ -159,6 +160,7 @@ TEST(Integration, Snapshots) {
 
             if(!falsePositives.empty())
                 ADD_FAILURE()
+                << "False positive !\n"
                 << "    File: " << testCase.filename << "\n"
                 << "   Id(s): " << cv::Mat(falsePositives) << "\n";
 
@@ -171,6 +173,7 @@ TEST(Integration, Snapshots) {
 
             if(!unexpectedFalseNegatives.empty())
                 ADD_FAILURE()
+                << "False negative !\n"
                 << "    File: " << testCase.filename << "\n"
                 << "   Id(s): " << cv::Mat(unexpectedFalseNegatives) << "\n";
 
@@ -183,6 +186,7 @@ TEST(Integration, Snapshots) {
                           << "   Id(s): " << cv::Mat(unexpectedTruePositives) << "\n";
 
             total += testCase.expectedTagIds.size();
+            totalFalsePositives += falsePositives.size();
             totalFalseNegatives += testCase.expectedTagIds.size() - foundIds.size();
             newFalseNegatives += unexpectedFalseNegatives.size();
             newTruePositives += unexpectedTruePositives.size();
@@ -216,6 +220,10 @@ TEST(Integration, Snapshots) {
         << newFalseNegatives << " new false negatives (bad) and "
         << newTruePositives  << " new true positives (good)\n"
         << "Please review, and if necessary, update the test case.\n";
+    }
+    if (totalFalsePositives > 0) {
+        std::cout << "There are " << totalFalsePositives << " false positives.\n";
+        
     }
 }
 
