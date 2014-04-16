@@ -61,6 +61,9 @@ public:
     Constructs a object ready to detect tags.
     It sets a default persistence of 5 frames for the tags, and a gain of 0.
     Please refer to the documentation of setFilter() for more detail.
+    The detection performance is tuned to favor accuracy over processing time
+    (see Chilitags::ACCURATE); it can be changed with
+    tunePerformance().
  */
 Chilitags();
 
@@ -76,6 +79,33 @@ Chilitags();
     latest position of the tag is returned.
  */
 void setFilter(int persistence, double gain);
+
+/**
+    Preset groups of parameters (for tunePerformance()) to adjust  the
+    compromise between processing time and accuracy of detection.
+ */
+enum PerformancePreset {
+/**
+    Completely favor speed over accuracy: no corner refinment, no subsampling.
+*/
+    FASTER,
+/**
+    Favor speed over accuracy: corners are refined, no subsampling.
+*/
+    FAST,
+/**
+    Favor speed over accuracy (default): corner are refined, input is
+    subsampled of down to 160 pixels wide.
+*/
+    ACCURATE,
+};
+
+/**
+    Applies one of the performance tuning preset (See PerformancePreset). To
+    tune more finely the performance trade-offs, see setCornerRefinment(),
+    setMaxInputWidth(), and setMinInputWidth().
+*/
+void tunePerformance(PerformancePreset preset);
 
 /**
     Enable or disable the corner refinement. It is enabled (true) by default.

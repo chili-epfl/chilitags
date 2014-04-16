@@ -53,6 +53,7 @@ Impl() :
 
     mRefineCorners(true)
 {
+    tunePerformance(ACCURATE);
 }
 
 void setFilter(int persistence, double gain) {
@@ -60,6 +61,24 @@ void setFilter(int persistence, double gain) {
     mFilter.setGain(gain);
 }
 
+void tunePerformance(PerformancePreset preset) {
+    switch (preset) {
+        case FASTER:
+            setCornerRefinement(false);
+            mFindQuads.setMinInputWidth(0);
+            break;
+        case FAST:
+            setCornerRefinement(true);
+            mFindQuads.setMinInputWidth(0);
+            break;
+        case ACCURATE:
+            setCornerRefinement(true);
+            mFindQuads.setMinInputWidth(160);
+            break;
+        defaut:
+            break;
+    }
+}
 void setCornerRefinement(bool refineCorners) {
     mRefineCorners = refineCorners;
 }
@@ -165,6 +184,10 @@ Chilitags::Chilitags() :
 
 void Chilitags::setFilter(int persistence, double gain) {
     mImpl->setFilter(persistence, gain);
+}
+
+void Chilitags::tunePerformance(PerformancePreset preset) {
+    mImpl->tunePerformance(preset);
 }
 
 void Chilitags::setCornerRefinement(bool refineCorners) {

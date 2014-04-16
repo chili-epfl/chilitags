@@ -231,7 +231,10 @@ TEST(Integration, Snapshots) {
         
     }
 
-    chilitags.setCornerRefinement(false);
+    //chilitags.setCornerRefinement(false);
+    //chilitags.setMaxInputWidth(640);
+    //chilitags.setMinInputWidth(0);
+    chilitags.tunePerformance(chilitags::Chilitags::FAST);
     map<int, vector<double> > perfDurations;
     map<int, int > perfFalseNegatives;
     int perfTotalFalseNegatives = 0;
