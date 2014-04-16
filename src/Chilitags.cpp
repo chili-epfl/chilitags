@@ -64,6 +64,14 @@ void setCornerRefinement(bool refineCorners) {
     mRefineCorners = refineCorners;
 }
 
+void setMaxInputWidth(int maxWidth) {
+    mFindQuads.setMaxInputWidth(maxWidth);
+}
+
+void setMinInputWidth(int minWidth) {
+    mFindQuads.setMinInputWidth(minWidth);
+}
+
 
 std::map<int, Quad> find(const cv::Mat &inputImage){
     auto greyscaleImage = mEnsureGreyscale(inputImage);
@@ -161,6 +169,14 @@ void Chilitags::setFilter(int persistence, double gain) {
 
 void Chilitags::setCornerRefinement(bool refineCorners) {
     mImpl->setCornerRefinement(refineCorners);
+}
+
+void Chilitags::setMaxInputWidth(int maxWidth) {
+    mImpl->setMaxInputWidth(maxWidth);
+}
+
+void Chilitags::setMinInputWidth(int minWidth) {
+    mImpl->setMinInputWidth(minWidth);
 }
 
 std::map<int, Quad> Chilitags::find(

@@ -86,6 +86,29 @@ void setFilter(int persistence, double gain);
 void setCornerRefinement(bool refineCorners);
 
 /**
+    Ensures that the input image is at most `maxWidth` wide. The smaller, the
+    faster, but tags smaller than 20 pixels won't be detected.
+
+    \param maxWidth the width to which input images should be reduced to, or 0
+    if no resizing should occur (default).
+ */
+void setMaxInputWidth(int maxWidth);
+
+/**
+    
+    Chilitags searches for tags on the input image and on subsamples reduced to
+    50%, 25%, 12.5%, etc. of the original size. The subsamples are reduced as
+    long as they are at least `minWidth` wide. This value can be changed
+    (default: 160), or set to 0 to completely disable the subsampling. In this
+    case, the processing time is reduced by ~40%, but large tags (hundreds of
+    pixels) are likely to be missed.
+
+    \param minWidth the width down to which the input image is subsampled to
+    search for tags. The default is 160, and 0 disables subsamplind.
+ */
+void setMinInputWidth(int minWidth);
+
+/**
     This is the main method of Chilitags.
 
     \returns the detected tags, in the form of a mapping between their id's and
