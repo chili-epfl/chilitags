@@ -126,6 +126,7 @@ TEST(Integration, Snapshots) {
     // We do not want any filtering, to measure the raw performances
     chilitags.setFilter(0, 0.);
 
+    map<int, std::string> resolution;
     int newFalseNegatives = 0;
     int newTruePositives = 0;
     int totalFalsePositives = 0;
@@ -140,6 +141,7 @@ TEST(Integration, Snapshots) {
 
         if(image.data) {
             std::map<int, chilitags::Quad> tags;
+            resolution[image.cols*image.rows] = cv::format("%dx%d", image.cols, image.rows);
             for (int i = 0; i < ITERATIONS; i++) {
                 int64 startCount = cv::getTickCount();
                 tags = chilitags.find(image);
@@ -206,7 +208,7 @@ TEST(Integration, Snapshots) {
     for (const auto & durations : runs_duration) {
         cout
         << std::setw(3) << durations.second.size()/ITERATIONS
-        << std::setw(10) << durations.first
+        << std::setw(10) << resolution[durations.first]
         << std::setw(10) << std::fixed << std::setprecision(1) << mean(durations.second)
         << std::setw(10) << std::fixed << std::setprecision(1) << sigma(durations.second)
         << "\n";
