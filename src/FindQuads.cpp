@@ -79,7 +79,7 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
     while (mGrayPyramid.size() < nPyramidLevel) mGrayPyramid.push_back(cv::Mat());
     mGrayPyramid[0] = greyscaleImage;
     for (int i = 1; i < nPyramidLevel; ++i) {
-        cv::pyrDown(mGrayPyramid[i-1], mGrayPyramid[i]);
+        cv::resize(mGrayPyramid[i-1], mGrayPyramid[i], cv::Size(0,0), .5, .5, cv::INTER_NEAREST);
     }
 
     while (mBinaryPyramid.size() < nPyramidLevel) mBinaryPyramid.push_back(cv::Mat());
