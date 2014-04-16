@@ -61,8 +61,8 @@ public:
     Constructs a object ready to detect tags.
     It sets a default persistence of 5 frames for the tags, and a gain of 0.
     Please refer to the documentation of setFilter() for more detail.
-    The detection performance is tuned to favor accuracy over processing time
-    (see Chilitags::ACCURATE); it can be changed with
+    The default detection performance is balanced between accuracy and
+    processing time (see Chilitags::FAST); it can be changed with
     tunePerformance().
  */
 Chilitags();
@@ -86,18 +86,18 @@ void setFilter(int persistence, double gain);
  */
 enum PerformancePreset {
 /**
-    Completely favor speed over accuracy: no corner refinment, no subsampling.
+    Favor speed over accuracy: no corner refinment, no subsampling.
 */
     FASTER,
 /**
-    Favor speed over accuracy: corners are refined, no subsampling.
+    Balance speed and accuracy (default): corners are refined, no subsampling.
 */
     FAST,
 /**
-    Favor speed over accuracy (default): corner are refined, input is
-    subsampled of down to 160 pixels wide.
+    Favor robustness over accuracy: corner are refined, input is
+    subsampled down to 160 pixels wide.
 */
-    ACCURATE,
+    ROBUST,
 };
 
 /**
@@ -116,8 +116,9 @@ void tunePerformance(PerformancePreset preset);
 void setCornerRefinement(bool refineCorners);
 
 /**
-    Ensures that the input image is at most `maxWidth` wide. The smaller, the
-    faster, but tags smaller than 20 pixels won't be detected.
+    Ensures that the image used as input for the detection is at most
+    `maxWidth` wide. The smaller, the faster, but tags smaller than 20 pixels
+    won't be detected.
 
     \param maxWidth the width to which input images should be reduced to, or 0
     if no resizing should occur (default).
@@ -128,13 +129,12 @@ void setMaxInputWidth(int maxWidth);
     
     Chilitags searches for tags on the input image and on subsamples reduced to
     50%, 25%, 12.5%, etc. of the original size. The subsamples are reduced as
-    long as they are at least `minWidth` wide. This value can be changed
-    (default: 160), or set to 0 to completely disable the subsampling. In this
-    case, the processing time is reduced by ~40%, but large tags (hundreds of
-    pixels) are likely to be missed.
+    long as they are at least `minWidth` wide. This value can be changed (e.g.
+    to 160 by the Chilitags::ROBUST performance preset), or set to 0 to
+    completely disable the subsampling (default).
 
-    \param minWidth the width down to which the input image is subsampled to
-    search for tags. The default is 160, and 0 disables subsamplind.
+    Disabling the subsampling reduces the processing time by ~40%, but large
+    tags (hundreds of pixels) are likely to be missed.
  */
 void setMinInputWidth(int minWidth);
 

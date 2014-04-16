@@ -53,7 +53,7 @@ Impl() :
 
     mRefineCorners(true)
 {
-    tunePerformance(ACCURATE);
+    tunePerformance(FAST);
 }
 
 void setFilter(int persistence, double gain) {
@@ -71,7 +71,7 @@ void tunePerformance(PerformancePreset preset) {
             setCornerRefinement(true);
             mFindQuads.setMinInputWidth(0);
             break;
-        case ACCURATE:
+        case ROBUST:
             setCornerRefinement(true);
             mFindQuads.setMinInputWidth(160);
             break;
