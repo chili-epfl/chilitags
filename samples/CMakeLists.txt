@@ -37,3 +37,8 @@ add_executable( detect-from-file detection/detect-from-file.cpp)
 target_link_libraries( detect-from-file chilitags_static )
 target_link_libraries( detect-from-file ${OpenCV_LIBS} )
 install (TARGETS detect-from-file RUNTIME DESTINATION bin)
+
+add_executable( tracking tracking/tracking.cpp)
+target_link_libraries( tracking chilitags )
+target_link_libraries( tracking ${OpenCV_LIBS} )
+install (TARGETS tracking RUNTIME DESTINATION bin)

@@ -29,6 +29,8 @@
 
 #include "Filter.hpp"
 
+#include "Track.hpp"
+
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <iostream>
@@ -51,7 +53,10 @@ Impl() :
 
     mFilter(5, 0.),
 
-    mRefineCorners(true)
+    mTrack(),
+
+    mRefineCorners(true),
+    mFindAndTrack(false)
 {
     setPerformance(FAST);
 }
@@ -66,19 +71,23 @@ void setPerformance(PerformancePreset preset) {
         case FASTER:
             setCornerRefinement(false);
             mFindQuads.setMinInputWidth(0);
+            setFindAndTrack(false);
             break;
         case FAST:
             setCornerRefinement(true);
             mFindQuads.setMinInputWidth(0);
+            setFindAndTrack(false);
             break;
         case ROBUST:
             setCornerRefinement(true);
             mFindQuads.setMinInputWidth(160);
+            setFindAndTrack(true);
             break;
         defaut:
             break;
     }
 }
+
 void setCornerRefinement(bool refineCorners) {
     mRefineCorners = refineCorners;
 }
@@ -91,11 +100,19 @@ void setMinInputWidth(int minWidth) {
     mFindQuads.setMinInputWidth(minWidth);
 }
 
+void setFindAndTrack(bool findAndTrack) {
+    mFindAndTrack = findAndTrack;
+}
 
 std::map<int, Quad> find(const cv::Mat &inputImage){
-    auto greyscaleImage = mEnsureGreyscale(inputImage);
 
+    cv::Mat greyscaleImage = mEnsureGreyscale(inputImage);
     std::map<int, Quad> tags;
+
+    if (mFindAndTrack) {
+        // track first to override tracked tags with actually detected tags
+        tags = mTrack(inputImage);
+    }
 
     if (mRefineCorners) {
         for (const auto & quad : mFindQuads(greyscaleImage)) {
@@ -114,8 +131,22 @@ std::map<int, Quad> find(const cv::Mat &inputImage){
             if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
         }
     }
+
+    if (mFindAndTrack) {
+        // the current input image has already been updated in mTrack()
+        mTrack.update(tags);
+    }
+    else {
+        mTrack.update(greyscaleImage, tags);
+    }
+
     return mFilter(tags);
 };
+
+std::map<int, Quad> track(const cv::Mat &inputImage)
+{
+    return mTrack(inputImage);
+}
 
 cv::Matx<unsigned char, 6, 6> encode(int id) const {
     cv::Matx<unsigned char, 6, 6> encodedId;
@@ -173,7 +204,10 @@ Decode mDecode;
 
 Filter<int, Quad> mFilter;
 
+Track mTrack;
+
 bool mRefineCorners;
+bool mFindAndTrack;
 
 };
 
@@ -202,9 +236,17 @@ void Chilitags::setMinInputWidth(int minWidth) {
     mImpl->setMinInputWidth(minWidth);
 }
 
+void Chilitags::setFindAndTrack(bool findAndTrack) {
+    mImpl->setFindAndTrack(findAndTrack);
+}
+
 std::map<int, Quad> Chilitags::find(
     const cv::Mat &inputImage) {
     return mImpl->find(inputImage);
+}
+
+std::map<int, Quad> Chilitags::track(const cv::Mat &inputImage) {
+    return mImpl->track(inputImage);
 }
 
 cv::Matx<unsigned char, 6, 6> Chilitags::encode(int id) const {

@@ -91,6 +91,20 @@ void setFilter(int persistence, double gain);
 std::map<int, Quad> find(const cv::Mat &inputImage);
 
 /**
+    track() can be used in place of find(). It is significantly faster, but it
+    can only update the position of tags returned from a previous call to
+    find() or track().
+
+    track() can at best return tags previously found; it won't find new ones,
+    but can lose some.
+
+    track() and find() are mutually explusive: it is useless to call track() on
+    an input image on which find() has been called. To combine find() and
+    track(), refer to setFindAndTrack().
+ */
+std::map<int, Quad> track(const cv::Mat &inputImage);
+
+/**
     Preset groups of parameters (for setPerformance()) to adjust  the
     compromise between processing time and accuracy of detection.
  */
@@ -152,6 +166,22 @@ void setMaxInputWidth(int maxWidth);
     tags (having sides larger than hundreds of pixels) are likely to be missed.
  */
 void setMinInputWidth(int minWidth);
+
+/**
+    Enable or disable tracking to complement the detection.
+
+    Tracking allows a more robust detection, e.g. in the case where the tag has
+    already been detected, but moves too fast to be detected again.
+
+    The results of the regular detection override the results of tracking, as
+    the former is expected to be more precise than the latter.
+
+    Disabling tracking as a complement to detection allows a marginally faster
+    detection at the cost of a marginally less robust detection.
+
+    setFindAndTrack() has an effect only on find().
+ */
+void setFindAndTrack(bool findAndTrack);
 //@}
 
 //@{

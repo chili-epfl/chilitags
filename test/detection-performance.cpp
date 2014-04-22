@@ -123,10 +123,13 @@ TEST(Integration, Snapshots) {
     cvtest::TS::ptr()->init("");
 
     chilitags::Chilitags chilitags;
-    // We do not want any filtering, to measure the raw performances
-    chilitags.setFilter(0, 0.);
     // We measure chilitags at its best, and compare optimisations later
     chilitags.setPerformance(chilitags::Chilitags::ROBUST);
+    // We do not want any filtering, to measure the raw performances
+    chilitags.setFilter(0, 0.);
+    // and we disable tracking, which does not help unrelated input images,
+    // and actually breaks when images of different size follow each other.
+    chilitags.setFindAndTrack(false);
 
     map<int, std::string> resolution;
 

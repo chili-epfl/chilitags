@@ -19,6 +19,8 @@
 *******************************************************************************/
 
 #include "Refine.hpp"
+
+#include "GrowRoi.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
 
 //#define DEBUG_Refine
@@ -41,23 +43,7 @@ chilitags::Quad chilitags::Refine::operator()(const cv::Mat &inputImage, const Q
 
     // Taking a ROI around the raw corners with some margin
     static const float GROWTH_RATIO = 1.2f/10.0f;
-    cv::Rect roi = cv::boundingRect(refinedQuad);
-    int xGrowth = (int)(GROWTH_RATIO*roi.width);
-    int yGrowth = (int)(GROWTH_RATIO*roi.height);
-    roi.x -= xGrowth;
-    roi.y -= yGrowth;
-    roi.width += 2*xGrowth;
-    roi.height += 2*yGrowth;
-
-    // Making sure the ROI is still in the image
-    int previousRoiX = roi.x;
-    int previousRoiY = roi.y;
-    roi.x = std::max(roi.x, 0);
-    roi.y = std::max(roi.y, 0);
-    roi.width -= roi.x - previousRoiX;
-    roi.height -= roi.y - previousRoiY;
-    roi.width = cv::min(roi.x+roi.width, inputImage.cols)-roi.x;
-    roi.height = cv::min(roi.y+roi.height, inputImage.rows)-roi.y;
+    cv::Rect roi = chilitags::growRoi(inputImage, refinedQuad, GROWTH_RATIO);
 
     static const int MIN_ROI_SIZE = 10;
     if (roi.width < MIN_ROI_SIZE || roi.height < MIN_ROI_SIZE) return quad;
