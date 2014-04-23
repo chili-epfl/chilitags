@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
     int xRes = 640;
     int yRes = 480;
     int cameraIndex = 0;
+    bool fromFile = argc == 2;
     if (argc > 2) {
         xRes = std::atoi(argv[1]);
         yRes = std::atoi(argv[2]);
@@ -43,32 +44,50 @@ int main(int argc, char* argv[])
     }
 
     // The source of input images
-    cv::VideoCapture capture(cameraIndex);
+    cv::VideoCapture capture;
+    if (fromFile) {
+        capture.open(argv[1]);
+    }
+    else {
+        capture.open(cameraIndex);
+    }
+
     if (!capture.isOpened())
     {
         std::cerr << "Unable to initialise video capture." << std::endl;
         return 1;
     }
+
+    if (!fromFile) {
 #ifdef OPENCV3
-    capture.set(cv::CAP_PROP_FRAME_WIDTH, xRes);
-    capture.set(cv::CAP_PROP_FRAME_HEIGHT, yRes);
+        capture.set(cv::CAP_PROP_FRAME_WIDTH, xRes);
+        capture.set(cv::CAP_PROP_FRAME_HEIGHT, yRes);
 #else
-    capture.set(CV_CAP_PROP_FRAME_WIDTH, xRes);
-    capture.set(CV_CAP_PROP_FRAME_HEIGHT, yRes);
+        capture.set(CV_CAP_PROP_FRAME_WIDTH, xRes);
+        capture.set(CV_CAP_PROP_FRAME_HEIGHT, yRes);
 #endif
+    }
 
     cv::Mat inputImage;
     chilitags::Chilitags chilitags;
+
     std::cout
         << "The input of Chilitags::find() is saved as ./lastimage.png\n"
-        << "If the program crashes, it can be used to reproduce the crash\n."
-        << "Hit Ctrl-C to stop the program." << std::endl;
-    for (;;) {
-        capture.read(inputImage);
+        << "If the program crashes, this file can be used to reproduce the crash.\n"
+        << "\n"
+        << "Usage: " << argv[0] << " videofile\n"
+        << "       to use a video file as input.\n"
+        << "       " << argv[0] << " [x-res y-res [camera-index]]\n"
+        << "       to use the live feed of a camera as input.\n"
+        << "\n"
+        << "Hit Ctrl-C to stop the program.\n"
+        ;
+    while(capture.read(inputImage)) {
         cv::imwrite("lastimage.png", inputImage);
         chilitags.find(inputImage);
     }
     capture.release();
+    std::cout << "Done.\n";
 
     return 0;
 }
