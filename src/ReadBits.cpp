@@ -32,10 +32,10 @@ static const int DATA_SIZE = 6;
 static const int TAG_MARGIN = 2;
 static const float TAG_SIZE = 2*TAG_MARGIN+DATA_SIZE;
 static const chilitags::Quad NORMALIZED_CORNERS = {
-           0.,        0.,
+          0.,        0.,
     TAG_SIZE,        0.,
     TAG_SIZE, TAG_SIZE,
-           0., TAG_SIZE
+          0., TAG_SIZE
 };
 
 }
@@ -86,9 +86,10 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
 
     uchar* sampleData = mSamples.ptr(0);
     for (auto& transformedSamplePoint : mTransformedSamplePoints) {
-
-		transformedSamplePoint.x = cv::max(cv::min(roi.width - 1, (int)std::floor(transformedSamplePoint.x)), 0);
-		transformedSamplePoint.y = cv::max(cv::min(roi.height - 1, (int)std::floor(transformedSamplePoint.y)), 0);
+        int x = cv::max(cv::min(roi.width - 1,
+        static_cast<int>(transformedSamplePoint.x)), 0);
+        int y = cv::max(cv::min(roi.width - 1,
+        static_cast<int>(transformedSamplePoint.y)), 0);
         *sampleData++ = inputRoi.at<uchar>(transformedSamplePoint);
     }
 
