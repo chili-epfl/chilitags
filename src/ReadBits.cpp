@@ -1,5 +1,6 @@
 /*******************************************************************************
-*   Copyright 2013 EPFL                                                        *
+*   Copyright 2013-2014 EPFL                                                   *
+*   Copyright 2013-2014 Quentin Bonnard                                        *
 *                                                                              *
 *   This file is part of chilitags.                                            *
 *                                                                              *

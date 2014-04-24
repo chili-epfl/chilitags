@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Chilitags3D + Three.js</title>
+        <style>
+            .hidden {
+                display:none;
+            }
+        </style>
+	</head>
+	<body>
+        <canvas id="videoCanvas" class="hidden" width="640" height="480"></canvas>
+        <video id="webcam" autoplay class="hidden" width="640" height="480"></video>
+		<div id="threeRenderer"> </div>
+
+        <script type="text/javascript">
+            var persistency3d = 5;
+            var gain3d = .5;
+            var persistency2d = 0;
+            var gain2d = .0;
+        </script>
+        <table>
+            <tr>
+                <th></th> <th>Persistency</th> <th>Gain (%)</th> </tr>
+            <tr>
+                <td>3D Filter</td>
+                <td><input type="number"
+                           value=5
+                           min=0
+                           onChange="persistency3d=this.value; Chilitags.set3DFilter(persistency3d, gain3d);">
+               </input></td>
+                <td><input type="number"
+                           size=3 
+                           value=50
+                           min=0
+                           max=100
+                           onChange="gain3d=this.value/100; Chilitags.set3DFilter(persistency3d, gain3d);">
+               </input></td>
+            </tr>
+            <tr>
+                <td>2D Filter</td>
+                <td><input type="number"
+                           value=0
+                           min=0
+                           onChange="persistency2d=this.value; Chilitags.set2DFilter(persistency2d, gain2d);">
+               </input></td>
+                <td><input type="number"
+                           size=3 
+                           value=0
+                           min=0
+                           max=100
+                           onChange="gain2d=this.value/100; Chilitags.set2DFilter(persistency2d, gain2d);">
+               </input></td>
+            </tr>
+        </table>
+        <div>
+            Tag Configuration:
+            <input type="file"
+                   onChange="Chilitags.readTagConfiguration(this.files[0]);">
+            </input>
+        </div>
+        <script>
+            var defaultTagSize = 20;
+            function updateDefaultSize() {
+                for (var o in objects) {
+                    // quick and dirty: assumes the cube is always
+                    // the second child
+                    objects[o].remove(objects[o].children[1]);
+                    var cube = new THREE.Mesh(new THREE.CubeGeometry(defaultTagSize, defaultTagSize, 2));
+                    cube.position.x = defaultTagSize/2;
+                    cube.position.y = defaultTagSize/2;
+                    objects[o].add(cube);
+                }
+            }
+        </script>
+        <div>
+            Default TagSize:
+            <input type="number"
+                   value=20
+                   min=0
+                   onChange="defaultTagSize = this.value; Chilitags.setDefaultTagSize(defaultTagSize); updateDefaultSize();">
+            </input>
+        </div>
+        <div>
+            Camera Calibration:
+            <input type="file"
+                   onChange="Chilitags.readCalibration(this.files[0], setCameraMatrix);">
+            </input>
+        </div>
+        <script type="text/javascript">
+            var rectify = false;
+        </script>
+        <div>
+            Undistort input image
+            <input type="checkbox"
+                   onChange="rectify = this.checked;">
+            </input>
+        </div>
+
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min.js"></script>
+	<script src="../../chilitags.js"></script>
+
+	<script type="text/javascript">
+
+	var objects = {};
+
+    var camera, scene;
+    var videoCamera, videoScene;
+    var videoTexture;
+    var renderer;
+
+    var video = document.getElementById('webcam');
+    var videoCanvas = document.getElementById('videoCanvas');
+    var videoCtx = videoCanvas.getContext('2d');
+
+    var width = videoCanvas.width;
+    var height = videoCanvas.height;
+
+    function setCameraMatrix() {
+        var far = 1000;
+        var near = 10;
+        var m = Chilitags.getCameraMatrix();
+        camera.projectionMatrix.set(
+            2*m[0]/width,              0,        2*m[2]/width-1,  0,
+                       0, -2*m[4]/height,    -(2*m[5]/height-1),  0,
+                       0,              0, (far+near)/(far-near), -2*far*near/(far-near),
+                       0,              0,                     1,  0
+        );
+    }
+
+    function init() {
+		scene = new THREE.Scene();
+
+        camera = new THREE.Camera();
+        setCameraMatrix();
+		scene.add(camera);
+
+        videoScene = new THREE.Scene();
+        videoCamera = new THREE.OrthographicCamera(-width/2, width/2, height/2, -height/2, 1, 1000);
+        videoCamera.position.x = 0;
+        videoCamera.position.y = 0;
+        videoCamera.position.z = 0;
+        videoCamera.lookAt({x:0, y:0, z:-50});
+
+        videoTexture = new THREE.Texture(videoCanvas);
+        videoTexture.minFilter = THREE.LinearFilter;
+        videoTexture.magFilter = THREE.LinearFilter;
+        var plane = new THREE.Mesh(new THREE.PlaneGeometry(width, height, 1, 1), new THREE.MeshBasicMaterial({map: videoTexture, overdraw: true, side:THREE.DoubleSide}));
+        plane.position.x = 0;
+        plane.position.y = 0;
+        plane.position.z = -50;
+        plane.material.depthTest = false;
+        plane.material.depthWrite = false;
+        videoScene.add(plane);
+        videoScene.add(videoCamera);
+
+
+        var hasCanvas = !! window.CanvasRenderingContext2D;
+        var hasWebGL = ( function () { try {
+            var canvas = document.createElement( 'canvas' );
+            return !! window.WebGLRenderingContext && (
+                canvas.getContext( 'webgl' ) || canvas.getContext( 'experimental-webgl' ) );
+            } catch( e ) { return false; } } )();
+
+        if (hasWebGL) {
+            renderer = new THREE.WebGLRenderer({antialias: true});
+        }
+        else {
+            renderer = new THREE.CanvasRenderer();
+        }
+		renderer.setSize(width, height);
+
+		var threeRenderer = document.getElementById('threeRenderer');
+		threeRenderer.appendChild(renderer.domElement);
+
+        renderLoop();
+    }
+ 
+    function renderLoop() {
+
+        //Work around Firefox's bug 879717
+        var videoIsReady = false;
+        while (!videoIsReady) {
+            try {
+                videoCtx.drawImage(video, 0, 0, width, height);
+                videoIsReady = true;
+            } catch (e) {
+                if (e.name.indexOf("NS_ERROR_NOT_AVAILABLE") == -1) throw e;
+            }
+        }
+        videoTexture.needsUpdate = true;
+
+        var obj = Chilitags.estimate(videoCanvas, rectify);
+        for (key in objects) {
+            for (var i = 0; i < objects[key].children.length; i++) {
+                objects[key].children[i].visible = false;
+            }
+        }
+        for (var key in obj) {
+            if (!(key in objects)) {
+                var root = new THREE.Object3D();
+                root.matrixAutoUpdate = false;
+
+                var id = new THREE.Mesh(
+                    new THREE.TextGeometry(key, {size:10, height:2})
+                );
+                id.rotation.set(0,0,0);
+                id.scale.set(1,-1,1);
+                id.position.y = -10;
+                id.position.z = -2;
+                root.add(id);
+
+                // updateDefaultSize assumes the cube is the second child
+                var cube = new THREE.Mesh(new THREE.CubeGeometry(defaultTagSize, defaultTagSize, 2));
+                cube.position.x = defaultTagSize/2;
+                cube.position.y = defaultTagSize/2;
+                root.add(cube);
+
+                scene.add(root);
+                objects[key] = root;
+            }
+            for (var i = 0; i < objects[key].children.length; i++) {
+                objects[key].children[i].visible = true;
+            }
+            objects[key].updateMatrix();
+            objects[key].matrix.set.apply(objects[key].matrix, obj[key]);
+        }
+
+        renderer.autoClear = false;
+        renderer.clear();
+        renderer.render(videoScene, videoCamera);
+        renderer.render(scene, camera);
+
+        requestAnimationFrame( renderLoop );
+    }
+
+    window.URL = window.URL || window.webkitURL;
+    navigator.getUserMedia  = navigator.getUserMedia
+                           || navigator.webkitGetUserMedia
+                           || navigator.mozGetUserMedia
+                           || navigator.msGetUserMedia;
+
+    navigator.getUserMedia({video: true}, function(stream) {
+            video.src = window.URL.createObjectURL(stream);
+            localMediaStream = stream;
+            video.play();
+            }, function() {alert('Failed to open video.')});
+
+    //the timeOut is a work around Firefox's bug 879717
+    video.addEventListener('play', function() {setTimeout(init, 2500);}, false);
+	</script>
+	</body>
+</html>

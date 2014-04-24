@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="../../chilitags.js"></script>
+    <style type="text/css">
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body> 
+
+    <video id="inputVideo" autoplay class="hidden" width="640" height="480"></video>
+    <canvas id="chilitagsCanvas" width="640" height="480"></canvas>
+
+    <script type="text/javascript">
+        var persistency = 5;
+        var gain = .5;
+        var drawBorders = true;
+    </script>
+    <table>
+        <tr>
+            <td>Persistency:</td>
+            <td><input type="number"
+                       value=5
+                       min=0
+                       onChange="persistency=this.value; Chilitags.setFilter(persistency, gain);">
+            </input></td>
+        </tr>
+        <tr>
+            <td>Gain (%):</td>
+            <td><input type="number"
+                       size=3 
+                       value=50
+                       min=0
+                       max=100
+                       onChange="gain=this.value/100; Chilitags.setFilter(persistency, gain);">
+            </input></td>
+        <tr>
+            <td>Processing time (ms):</td>
+            <td id="processingTime"></td>
+        </tr>
+        <tr>
+            <td>Draw Borders:</td>
+            <td><input type="checkbox"
+                       checked="true"
+                       onChange="drawBorders = this.checked;">
+            </input></td>
+        </tr>
+    </table>
+    <p>Detected tags (px)</p>
+    <table id="tagList"></table>
+
+    <script>
+
+    var video = document.getElementById('inputVideo');
+    var canvas = document.getElementById('chilitagsCanvas');
+    var canvasCtx = canvas.getContext('2d');
+    var localMediaStream = null;
+
+    var processingTime = document.createTextNode('');
+    document.getElementById('processingTime').appendChild(processingTime);
+    var tagList = document.getElementById("tagList");
+
+    var updateChilitags = function() {
+        if (localMediaStream) {
+            //Work around Firefox's bug 879717
+            var videoIsReady = false;
+            while (!videoIsReady) {
+                try {
+                    canvasCtx.drawImage(video, 0, 0, video.width, video.height);
+                    videoIsReady = true;
+                } catch (e) {
+                    if (e.name.indexOf("NS_ERROR_NOT_AVAILABLE") == -1) throw e;
+                    else console.log("try again");
+                }
+            }
+            canvasCtx.drawImage(video, 0, 0, video.width, video.height);
+            var start = new Date();
+            var tags = Chilitags.find(canvas, drawBorders);
+            var end = new Date();
+
+            processingTime.nodeValue = end.getTime() - start.getTime();
+
+            if(drawBorders){
+                //Draw lines
+                var ctx = canvas.getContext('2d');
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'rgb(255, 0, 192)';
+                for(tag in tags){
+                    ctx.beginPath();
+                    ctx.moveTo(tags[tag][0][0], tags[tag][0][1]);
+                    ctx.lineTo(tags[tag][1][0], tags[tag][1][1]); 
+                    ctx.lineTo(tags[tag][2][0], tags[tag][2][1]); 
+                    ctx.lineTo(tags[tag][3][0], tags[tag][3][1]);
+                    ctx.closePath();
+                    ctx.stroke(); 
+
+                    ctx.fillStyle = 'rgb(255, 0, 192)';
+                    ctx.font = "bold 16px Arial";
+                    ctx.fillText(
+                        tag,
+                        (tags[tag][0][0]+tags[tag][2][0])/2,
+                        (tags[tag][0][1]+tags[tag][2][1])/2);
+                }
+            }
+
+            tagList.innerHTML = '<tr><th>ID</th><td>Top Left Corner</td><td>Top Right Corner</td><td>Bottom Right Corner</td><td>Bottom Left Corner</td></tr>';
+            for(var tag in tags) {
+                var row = tagList.appendChild(document.createElement('tr'));
+                row.appendChild(document.createElement('th')).textContent = tag;
+                row.appendChild(document.createElement('td')).textContent = tags[tag][0];
+                row.appendChild(document.createElement('td')).textContent = tags[tag][1];
+                row.appendChild(document.createElement('td')).textContent = tags[tag][2];
+                row.appendChild(document.createElement('td')).textContent = tags[tag][3];
+
+            }
+        }
+        requestAnimationFrame(updateChilitags);
+    }
+
+    navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+    if (!!navigator.getUserMedia) {
+        console.log("Camera OK");
+        navigator.getUserMedia(
+            {video: true},
+            function(stream) {
+                window.URL = window.URL || window.webkitURL;
+                video.src = window.URL.createObjectURL(stream);
+                localMediaStream = stream;
+                video.play();
+            },
+            function(e) { console.log('Error in getUserMedia()', e); });
+        //the timeOut is a work around Firefox's bug 879717
+        video.addEventListener('play', function() {setTimeout(updateChilitags, 2500);}, false);
+    }
+    else alert("No getUserMedia");
+
+
+    </script>
+
+</body>
+</html>
