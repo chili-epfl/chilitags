@@ -24,7 +24,7 @@ MACRO(declare_test)
 	file(GLOB ${declare_test_TESTNAME}_source_files ${declare_test_TESTNAME}*.cpp)
 	add_executable(${declare_test_TESTNAME} ${${declare_test_TESTNAME}_source_files})
 
-	target_link_libraries(${declare_test_TESTNAME} chilitags)
+	target_link_libraries(${declare_test_TESTNAME} chilitags_static)
 	target_link_libraries(${declare_test_TESTNAME} ${OpenCV_LIBS} )
 
 	add_test(${declare_test_TESTNAME} ${declare_test_TESTNAME})
