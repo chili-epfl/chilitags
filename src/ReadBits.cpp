@@ -87,10 +87,11 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
 
     uchar* sampleData = mSamples.ptr(0);
     for (auto& transformedSamplePoint : mTransformedSamplePoints) {
-        int x = cv::max(cv::min(roi.width - 1,
-        static_cast<int>(transformedSamplePoint.x)), 0);
-        int y = cv::max(cv::min(roi.width - 1,
-        static_cast<int>(transformedSamplePoint.y)), 0);
+      
+
+		transformedSamplePoint.x = cv::max(cv::min(roi.width - 1, (int)std::round(transformedSamplePoint.x)), 0);
+		transformedSamplePoint.y = cv::max(cv::min(roi.height - 1, (int)std::round(transformedSamplePoint.y)), 0);
+
         *sampleData++ = inputRoi.at<uchar>(transformedSamplePoint);
     }
 
