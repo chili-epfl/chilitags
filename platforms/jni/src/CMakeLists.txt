@@ -7,7 +7,8 @@ set(CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH_OLD})
 
 #For finding jni.h while we're not on an Android toolchain
 if(NOT ANDROID)
-    include_directories($ENV{JAVA_HOME}/include/)
+    find_package(JNI REQUIRED)
+    include_directories(${JNI_INCLUDE_DIRS})
 endif()
 
 file(GLOB_RECURSE chilitags_jni_bindings_source *.cpp)
