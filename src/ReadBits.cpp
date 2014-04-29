@@ -27,6 +27,16 @@
 #include <iostream>
 #endif
 
+//std::round is missing in the Android NDK, we implement it here (taken from AOSP):
+#ifdef ANDROID
+namespace std{
+template <typename T>
+inline T round(const T &x){
+  return static_cast<T>(std::floor(static_cast<double>(x) + 0.5));
+}
+}
+#endif
+
 namespace {
 
 static const int DATA_SIZE = 6;
