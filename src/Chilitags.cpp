@@ -53,7 +53,7 @@ Impl() :
 
     mRefineCorners(true)
 {
-    tunePerformance(FAST);
+    setPerformance(FAST);
 }
 
 void setFilter(int persistence, double gain) {
@@ -61,7 +61,7 @@ void setFilter(int persistence, double gain) {
     mFilter.setGain(gain);
 }
 
-void tunePerformance(PerformancePreset preset) {
+void setPerformance(PerformancePreset preset) {
     switch (preset) {
         case FASTER:
             setCornerRefinement(false);
@@ -186,8 +186,8 @@ void Chilitags::setFilter(int persistence, double gain) {
     mImpl->setFilter(persistence, gain);
 }
 
-void Chilitags::tunePerformance(PerformancePreset preset) {
-    mImpl->tunePerformance(preset);
+void Chilitags::setPerformance(PerformancePreset preset) {
+    mImpl->setPerformance(preset);
 }
 
 void Chilitags::setCornerRefinement(bool refineCorners) {

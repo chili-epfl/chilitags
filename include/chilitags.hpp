@@ -63,7 +63,7 @@ public:
     Please refer to the documentation of setFilter() for more detail.
     The default detection performance is balanced between accuracy and
     processing time (see Chilitags::FAST); it can be changed with
-    tunePerformance().
+    setPerformance().
  */
 Chilitags();
 
@@ -81,7 +81,17 @@ Chilitags();
 void setFilter(int persistence, double gain);
 
 /**
-    Preset groups of parameters (for tunePerformance()) to adjust  the
+    This is the main method of Chilitags.
+
+    \returns the detected tags, in the form of a mapping between their id's and
+    the position of their four corners.
+
+    \param inputImage an OpenCV image (gray or BGR)
+ */
+std::map<int, Quad> find(const cv::Mat &inputImage);
+
+/**
+    Preset groups of parameters (for setPerformance()) to adjust  the
     compromise between processing time and accuracy of detection.
  */
 enum PerformancePreset {
@@ -105,7 +115,9 @@ enum PerformancePreset {
     tune more finely the performance trade-offs, see setCornerRefinment(),
     setMaxInputWidth(), and setMinInputWidth().
 */
-void tunePerformance(PerformancePreset preset);
+void setPerformance(PerformancePreset preset);
+
+//@{
 
 /**
     Enable or disable the corner refinement. It is enabled (true) by default.
@@ -126,28 +138,23 @@ void setCornerRefinement(bool refineCorners);
 void setMaxInputWidth(int maxWidth);
 
 /**
-    
     Chilitags searches for tags on the input image and on subsamples reduced to
     50%, 25%, 12.5%, etc. of the original size. The subsamples are reduced as
-    long as they are at least `minWidth` wide. This value can be changed (e.g.
-    to 160 by the Chilitags::ROBUST performance preset), or set to 0 to
-    completely disable the subsampling (default).
+    long as they are at least `minWidth` wide. This value can be changed to
+    adjust the lower limit of subsampling. For example, the Chilitags::ROBUST
+    performance preset calls `setMinInputWidth(160)`.
+
+    If `minWidth` is set to 0, subsampling is completely disabled, i.e. tags
+    are searched only on the original input image. This is the behaviour set by
+    Chilitags::FAST, i.e. the default behaviour.
 
     Disabling the subsampling reduces the processing time by ~40%, but large
-    tags (hundreds of pixels) are likely to be missed.
+    tags (having sides larger than hundreds of pixels) are likely to be missed.
  */
 void setMinInputWidth(int minWidth);
+//@}
 
-/**
-    This is the main method of Chilitags.
-
-    \returns the detected tags, in the form of a mapping between their id's and
-    the position of their four corners.
-
-    \param inputImage an OpenCV image (gray or BGR)
- */
-std::map<int, Quad> find(const cv::Mat &inputImage);
-
+//@{
 /**
     Finds the black and white, 6x6 matrix corresponding to the given id.
 
@@ -186,6 +193,9 @@ int decode(const cv::Matx<unsigned char, 6, 6> &bits) const;
     within [0,255]. The darker, the better. Black is default and optimal.
  */
 cv::Mat draw(int id, int cellSize = 1, bool withMargin = false, cv::Scalar color = cv::Scalar(0,0,0)) const;
+
+//@}
+
 
 ~Chilitags();
 
