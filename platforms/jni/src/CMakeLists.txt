@@ -27,6 +27,7 @@ install (TARGETS chilitags_jni_bindings
 	ARCHIVE DESTINATION lib
 )
 
+set(CMAKE_JAVA_COMPILE_FLAGS ${CMAKE_JAVA_COMPILE_FLAGS} -encoding UTF-8)
 add_jar(chilitags-jni-wrapper ${chilitags_jni_wrapper_source})
 add_jar_no_compile(chilitags-jni-wrapper-sources ${chilitags_jni_wrapper_source})
 
