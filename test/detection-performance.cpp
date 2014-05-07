@@ -125,13 +125,19 @@ TEST(Integration, Snapshots) {
     chilitags::Chilitags chilitags;
     // We do not want any filtering, to measure the raw performances
     chilitags.setFilter(0, 0.);
+    // We measure chilitags at its best, and compare optimisations later
+    chilitags.tunePerformance(chilitags::Chilitags::ROBUST);
+
+    map<int, std::string> resolution;
 
     int newFalseNegatives = 0;
     int newTruePositives = 0;
+    int totalFalsePositives = 0;
     int totalFalseNegatives = 0;
     int total = 0;
 
-    map<int, vector<double> > runs_duration;
+    map<int, vector<double> > referenceDuration;
+    map<int, int> referenceFalseNegatives;
 
     for (auto testCase : TestMetadata::all) {
         std::string path = std::string(cvtest::TS::ptr()->get_data_path())+testCase.filename;
@@ -139,11 +145,12 @@ TEST(Integration, Snapshots) {
 
         if(image.data) {
             std::map<int, chilitags::Quad> tags;
+            resolution[image.cols*image.rows] = cv::format("%dx%d", image.cols, image.rows);
             for (int i = 0; i < ITERATIONS; i++) {
                 int64 startCount = cv::getTickCount();
                 tags = chilitags.find(image);
                 int64 endCount = cv::getTickCount();
-                runs_duration[image.rows*image.cols].push_back(((double) endCount - startCount)*1000/cv::getTickFrequency());
+                referenceDuration[image.rows*image.cols].push_back(((double) endCount - startCount)*1000/cv::getTickFrequency());
             }
 
             std::vector<int> foundIds;
@@ -159,18 +166,21 @@ TEST(Integration, Snapshots) {
 
             if(!falsePositives.empty())
                 ADD_FAILURE()
+                << "False positive !\n"
                 << "    File: " << testCase.filename << "\n"
                 << "   Id(s): " << cv::Mat(falsePositives) << "\n";
 
 
             std::vector<int> falseNegatives = my_set_difference(
                 testCase.expectedTagIds, foundIds);
+            referenceFalseNegatives[image.cols*image.rows] += falseNegatives.size();
 
             std::vector<int> unexpectedFalseNegatives = my_set_difference(
                 falseNegatives, testCase.knownMissedTagIds);
 
             if(!unexpectedFalseNegatives.empty())
                 ADD_FAILURE()
+                << "False negative !\n"
                 << "    File: " << testCase.filename << "\n"
                 << "   Id(s): " << cv::Mat(unexpectedFalseNegatives) << "\n";
 
@@ -183,6 +193,7 @@ TEST(Integration, Snapshots) {
                           << "   Id(s): " << cv::Mat(unexpectedTruePositives) << "\n";
 
             total += testCase.expectedTagIds.size();
+            totalFalsePositives += falsePositives.size();
             totalFalseNegatives += testCase.expectedTagIds.size() - foundIds.size();
             newFalseNegatives += unexpectedFalseNegatives.size();
             newTruePositives += unexpectedTruePositives.size();
@@ -199,10 +210,10 @@ TEST(Integration, Snapshots) {
     cout << "Processing times (ms) results, on " << ITERATIONS << " iterations:\n";
     cout << "  n    Pixels   Average        SD\n";
 
-    for (const auto & durations : runs_duration) {
+    for (const auto & durations : referenceDuration) {
         cout
         << std::setw(3) << durations.second.size()/ITERATIONS
-        << std::setw(10) << durations.first
+        << std::setw(10) << resolution[durations.first]
         << std::setw(10) << std::fixed << std::setprecision(1) << mean(durations.second)
         << std::setw(10) << std::fixed << std::setprecision(1) << sigma(durations.second)
         << "\n";
@@ -217,6 +228,77 @@ TEST(Integration, Snapshots) {
         << newTruePositives  << " new true positives (good)\n"
         << "Please review, and if necessary, update the test case.\n";
     }
+    if (totalFalsePositives > 0) {
+        std::cout << "There are " << totalFalsePositives << " false positives.\n";
+        
+    }
+
+    //chilitags.setCornerRefinement(false);
+    //chilitags.setMaxInputWidth(640);
+    //chilitags.setMinInputWidth(0);
+    chilitags.tunePerformance(chilitags::Chilitags::FAST);
+    map<int, vector<double> > perfDurations;
+    map<int, int > perfFalseNegatives;
+    int perfTotalFalseNegatives = 0;
+    for (auto testCase : TestMetadata::all) {
+        std::string path = std::string(cvtest::TS::ptr()->get_data_path())+testCase.filename;
+        cv::Mat image = cv::imread(path);
+
+        if(image.data) {
+            std::map<int, chilitags::Quad> tags;
+            for (int i = 0; i < ITERATIONS; i++) {
+                int64 startCount = cv::getTickCount();
+                tags = chilitags.find(image);
+                int64 endCount = cv::getTickCount();
+                perfDurations[image.rows*image.cols].push_back(((double) endCount - startCount)*1000/cv::getTickFrequency());
+            }
+
+            std::vector<int> foundIds;
+
+            perfFalseNegatives[image.rows*image.cols] += testCase.expectedTagIds.size() - tags.size();
+        }
+        else {
+            ADD_FAILURE()
+            << "Unable to read: " << path << "\n"
+            << "Did you correctly set the OPENCV_TEST_DATA_PATH environment variable?\n"
+            << "CMake takes care of this if you set its TEST_DATA variable.\n"
+            << "You can download the test data from\n"
+            << "https://github.com/chili-epfl/chilitags-testdata";
+        }
+    }
+
+    cout << "\nPerformance-tuned processing compared to default\n";
+    cout << "  n    Pixels   Processing time   False negatives\n";
+    auto perfDurationsIt = perfDurations.begin();
+    auto perfFalseNegativesIt = perfFalseNegatives.begin();
+    auto referenceFalseNegativesIt = referenceFalseNegatives.begin();
+    int totalNewFalseNegatives = 0;
+    for (const auto & durations : referenceDuration) {
+        std::transform(
+            perfDurationsIt->second.begin(), perfDurationsIt->second.end(),
+            durations.second.begin(),
+            perfDurationsIt->second.begin(),
+            [](double a, double b){return 100.*(a-b)/b;});
+
+        bool increased = perfFalseNegativesIt->second > referenceFalseNegativesIt->second;
+        cout 
+            << std::setw(3) << durations.second.size()/ITERATIONS
+            << std::setw(10) << resolution[durations.first]
+            << std::setw(17) << std::fixed << std::setprecision(0) <<
+                mean(perfDurationsIt->second) << "%"
+            << std::setw(11) << perfFalseNegativesIt->second
+            << " vs "
+            << std::setw(3) << referenceFalseNegativesIt->second
+            << (increased?" (+" : " (")
+            << perfFalseNegativesIt->second - referenceFalseNegativesIt->second 
+            << ")"
+            << "\n";
+        totalNewFalseNegatives += perfFalseNegativesIt->second;
+        ++perfDurationsIt;
+        ++perfFalseNegativesIt;
+        ++referenceFalseNegativesIt;
+    }
+    std::cout << totalNewFalseNegatives << "/" << total << " tags were not detected with the tuned processing.\n";
 }
 
 CV_TEST_MAIN(".")

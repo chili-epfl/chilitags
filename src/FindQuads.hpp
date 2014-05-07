@@ -35,10 +35,15 @@ FindQuads();
 
 std::vector<Quad> operator()(const cv::Mat &greyscaleImage);
 
+void setMaxInputWidth(int maxWidth) {mMaxInputWidth = maxWidth;}
+void setMinInputWidth(int minWidth) {mMinInputWidth = minWidth;}
+
 protected:
 
 std::vector<cv::Mat> mGrayPyramid;
 std::vector<cv::Mat> mBinaryPyramid;
+int mMaxInputWidth;
+int mMinInputWidth;
 
 };
 

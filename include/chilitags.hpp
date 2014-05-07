@@ -61,6 +61,9 @@ public:
     Constructs a object ready to detect tags.
     It sets a default persistence of 5 frames for the tags, and a gain of 0.
     Please refer to the documentation of setFilter() for more detail.
+    The default detection performance is balanced between accuracy and
+    processing time (see Chilitags::FAST); it can be changed with
+    setPerformance().
  */
 Chilitags();
 
@@ -87,6 +90,71 @@ void setFilter(int persistence, double gain);
  */
 std::map<int, Quad> find(const cv::Mat &inputImage);
 
+/**
+    Preset groups of parameters (for setPerformance()) to adjust  the
+    compromise between processing time and accuracy of detection.
+ */
+enum PerformancePreset {
+/**
+    Favor speed over accuracy: no corner refinment, no subsampling.
+*/
+    FASTER,
+/**
+    Balance speed and accuracy (default): corners are refined, no subsampling.
+*/
+    FAST,
+/**
+    Favor robustness over accuracy: corner are refined, input is
+    subsampled down to 160 pixels wide.
+*/
+    ROBUST,
+};
+
+/**
+    Applies one of the performance tuning preset (See PerformancePreset). To
+    tune more finely the performance trade-offs, see setCornerRefinment(),
+    setMaxInputWidth(), and setMinInputWidth().
+*/
+void setPerformance(PerformancePreset preset);
+
+//@{
+
+/**
+    Enable or disable the corner refinement. It is enabled (true) by default.
+    When disabled, the processing time is reduced by ~33%, but the coordinates
+    of the tags lose their sub-pixel precision, and there is a marginally
+    higher level of false negatives.
+ */
+void setCornerRefinement(bool refineCorners);
+
+/**
+    Ensures that the image used as input for the detection is at most
+    `maxWidth` wide. The smaller, the faster, but tags smaller than 20 pixels
+    won't be detected.
+
+    \param maxWidth the width to which input images should be reduced to, or 0
+    if no resizing should occur (default).
+ */
+void setMaxInputWidth(int maxWidth);
+
+/**
+    Chilitags searches for tags on the input image and on subsamples reduced to
+    50%, 25%, 12.5%, etc. of the original size. The subsamples are reduced as
+    long as they are at least `minWidth` wide. This value can be changed to
+    adjust the lower limit of subsampling. For example, the Chilitags::ROBUST
+    performance preset calls `setMinInputWidth(160)`.
+
+    If `minWidth` is set to 0, subsampling is completely disabled, i.e. tags
+    are searched only on the original input image. This is the behaviour set by
+    Chilitags::FAST, i.e. the default behaviour.
+
+    Disabling the subsampling reduces the processing time by ~40%, but large
+    tags (having sides larger than hundreds of pixels) are likely to be missed.
+ */
+void setMinInputWidth(int minWidth);
+//@}
+
+//@{
 /**
     Finds the black and white, 6x6 matrix corresponding to the given id.
 
@@ -125,6 +193,9 @@ int decode(const cv::Matx<unsigned char, 6, 6> &bits) const;
     within [0,255]. The darker, the better. Black is default and optimal.
  */
 cv::Mat draw(int id, int cellSize = 1, bool withMargin = false, cv::Scalar color = cv::Scalar(0,0,0)) const;
+
+//@}
+
 
 ~Chilitags();
 
