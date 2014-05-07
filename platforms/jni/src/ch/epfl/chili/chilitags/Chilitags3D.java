@@ -1,21 +1,21 @@
 /*******************************************************************************
-*   Copyright 2014 EPFL                                                        *
-*                                                                              *
-*   This file is part of chilitags.                                            *
-*                                                                              *
-*   Chilitags is free software: you can redistribute it and/or modify          *
-*   it under the terms of the Lesser GNU General Public License as             *
-*   published by the Free Software Foundation, either version 3 of the         *
-*   License, or (at your option) any later version.                            *
-*                                                                              *
-*   Chilitags is distributed in the hope that it will be useful,               *
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
-*   GNU Lesser General Public License for more details.                        *
-*                                                                              *
-*   You should have received a copy of the GNU Lesser General Public License   *
-*   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
-*******************************************************************************/
+ *   Copyright 2014 EPFL                                                        *
+ *                                                                              *
+ *   This file is part of chilitags.                                            *
+ *                                                                              *
+ *   Chilitags is free software: you can redistribute it and/or modify          *
+ *   it under the terms of the Lesser GNU General Public License as             *
+ *   published by the Free Software Foundation, either version 3 of the         *
+ *   License, or (at your option) any later version.                            *
+ *                                                                              *
+ *   Chilitags is distributed in the hope that it will be useful,               *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+ *   GNU Lesser General Public License for more details.                        *
+ *                                                                              *
+ *   You should have received a copy of the GNU Lesser General Public License   *
+ *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
+ *******************************************************************************/
 
 package ch.epfl.chili.chilitags;
 
@@ -26,7 +26,7 @@ package ch.epfl.chili.chilitags;
  *
  */
 public class Chilitags3D {
-	
+
 	/**
 	 * The allowed input types/color spaces.
 	 */
@@ -35,7 +35,17 @@ public class Chilitags3D {
 		RGB565,
 		RGB888
 	}
-	
+
+	/**
+	 * Preset groups of parameters (for setPerformance()) to adjust  the
+	 * compromise between processing time and accuracy of detection. 
+	 */
+	public enum PerformancePreset {
+		FASTER, /** Favor speed over accuracy: no corner refinment, no subsampling */
+		FAST, /** Balance speed and accuracy (default): corners are refined, no subsampling */
+		ROBUST, /** Favor robustness over accuracy: corner are refined, input is subsampled down to 160 pixels wide */
+	};
+
 	/**
 	 * Load the necessary libraries in the order of dependency.
 	 */
@@ -49,9 +59,9 @@ public class Chilitags3D {
 		System.loadLibrary("chilitags");
 		System.loadLibrary("chilitags_jni_bindings");
 	}
-	
+
 	private final long ptr; //The pointer to the native object
-	
+
 	/*
 	 * Prototypes for the actual native functions.
 	 */
@@ -59,9 +69,10 @@ public class Chilitags3D {
 	private native void free(long ptr);
 	private native void readTagConfigurationImpl(long ptr, String filename, boolean omitOtherTags);
 	private native CVSize readCalibrationImpl(long ptr, String filename);
-	private native ObjectTransform[] estimateImpl(long ptr,byte[] imageData);
+	private native ObjectTransform[] estimateImpl(long ptr, byte[] imageData);
 	private native void setCalibrationImpl(long ptr, double[] cameraMatrix, double[] distortionCoeffs);
-	
+	private native void setPerformancePresetImpl(long ptr, int preset);
+
 	/**
 	 * Creates a new Chilitags3D object.
 	 * 
@@ -74,14 +85,14 @@ public class Chilitags3D {
 	public Chilitags3D(int width, int height, int processingWidth, int processingHeight, InputType inputType){
 		ptr = alloc(width, height, processingWidth, processingHeight, inputType.ordinal());
 	}
-	
+
 	/**
 	 * Deletes the native counterpart of this Chilitags3D object.
 	 */
 	public void delete(){
 		free(ptr);
 	}
-	
+
 	/**
 	 * Reads the tag configuration file. 
 	 * 
@@ -91,7 +102,7 @@ public class Chilitags3D {
 	public void readTagConfiguration(String filename, boolean omitOtherTags){
 		readTagConfigurationImpl(ptr,filename,omitOtherTags);
 	}
-	
+
 	/**
 	 * Sets the camera calibration from a file.
 	 * 
@@ -101,7 +112,7 @@ public class Chilitags3D {
 	public CVSize readCalibration(String filename){
 		return readCalibrationImpl(ptr,filename);
 	}
-	
+
 	/**
 	 * Sets the camera calibration from given parameters.
 	 * 
@@ -111,7 +122,16 @@ public class Chilitags3D {
 	public void setCalibration(double[] cameraMatrix, double[] distortionCoeffs){
 		setCalibrationImpl(ptr,cameraMatrix,distortionCoeffs);
 	}
-	
+
+	/**
+	 * Sets the performance preset.
+	 * 
+	 * @param preset Performance preset
+	 */
+	public void setPerformancePreset(PerformancePreset preset){
+		setPerformancePresetImpl(ptr,preset.ordinal());
+	}
+
 	/**
 	 * Estimates the 3D transforms of objects tagged with Chilitags. 
 	 * Depends on the tag configuration file, set it first.

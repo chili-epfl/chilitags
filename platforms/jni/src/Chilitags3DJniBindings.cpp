@@ -231,3 +231,20 @@ JNI(jobjectArray,estimateImpl)(JNIEnv* env, jclass* class_, jlong ptr, jbyteArra
 
 	return jresult;
 }
+
+JNI(void,setPerformancePresetImpl)(JNIEnv* env, jclass* class_, jlong ptr, jint preset){
+	switch(preset){
+	case 0: //FASTER
+		GET_OBJ(ptr)->getChilitags().setPerformance(chilitags::Chilitags::FASTER);
+		break;
+	case 1: //FAST
+		GET_OBJ(ptr)->getChilitags().setPerformance(chilitags::Chilitags::FAST);
+		break;
+	case 2: //ROBUST
+		GET_OBJ(ptr)->getChilitags().setPerformance(chilitags::Chilitags::ROBUST);
+		break;
+	default: //UNKNOWN PRESET
+		env->ThrowNew(env->FindClass("java/lang/Exception"), "Chilitags3D: performancePreset unknown.");
+		break;
+	}
+}
