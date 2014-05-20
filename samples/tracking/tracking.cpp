@@ -69,26 +69,26 @@ int main(int argc, char* argv[])
 #endif
     cv::Mat inputImage;
 
-    // We need separate Chilitags if we want to compare find() and track() on
-    // the same image, given that these methods are not supposed to be called
-    // both on the same image
+    // We need separate Chilitags if we want to compare find() with different
+    // detection/tracking parameters on the same image
 
-    // This one is the "regular" with find(), for reference
+    // This one is the reference Chilitags
     chilitags::Chilitags detectedChilitags;
     detectedChilitags.setFilter(0, 0.);
     // ... with tracking completely disabled
-    detectedChilitags.setFindAndTrack(false);
+    detectedChilitags.setDefaultDetectionTrigger(chilitags::Chilitags::JUST_DETECT);
 
-    // This one will be used to call track()
+    // This one will be called with JUST_TRACK when it has previously detected
+    // something
     chilitags::Chilitags trackedChilitags;
     trackedChilitags.setFilter(0, 0.);
 
     cv::namedWindow("DisplayChilitags");
 
-    // Do we want to run and show the regular detection ?
-    bool detect = true;
+    // Do we want to run and show the reference detection ?
+    bool showReference = true;
     // Do we want to run and show the tracking-based detection ?
-    bool track = true;
+    bool showTracking = true;
 
     // In the tracking-based detection, we need to know whether there is
     // something to track
@@ -98,31 +98,30 @@ int main(int argc, char* argv[])
     while ('q' != (keyPressed = (char) cv::waitKey(1))) {
 
         // toggle the processing, according to user input
-        if (keyPressed == 't') track = !track;
-        if (keyPressed == 'd') detect = !detect;
+        if (keyPressed == 't') showTracking = !showTracking;
+        if (keyPressed == 'd') showReference = !showReference;
 
         capture.read(inputImage);
 
         cv::Mat outputImage = inputImage.clone();
 
         // nothing new here
-        if (detect) {
+        if (showReference) {
             int64 startTime = cv::getTickCount();
             auto tags = detectedChilitags.find(inputImage);
             int64 endTime = cv::getTickCount();
             drawTags(outputImage, tags, startTime, endTime, true);
         }
 
-        if (track) {
+        if (showTracking) {
             int64 startTime = cv::getTickCount();
             // Tracking needs something to track; it is initialised with a
             // regular detection (find()). When something is detected, tracking
             // will take over and return tags processed from the previous call
             // to track() as long as there is something returned.
             // When nothing is returned, we are back to regular detection.
-            auto tags = tracking?
-                trackedChilitags.track(inputImage):
-                trackedChilitags.find(inputImage);
+            auto tags = 
+                trackedChilitags.find(inputImage, tracking?chilitags::Chilitags::JUST_TRACK:chilitags::Chilitags::TRACK_AND_DETECT);
             int64 endTime = cv::getTickCount();
             drawTags(outputImage, tags, startTime, endTime, false);
             tracking = !tags.empty();

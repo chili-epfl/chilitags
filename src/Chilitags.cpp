@@ -56,7 +56,10 @@ Impl() :
     mTrack(),
 
     mRefineCorners(true),
-    mFindAndTrack(false)
+
+    mDefaultDetectionTrigger(TRACK_AND_DETECT),
+    mCallsBeforeDetection(15),
+    mCallsBeforeNextDetection(0)
 {
     setPerformance(FAST);
 }
@@ -71,17 +74,17 @@ void setPerformance(PerformancePreset preset) {
         case FASTER:
             setCornerRefinement(false);
             mFindQuads.setMinInputWidth(0);
-            setFindAndTrack(false);
+            setDefaultDetectionTrigger(DETECT_PERIODICALLY, 15);
             break;
         case FAST:
             setCornerRefinement(true);
             mFindQuads.setMinInputWidth(0);
-            setFindAndTrack(false);
+            setDefaultDetectionTrigger(DETECT_PERIODICALLY, 15);
             break;
         case ROBUST:
             setCornerRefinement(true);
             mFindQuads.setMinInputWidth(160);
-            setFindAndTrack(true);
+            setDefaultDetectionTrigger(TRACK_AND_DETECT);
             break;
         defaut:
             break;
@@ -100,16 +103,33 @@ void setMinInputWidth(int minWidth) {
     mFindQuads.setMinInputWidth(minWidth);
 }
 
-void setFindAndTrack(bool findAndTrack) {
-    mFindAndTrack = findAndTrack;
+void setDefaultDetectionTrigger(DetectionTrigger trigger, int parameter = -1) {
+    mDefaultDetectionTrigger = trigger;
+         if (trigger == DETECT_PERIODICALLY) {
+        mCallsBeforeDetection = (parameter < 0)?15:parameter;
+    }
 }
 
-std::map<int, Quad> find(const cv::Mat &inputImage){
+std::map<int, Quad> find(
+    const cv::Mat &inputImage,
+    DetectionTrigger detectionTrigger){
+
+    if (detectionTrigger == DEFAULT) detectionTrigger = mDefaultDetectionTrigger;
+
+    mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection-1, 0);
+    if (detectionTrigger == DETECT_PERIODICALLY) {
+        detectionTrigger = (mCallsBeforeNextDetection > 0)?JUST_TRACK:TRACK_AND_DETECT;
+    }
+
+    if (detectionTrigger == JUST_TRACK) return mTrack(inputImage);
+
+    // now we're going to do a full detection
+    mCallsBeforeNextDetection = mCallsBeforeDetection;
 
     cv::Mat greyscaleImage = mEnsureGreyscale(inputImage);
     std::map<int, Quad> tags;
 
-    if (mFindAndTrack) {
+    if (detectionTrigger == TRACK_AND_DETECT) {
         // track first to override tracked tags with actually detected tags
         tags = mTrack(inputImage);
     }
@@ -132,7 +152,7 @@ std::map<int, Quad> find(const cv::Mat &inputImage){
         }
     }
 
-    if (mFindAndTrack) {
+    if (detectionTrigger == TRACK_AND_DETECT) {
         // the current input image has already been updated in mTrack()
         mTrack.update(tags);
     }
@@ -142,11 +162,6 @@ std::map<int, Quad> find(const cv::Mat &inputImage){
 
     return mFilter(tags);
 };
-
-std::map<int, Quad> track(const cv::Mat &inputImage)
-{
-    return mTrack(inputImage);
-}
 
 cv::Matx<unsigned char, 6, 6> encode(int id) const {
     cv::Matx<unsigned char, 6, 6> encodedId;
@@ -207,7 +222,10 @@ Filter<int, Quad> mFilter;
 Track mTrack;
 
 bool mRefineCorners;
-bool mFindAndTrack;
+
+DetectionTrigger mDefaultDetectionTrigger;
+int mCallsBeforeNextDetection;
+int mCallsBeforeDetection;
 
 };
 
@@ -236,17 +254,15 @@ void Chilitags::setMinInputWidth(int minWidth) {
     mImpl->setMinInputWidth(minWidth);
 }
 
-void Chilitags::setFindAndTrack(bool findAndTrack) {
-    mImpl->setFindAndTrack(findAndTrack);
-}
-
 std::map<int, Quad> Chilitags::find(
-    const cv::Mat &inputImage) {
-    return mImpl->find(inputImage);
+    const cv::Mat &inputImage,
+    DetectionTrigger trigger
+    ) {
+    return mImpl->find(inputImage, trigger);
 }
 
-std::map<int, Quad> Chilitags::track(const cv::Mat &inputImage) {
-    return mImpl->track(inputImage);
+void Chilitags::setDefaultDetectionTrigger(Chilitags::DetectionTrigger trigger, int parameter) {
+    mImpl->setDefaultDetectionTrigger(trigger, parameter);
 }
 
 cv::Matx<unsigned char, 6, 6> Chilitags::encode(int id) const {

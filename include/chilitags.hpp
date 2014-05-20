@@ -72,7 +72,7 @@ Chilitags();
 
     \param persistence the number of frames in which a tag should be absent
     before being removed from the output of find(). 0 means that tags disappear
-    directly if they are note detected.
+    directly if they are not detected.
 
     \param gain a value between 0 and 1 corresponding to the weight of the
     previous (filtered) position in the new filtered position. 0 means that the
@@ -81,28 +81,92 @@ Chilitags();
 void setFilter(int persistence, double gain);
 
 /**
+    Values of parameter to tell find() how to combine trackiing and full
+    detection.
+*/
+enum DetectionTrigger {
+/**
+    First track results of the previous call to find(), then run a full
+    detection on the same input image.
+
+    This improves the robustness of the detection, e.g. in the case where the
+    tag has already been detected previously, but moves too fast to be detected
+    again.
+*/
+    TRACK_AND_DETECT,
+
+/**
+    Disable tracking as a complement to detection. Compared to
+    `TRACK_AND_DETECT`, `JUST_DETECT` allows a marginally faster procesing, but
+    results in poor detection performances as soon as the tags are in movement.
+*/
+    JUST_DETECT,
+
+/**
+    Perform tracking only. Tracking is drastically faster, but it can at best
+    return tags previously found; it won't find new ones, but can lose some.
+
+    `JUST_TRACK` lets the user to decide when to run a full detection.  An
+    interesting use case is to call find() with `JUST_TRACK` as long as an
+    expected (set of) tag(s) is found, and with `JUST_DETECT` otherwise.
+*/
+    JUST_TRACK,
+
+/**
+    Periodically run a full detection.
+
+    `DETECT_PERIODICALLY` allows to specifies a number of calls to find() in
+    which the full detection will be used once, and tracking the rest of the
+    time.
+
+    Use setDefaultDetectionTrigger() to specify the number of calls to find()
+    in which one full detection should be happen. This number is kept between
+    calls to setDefaultDetectionTrigger(). The default is 15, which means that
+    out of 15 consecutive calls to find(), 1 will use a full detection, and
+    the 14 others will only track previous results. 
+*/
+    DETECT_PERIODICALLY,
+
+/**
+    `DEFAULT` corresponds to whatever has been set by a call to
+    setDefaultDetectionTrigger(). The Chilitags::ROBUST, Chilitags::FAST and
+    Chilitags::FASTER performance presets respectively use `TRACK_AND_DETECT`,
+    `DETECT_PERIODICALLY` (with n=15), `DETECT_PERIODICALLY` (with n=15).
+    `FAST` is the initial performance preset.
+*/
+    DEFAULT
+};
+
+/**
     This is the main method of Chilitags.
 
     \returns the detected tags, in the form of a mapping between their id's and
     the position of their four corners.
 
     \param inputImage an OpenCV image (gray or BGR)
+
+    \param detectionTrigger specifies how to combine tracking and
+    full detection. Tracking is drastically faster, but it can at
+    best return tags previously found; it won't find new ones, but
+    can lose some. See Chilitags::DetectionTrigger for a description of the
+    possible values.
  */
-std::map<int, Quad> find(const cv::Mat &inputImage);
+std::map<int, Quad> find(const cv::Mat &inputImage, DetectionTrigger detectionTrigger = DEFAULT);
 
 /**
-    track() can be used in place of find(). It is significantly faster, but it
-    can only update the position of tags returned from a previous call to
-    find() or track().
+    Specifies how find() should use tracking and full detection when it is not specified in the specific call.
 
-    track() can at best return tags previously found; it won't find new ones,
-    but can lose some.
+    \param trigger one of the methods to combine tracking and full detection. See Chilitags::DetectionTrigger.
 
-    track() and find() are mutually explusive: it is useless to call track() on
-    an input image on which find() has been called. To combine find() and
-    track(), refer to setFindAndTrack().
- */
-std::map<int, Quad> track(const cv::Mat &inputImage);
+    \param parameter an extra parameter, depending on the value of `trigger`
+        \li In the case of Chilitags::DETECT_PERIODICALLY, `parameter`
+        specifies the number of calls to find() for each full detection. The
+        default is 15, which means that out of 15 consecutive calls to find(),
+        one will use a full detection, and the 14 others will only track
+        previous results.
+        \li In other cases, `parameter` is ignored
+*/
+void setDefaultDetectionTrigger(DetectionTrigger trigger, int parameter = -1);
 
 /**
     Preset groups of parameters (for setPerformance()) to adjust  the
@@ -167,21 +231,6 @@ void setMaxInputWidth(int maxWidth);
  */
 void setMinInputWidth(int minWidth);
 
-/**
-    Enable or disable tracking to complement the detection.
-
-    Tracking allows a more robust detection, e.g. in the case where the tag has
-    already been detected, but moves too fast to be detected again.
-
-    The results of the regular detection override the results of tracking, as
-    the former is expected to be more precise than the latter.
-
-    Disabling tracking as a complement to detection allows a marginally faster
-    detection at the cost of a marginally less robust detection.
-
-    setFindAndTrack() has an effect only on find().
- */
-void setFindAndTrack(bool findAndTrack);
 //@}
 
 //@{
@@ -342,9 +391,16 @@ std::map<std::string, cv::Matx44d> estimate(const std::map<int, Quad> & tags);
       r31 , r32 , r33 , tz 
         0 ,   0 ,   0 ,  1 }
     \endverbatim
+
     \param inputImage the image to feed to Chilitags::find().
+
+    \param detectionTrigger specifies how to combine tracking and
+    full detection. Tracking is drastically faster, but it can at
+    best return tags previously found; it won't find new ones, but
+    can lose some. See Chilitags::DetectionTrigger for a description of the
+    possible values.
  */
-std::map<std::string, cv::Matx44d> estimate(const cv::Mat &inputImage);
+std::map<std::string, cv::Matx44d> estimate(const cv::Mat &inputImage, Chilitags::DetectionTrigger detectionTrigger = Chilitags::DEFAULT);
 
 /**
     Chilitags3D can also detect rigid assemblies of tags. This allows for a
