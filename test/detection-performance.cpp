@@ -126,7 +126,7 @@ TEST(Integration, Snapshots) {
     // We do not want any filtering, to measure the raw performances
     chilitags.setFilter(0, 0.);
     // We measure chilitags at its best, and compare optimisations later
-    chilitags.tunePerformance(chilitags::Chilitags::ROBUST);
+    chilitags.setPerformance(chilitags::Chilitags::ROBUST);
 
     map<int, std::string> resolution;
 
@@ -236,7 +236,7 @@ TEST(Integration, Snapshots) {
     //chilitags.setCornerRefinement(false);
     //chilitags.setMaxInputWidth(640);
     //chilitags.setMinInputWidth(0);
-    chilitags.tunePerformance(chilitags::Chilitags::FAST);
+    chilitags.setPerformance(chilitags::Chilitags::FAST);
     map<int, vector<double> > perfDurations;
     map<int, int > perfFalseNegatives;
     int perfTotalFalseNegatives = 0;
