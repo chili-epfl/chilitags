@@ -81,8 +81,16 @@ Chilitags();
 void setFilter(int persistence, double gain);
 
 /**
-    Values of parameter to tell find() how to combine trackiing and full
+    Values of the parameter to tell find() how to combine tracking and full
     detection.
+
+    find() relies on two different techniques to localize 2D tags in an image:
+    \li The *detection* searches for edges in the full input image, keeps those
+    wich looke like a quadrilateral, and check whether there is a valid
+    bitmatrix inside it.
+    \li The *tracking* compares two succesive input images and tries to update
+    the position of tags that were previously detected. This process is
+    significantly faster than the full detection, but can not detect new tags.
 */
 enum DetectionTrigger {
 /**
@@ -97,20 +105,24 @@ enum DetectionTrigger {
 
 /**
     Disable tracking as a complement to detection. Compared to
-    `TRACK_AND_DETECT`, `JUST_DETECT` allows a marginally faster procesing, but
-    results in poor detection performances as soon as the tags are in movement.
+    `TRACK_AND_DETECT`, `DETECT_ONLY` allows a marginally faster processing,
+    but results in poor detection performances as soon as the tags are in
+    movement.  `DETECT_ONLY` is also useful in the case where Chilitags are
+    detected in a sequence of images that are not related to each other, e.g. a
+    batch processing of still images. In this case, tracking is useless at
+    best, and makes false positives at worst.
 */
-    JUST_DETECT,
+    DETECT_ONLY,
 
 /**
     Perform tracking only. Tracking is drastically faster, but it can at best
     return tags previously found; it won't find new ones, but can lose some.
 
-    `JUST_TRACK` lets the user to decide when to run a full detection.  An
-    interesting use case is to call find() with `JUST_TRACK` as long as an
-    expected (set of) tag(s) is found, and with `JUST_DETECT` otherwise.
+    `TRACK_ONLY` lets the user to decide when to run a full detection.  An
+    interesting use case is to call find() with `TRACK_ONLY` as long as an
+    expected (set of) tag(s) is found, and with `DETECT_ONLY` otherwise.
 */
-    JUST_TRACK,
+    TRACK_ONLY,
 
 /**
     Periodically run a full detection.
@@ -132,7 +144,6 @@ enum DetectionTrigger {
     setDefaultDetectionTrigger(). The Chilitags::ROBUST, Chilitags::FAST and
     Chilitags::FASTER performance presets respectively use `TRACK_AND_DETECT`,
     `DETECT_PERIODICALLY` (with n=15), `DETECT_PERIODICALLY` (with n=15).
-    `FAST` is the initial performance preset.
 */
     DEFAULT
 };
@@ -261,8 +272,9 @@ int decode(const cv::Matx<unsigned char, 6, 6> &bits) const;
 
     \param id the id of the tag to draw, between [0,1024)
 
-    \param cellSize the (integer) scale factor with which to draw the tag. In other
-    words, every bit of the data matrix of the tag will be `cellSize` large.
+    \param cellSize the (integer) scale factor with which to draw the tag. In
+    other words, every bit of the data matrix of the tag will be `cellSize`
+    large.
 
     \param withMargin a boolean coding whether the returned image of the tag
     should be surrounded by a white frame, ensuring that the edges of the tag
@@ -271,7 +283,11 @@ int decode(const cv::Matx<unsigned char, 6, 6> &bits) const;
     \param color the RGB color with which to draw the tag. Values are integers
     within [0,255]. The darker, the better. Black is default and optimal.
  */
-cv::Mat draw(int id, int cellSize = 1, bool withMargin = false, cv::Scalar color = cv::Scalar(0,0,0)) const;
+cv::Mat draw(
+    int id,
+    int cellSize = 1,
+    bool withMargin = false,
+    cv::Scalar color = cv::Scalar(0,0,0)) const;
 
 //@}
 

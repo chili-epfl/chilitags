@@ -118,10 +118,10 @@ std::map<int, Quad> find(
 
     mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection-1, 0);
     if (detectionTrigger == DETECT_PERIODICALLY) {
-        detectionTrigger = (mCallsBeforeNextDetection > 0)?JUST_TRACK:TRACK_AND_DETECT;
+        detectionTrigger = (mCallsBeforeNextDetection > 0)?TRACK_ONLY:TRACK_AND_DETECT;
     }
 
-    if (detectionTrigger == JUST_TRACK) return mTrack(inputImage);
+    if (detectionTrigger == TRACK_ONLY) return mTrack(inputImage);
 
     // now we're going to do a full detection
     mCallsBeforeNextDetection = mCallsBeforeDetection;

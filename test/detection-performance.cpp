@@ -129,7 +129,7 @@ TEST(Integration, Snapshots) {
     chilitags.setFilter(0, 0.);
     // and we disable tracking, which does not help unrelated input images,
     // and actually breaks when images of different size follow each other.
-    chilitags.setDefaultDetectionTrigger(chilitags::Chilitags::JUST_DETECT);
+    chilitags.setDefaultDetectionTrigger(chilitags::Chilitags::DETECT_ONLY);
 
     map<int, std::string> resolution;
 
@@ -243,7 +243,7 @@ TEST(Integration, Snapshots) {
 
     // We need to override FAST's default parameter for detection, to completely
     // disable tracking, as above.
-    chilitags.setDefaultDetectionTrigger(chilitags::Chilitags::JUST_DETECT);
+    chilitags.setDefaultDetectionTrigger(chilitags::Chilitags::DETECT_ONLY);
 
     map<int, vector<double> > perfDurations;
     map<int, int > perfFalseNegatives;

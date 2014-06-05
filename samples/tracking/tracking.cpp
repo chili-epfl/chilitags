@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
     chilitags::Chilitags detectedChilitags;
     detectedChilitags.setFilter(0, 0.);
     // ... with tracking completely disabled
-    detectedChilitags.setDefaultDetectionTrigger(chilitags::Chilitags::JUST_DETECT);
+    detectedChilitags.setDefaultDetectionTrigger(chilitags::Chilitags::DETECT_ONLY);
 
     // This one will be called with JUST_TRACK when it has previously detected
     // something
@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
             // to track() as long as there is something returned.
             // When nothing is returned, we are back to regular detection.
             auto tags = 
-                trackedChilitags.find(inputImage, tracking?chilitags::Chilitags::JUST_TRACK:chilitags::Chilitags::TRACK_AND_DETECT);
+                trackedChilitags.find(inputImage, tracking?chilitags::Chilitags::TRACK_ONLY:chilitags::Chilitags::TRACK_AND_DETECT);
             int64 endTime = cv::getTickCount();
             drawTags(outputImage, tags, startTime, endTime, false);
             tracking = !tags.empty();
