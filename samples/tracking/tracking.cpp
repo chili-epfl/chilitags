@@ -75,8 +75,6 @@ int main(int argc, char* argv[])
     // This one is the reference Chilitags
     chilitags::Chilitags detectedChilitags;
     detectedChilitags.setFilter(0, 0.);
-    // ... with tracking completely disabled
-    detectedChilitags.setDefaultDetectionTrigger(chilitags::Chilitags::DETECT_ONLY);
 
     // This one will be called with JUST_TRACK when it has previously detected
     // something
@@ -108,7 +106,7 @@ int main(int argc, char* argv[])
         // nothing new here
         if (showReference) {
             int64 startTime = cv::getTickCount();
-            auto tags = detectedChilitags.find(inputImage);
+            auto tags = detectedChilitags.find(inputImage, chilitags::Chilitags::DETECT_ONLY);
             int64 endTime = cv::getTickCount();
             drawTags(outputImage, tags, startTime, endTime, true);
         }

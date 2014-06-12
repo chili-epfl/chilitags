@@ -74,17 +74,19 @@ void setPerformance(PerformancePreset preset) {
         case FASTER:
             setCornerRefinement(false);
             mFindQuads.setMinInputWidth(0);
-            setDefaultDetectionTrigger(DETECT_PERIODICALLY, 15);
+            mDefaultDetectionTrigger = DETECT_PERIODICALLY;
+            setDetectionPeriod(15);
             break;
         case FAST:
             setCornerRefinement(true);
             mFindQuads.setMinInputWidth(0);
-            setDefaultDetectionTrigger(DETECT_PERIODICALLY, 15);
+            mDefaultDetectionTrigger = DETECT_PERIODICALLY;
+            setDetectionPeriod(15);
             break;
         case ROBUST:
             setCornerRefinement(true);
             mFindQuads.setMinInputWidth(160);
-            setDefaultDetectionTrigger(TRACK_AND_DETECT);
+            mDefaultDetectionTrigger = TRACK_AND_DETECT;
             break;
         defaut:
             break;
@@ -103,18 +105,15 @@ void setMinInputWidth(int minWidth) {
     mFindQuads.setMinInputWidth(minWidth);
 }
 
-void setDefaultDetectionTrigger(DetectionTrigger trigger, int parameter = -1) {
-    mDefaultDetectionTrigger = trigger;
-         if (trigger == DETECT_PERIODICALLY) {
-        mCallsBeforeDetection = (parameter < 0)?15:parameter;
-    }
+void setDetectionPeriod(int period) {
+    mCallsBeforeDetection = period;
 }
 
 std::map<int, Quad> find(
     const cv::Mat &inputImage,
     DetectionTrigger detectionTrigger){
 
-    if (detectionTrigger == DEFAULT) detectionTrigger = mDefaultDetectionTrigger;
+    if (detectionTrigger == AUTO) detectionTrigger = mDefaultDetectionTrigger;
 
     mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection-1, 0);
     if (detectionTrigger == DETECT_PERIODICALLY) {
@@ -261,8 +260,8 @@ std::map<int, Quad> Chilitags::find(
     return mImpl->find(inputImage, trigger);
 }
 
-void Chilitags::setDefaultDetectionTrigger(Chilitags::DetectionTrigger trigger, int parameter) {
-    mImpl->setDefaultDetectionTrigger(trigger, parameter);
+void Chilitags::setDetectionPeriod(int period) {
+    mImpl->setDetectionPeriod(period);
 }
 
 cv::Matx<unsigned char, 6, 6> Chilitags::encode(int id) const {

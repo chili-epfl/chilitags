@@ -127,9 +127,6 @@ TEST(Integration, Snapshots) {
     chilitags.setPerformance(chilitags::Chilitags::ROBUST);
     // We do not want any filtering, to measure the raw performances
     chilitags.setFilter(0, 0.);
-    // and we disable tracking, which does not help unrelated input images,
-    // and actually breaks when images of different size follow each other.
-    chilitags.setDefaultDetectionTrigger(chilitags::Chilitags::DETECT_ONLY);
 
     map<int, std::string> resolution;
 
@@ -151,9 +148,13 @@ TEST(Integration, Snapshots) {
             resolution[image.cols*image.rows] = cv::format("%dx%d", image.cols, image.rows);
             for (int i = 0; i < ITERATIONS; i++) {
                 int64 startCount = cv::getTickCount();
-                tags = chilitags.find(image);
+                // we disable tracking, which does not help unrelated input
+                // images, and actually breaks when images of different sizes
+                // follow each other.
+                tags = chilitags.find(image, chilitags::Chilitags::DETECT_ONLY);
                 int64 endCount = cv::getTickCount();
-                referenceDuration[image.rows*image.cols].push_back(((double) endCount - startCount)*1000/cv::getTickFrequency());
+                referenceDuration[image.rows*image.cols].push_back(
+                    ((double) endCount - startCount)*1000/cv::getTickFrequency());
             }
 
             std::vector<int> foundIds;
@@ -241,10 +242,6 @@ TEST(Integration, Snapshots) {
     //chilitags.setMinInputWidth(0);
     chilitags.setPerformance(chilitags::Chilitags::FAST);
 
-    // We need to override FAST's default parameter for detection, to completely
-    // disable tracking, as above.
-    chilitags.setDefaultDetectionTrigger(chilitags::Chilitags::DETECT_ONLY);
-
     map<int, vector<double> > perfDurations;
     map<int, int > perfFalseNegatives;
     int perfTotalFalseNegatives = 0;
@@ -256,7 +253,9 @@ TEST(Integration, Snapshots) {
             std::map<int, chilitags::Quad> tags;
             for (int i = 0; i < ITERATIONS; i++) {
                 int64 startCount = cv::getTickCount();
-                tags = chilitags.find(image);
+                // We need to override FAST's default parameter for detection,
+                // to completely disable tracking, as above.
+                tags = chilitags.find(image, chilitags::Chilitags::DETECT_ONLY);
                 int64 endCount = cv::getTickCount();
                 perfDurations[image.rows*image.cols].push_back(((double) endCount - startCount)*1000/cv::getTickFrequency());
             }
