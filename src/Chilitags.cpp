@@ -116,7 +116,7 @@ std::map<int, Quad> find(const cv::Mat &inputImage){
 
     if (mRefineCorners) {
         for (const auto & quad : mFindQuads(greyscaleImage)) {
-            auto refinedQuad = mRefine(greyscaleImage, quad);
+            auto refinedQuad = mRefine(greyscaleImage, quad, 1.5/10.);
             auto tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
             if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
             else {

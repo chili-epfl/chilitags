@@ -24,6 +24,8 @@
 #include "opencv2/video/tracking.hpp"
 
 chilitags::Track::Track():
+mRefine(),
+mEnsureGreyscale(),
 mFromImage(),
 mToImage(),
 mFromTags()
@@ -79,7 +81,7 @@ std::map<int, chilitags::Quad> chilitags::Track::operator()(
         }
 
         if (cv::sum(cv::Mat(status))[0] == status.size()) {
-            trackedTags[tag.first] = mRefine(mToImage, result);
+            trackedTags[tag.first] = mRefine(mToImage, result, .5/10.);
         }
     }
 

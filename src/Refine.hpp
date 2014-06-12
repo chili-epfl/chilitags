@@ -34,7 +34,10 @@ public:
 
 Refine();
 
-Quad operator()(const cv::Mat &inputImage, const Quad &quad);
+Quad operator()(
+    const cv::Mat &inputImage,
+    const Quad &quad,
+    const double proximityRatio);
 
 };
 

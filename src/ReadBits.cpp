@@ -78,6 +78,15 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
 {
     cv::Mat_<cv::Point2f> cornersCopy(corners);
 
+    // Sometimes, the corners are refined into a concave quadrilateral
+    // which makes ReadBits crash
+    cv::Mat convexHull;
+    cv::convexHull(cornersCopy, convexHull, true);
+    if (convexHull.rows != 4) {
+        cornersCopy = convexHull;
+        cornersCopy.push_back(.5f*(cornersCopy(0)+cornersCopy(1)));
+    }
+
     auto roi = cv::boundingRect(cornersCopy);
 
     // Refine can actually provide corners outside the image

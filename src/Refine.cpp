@@ -37,7 +37,10 @@ chilitags::Refine::Refine()
 #endif
 }
 
-chilitags::Quad chilitags::Refine::operator()(const cv::Mat &inputImage, const Quad &quad)
+chilitags::Quad chilitags::Refine::operator()(
+    const cv::Mat &inputImage,
+    const Quad &quad,
+    const double proximityRatio)
 {
     cv::Mat_<cv::Point2f> refinedQuad(quad);
 
@@ -51,13 +54,13 @@ chilitags::Quad chilitags::Refine::operator()(const cv::Mat &inputImage, const Q
     cv::Point2f roiOffset = roi.tl();
     for (int i : {0,1,2,3}) refinedQuad(i) -= roiOffset;
 
-    static const double PROXIMITYRATIO = 1.5/10.0;
     double averageSideLength = cv::arcLength(refinedQuad, true) / 4.0;
-    double cornerNeighbourhood = PROXIMITYRATIO*averageSideLength;
+    double cornerNeighbourhood = proximityRatio*averageSideLength;
 
     // ensure the cornerSubPixel search window is smaller that the ROI
     cornerNeighbourhood = cv::min(cornerNeighbourhood, ((double) roi.width-5)/2);
     cornerNeighbourhood = cv::min(cornerNeighbourhood, ((double) roi.height-5)/2);
+    cornerNeighbourhood = cv::max(cornerNeighbourhood, 1.0);
 
     cv::cornerSubPix(inputImage(roi), refinedQuad,
                      cv::Size(cornerNeighbourhood, cornerNeighbourhood),
@@ -65,19 +68,16 @@ chilitags::Quad chilitags::Refine::operator()(const cv::Mat &inputImage, const Q
                          cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS,
                          5, 0.01));
 
-    for (int i : {0,1,2,3}) refinedQuad(i) += roiOffset;
-
 #ifdef DEBUG_Refine
     cv::Mat debugImage = inputImage(roi).clone();
     for(int i=0; i<4; ++i)
     {
-        cv::circle(debugImage, refinedQuad(i)-roiOffset,
-                   3, cv::Scalar::all(128), 2);
+        cv::circle(debugImage, refinedQuad(i), 3, cv::Scalar::all(128), 2);
         cv::line(debugImage,
-                 refinedQuad(i)-roiOffset, refinedQuad(i)-roiOffset,
+                 refinedQuad(i), refinedQuad(i),
                  cv::Scalar::all(255), 5);
         cv::rectangle(debugImage,
-                 refinedQuad(i)-roiOffset-cv::Point2f(cornerNeighbourhood, cornerNeighbourhood), refinedQuad(i)-roiOffset+cv::Point2f(cornerNeighbourhood, cornerNeighbourhood),
+                 refinedQuad(i)-cv::Point2f(cornerNeighbourhood, cornerNeighbourhood), refinedQuad(i)+cv::Point2f(cornerNeighbourhood, cornerNeighbourhood),
                  cv::Scalar::all(255));
         printf("%1.1f  %1.1f        ", refinedQuad(i).x, refinedQuad(i).y);
     }
@@ -86,11 +86,7 @@ chilitags::Quad chilitags::Refine::operator()(const cv::Mat &inputImage, const Q
     cv::waitKey(0);
 #endif
 
-    // Sometimes, the corners are refined into a concave quadrilateral
-    // which makes ReadBits crash
-    cv::Mat convexHull;
-    cv::convexHull(refinedQuad, convexHull, false);
-    if (convexHull.rows == 4) return convexHull.reshape(1);
+    for (int i : {0,1,2,3}) refinedQuad(i) += roiOffset;
 
-    return quad;
+    return refinedQuad.reshape(1);
 }
