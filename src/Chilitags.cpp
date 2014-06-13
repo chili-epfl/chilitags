@@ -57,7 +57,6 @@ Impl() :
 
     mRefineCorners(true),
 
-    mDefaultDetectionTrigger(TRACK_AND_DETECT),
     mCallsBeforeDetection(15),
     mCallsBeforeNextDetection(0)
 {
@@ -74,19 +73,14 @@ void setPerformance(PerformancePreset preset) {
         case FASTER:
             setCornerRefinement(false);
             mFindQuads.setMinInputWidth(0);
-            mDefaultDetectionTrigger = DETECT_PERIODICALLY;
-            setDetectionPeriod(15);
             break;
         case FAST:
             setCornerRefinement(true);
             mFindQuads.setMinInputWidth(0);
-            mDefaultDetectionTrigger = DETECT_PERIODICALLY;
-            setDetectionPeriod(15);
             break;
         case ROBUST:
             setCornerRefinement(true);
             mFindQuads.setMinInputWidth(160);
-            mDefaultDetectionTrigger = TRACK_AND_DETECT;
             break;
         defaut:
             break;
@@ -112,8 +106,6 @@ void setDetectionPeriod(int period) {
 std::map<int, Quad> find(
     const cv::Mat &inputImage,
     DetectionTrigger detectionTrigger){
-
-    if (detectionTrigger == AUTO) detectionTrigger = mDefaultDetectionTrigger;
 
     mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection-1, 0);
     if (detectionTrigger == DETECT_PERIODICALLY) {
@@ -222,7 +214,6 @@ Track mTrack;
 
 bool mRefineCorners;
 
-DetectionTrigger mDefaultDetectionTrigger;
 int mCallsBeforeNextDetection;
 int mCallsBeforeDetection;
 

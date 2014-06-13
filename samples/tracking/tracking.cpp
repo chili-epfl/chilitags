@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
         // nothing new here
         if (showReference) {
             int64 startTime = cv::getTickCount();
-            auto tags = detectedChilitags.find(inputImage, chilitags::Chilitags::DETECT_ONLY);
+            auto tags = detectedChilitags.find(inputImage);
             int64 endTime = cv::getTickCount();
             drawTags(outputImage, tags, startTime, endTime, true);
         }

@@ -148,10 +148,7 @@ TEST(Integration, Snapshots) {
             resolution[image.cols*image.rows] = cv::format("%dx%d", image.cols, image.rows);
             for (int i = 0; i < ITERATIONS; i++) {
                 int64 startCount = cv::getTickCount();
-                // we disable tracking, which does not help unrelated input
-                // images, and actually breaks when images of different sizes
-                // follow each other.
-                tags = chilitags.find(image, chilitags::Chilitags::DETECT_ONLY);
+                tags = chilitags.find(image);
                 int64 endCount = cv::getTickCount();
                 referenceDuration[image.rows*image.cols].push_back(
                     ((double) endCount - startCount)*1000/cv::getTickFrequency());
@@ -253,9 +250,7 @@ TEST(Integration, Snapshots) {
             std::map<int, chilitags::Quad> tags;
             for (int i = 0; i < ITERATIONS; i++) {
                 int64 startCount = cv::getTickCount();
-                // We need to override FAST's default parameter for detection,
-                // to completely disable tracking, as above.
-                tags = chilitags.find(image, chilitags::Chilitags::DETECT_ONLY);
+                tags = chilitags.find(image);
                 int64 endCount = cv::getTickCount();
                 perfDurations[image.rows*image.cols].push_back(((double) endCount - startCount)*1000/cv::getTickFrequency());
             }

@@ -138,14 +138,6 @@ enum DetectionTrigger {
     will only track previous results. 
 */
     DETECT_PERIODICALLY,
-
-/**
-    `AUTO` corresponds to whatever has been set by a call to
-    setDefaultDetectionTrigger(). The Chilitags::ROBUST, Chilitags::FAST and
-    Chilitags::FASTER performance presets respectively use `TRACK_AND_DETECT`,
-    `DETECT_PERIODICALLY` (with n=15), `DETECT_PERIODICALLY` (with n=15).
-*/
-    AUTO
 };
 
 /**
@@ -163,7 +155,7 @@ enum DetectionTrigger {
  */
 std::map<int, Quad> find(
     const cv::Mat &inputImage,
-    DetectionTrigger detectionTrigger = AUTO);
+    DetectionTrigger detectionTrigger = DETECT_ONLY);
 
 /**
     When the detection trigger is Chilitags::DETECT_PERIODICALLY, `period`
@@ -413,7 +405,7 @@ std::map<std::string, cv::Matx44d> estimate(const std::map<int, Quad> & tags);
  */
 std::map<std::string, cv::Matx44d> estimate(
     const cv::Mat &inputImage,
-    Chilitags::DetectionTrigger detectionTrigger = Chilitags::AUTO);
+    Chilitags::DetectionTrigger detectionTrigger = Chilitags::DETECT_ONLY);
 
 /**
     Chilitags3D can also detect rigid assemblies of tags. This allows for a
