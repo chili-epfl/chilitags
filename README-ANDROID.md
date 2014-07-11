@@ -99,6 +99,7 @@ BUILD_opencv_features2d
 BUILD_opencv_flann
 BUILD_opencv_highgui
 BUILD_opencv_imgproc
+BUILD_opencv_video
 ENABLE_OMIT_FRAME_POINTER
 ```
 
@@ -188,6 +189,7 @@ following command takes care of it:
 cd $OpenCV_DIR/../libs/armeabi-v7a/
 cp libopencv_calib3d.so libopencv_core.so libopencv_features2d.so \
 	libopencv_flann.so libopencv_highgui.so libopencv_imgproc.so \
+	libopencv_video.so \
 	<YOUR_ANDROID_PROJECT>/libs/armeabi-v7a/
 ```
 
@@ -205,7 +207,8 @@ like the following:
 │   │   ├── libopencv_features2d.so
 │   │   ├── libopencv_flann.so
 │   │   ├── libopencv_highgui.so
-│   │   └── libopencv_imgproc.so
+│   │   ├── libopencv_imgproc.so
+│   │   └── libopencv_video.so
 │   ├── chilitags-jni-wrapper.jar
 │   └── chilitags-jni-wrapper-sources.jar
 ...

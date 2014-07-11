@@ -169,7 +169,7 @@ public class CameraPreviewRenderer implements GLSurfaceView.Renderer {
 			renderBackground(cameraImage);
 
 			//Get the 3D tag poses from Chilitags
-			ObjectTransform[] tags = chilitags.estimate(cameraImage);
+			ObjectTransform[] tags = chilitags.estimate(cameraImage,Chilitags3D.DetectionTrigger.DETECT_PERIODICALLY);
 
 			//Render the tags' reference frames on the image
 			renderTagFrames(tags);

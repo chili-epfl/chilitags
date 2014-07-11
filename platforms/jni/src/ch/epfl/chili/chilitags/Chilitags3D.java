@@ -47,6 +47,16 @@ public class Chilitags3D {
 	};
 
 	/**
+	 * Values of the parameter to tell find() how to combine tracking and full detection.
+	 */
+	public enum DetectionTrigger {
+	    TRACK_AND_DETECT, /** First track results of the previous call to find(), then run a full detection on the same input image. */
+	    DETECT_ONLY, /**Disable tracking as a complement to detection.*/
+	    TRACK_ONLY, /**Perform tracking only.*/
+	    DETECT_PERIODICALLY /** Periodically run a full detection, default is every 15 frames */
+	}
+	
+	/**
 	 * Load the necessary libraries in the order of dependency.
 	 */
 	static {
@@ -56,6 +66,7 @@ public class Chilitags3D {
 		System.loadLibrary("opencv_flann");
 		System.loadLibrary("opencv_features2d");
 		System.loadLibrary("opencv_calib3d");
+		System.loadLibrary("opencv_video");
 		System.loadLibrary("chilitags");
 		System.loadLibrary("chilitags_jni_bindings");
 	}
@@ -69,7 +80,7 @@ public class Chilitags3D {
 	private native void free(long ptr);
 	private native void readTagConfigurationImpl(long ptr, String filename, boolean omitOtherTags);
 	private native CVSize readCalibrationImpl(long ptr, String filename);
-	private native ObjectTransform[] estimateImpl(long ptr, byte[] imageData);
+	private native ObjectTransform[] estimateImpl(long ptr, byte[] imageData, int detectionTrigger);
 	private native void setCalibrationImpl(long ptr, double[] cameraMatrix, double[] distortionCoeffs);
 	private native void setPerformancePresetImpl(long ptr, int preset);
 
@@ -136,10 +147,24 @@ public class Chilitags3D {
 	 * Estimates the 3D transforms of objects tagged with Chilitags. 
 	 * Depends on the tag configuration file, set it first.
 	 * 
+	 * Does not use tracking.
+	 * 
 	 * @param imageData The image buffer, must be of size (height)x(width) and of YUV_NV21 encoding; height and width values are set during construction
 	 * @return The list of transforms of the objects found in the image
 	 */
 	public ObjectTransform[] estimate(byte[] imageData){
-		return estimateImpl(ptr,imageData);
+		return estimateImpl(ptr,imageData,DetectionTrigger.DETECT_ONLY.ordinal());
+	}
+	
+	/**
+	 * Estimates the 3D transforms of objects tagged with Chilitags. 
+	 * Depends on the tag configuration file, set it first.
+	 * 
+	 * @param imageData The image buffer, must be of size (height)x(width) and of YUV_NV21 encoding; height and width values are set during construction
+	 * @param detectionTrigger How to use detection and tracking
+	 * @return The list of transforms of the objects found in the image
+	 */
+	public ObjectTransform[] estimate(byte[] imageData, DetectionTrigger detectionTrigger){
+		return estimateImpl(ptr,imageData,detectionTrigger.ordinal());
 	}
 }

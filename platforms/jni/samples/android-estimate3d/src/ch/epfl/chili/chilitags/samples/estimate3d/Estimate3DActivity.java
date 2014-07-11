@@ -109,7 +109,7 @@ public class Estimate3DActivity extends Activity implements Camera.PreviewCallba
 			surf.updateTexImage();
 
 		//Run 3D estimation on the camera image
-		ObjectTransform[] results = chilitags.estimate(data); 
+		ObjectTransform[] results = chilitags.estimate(data,Chilitags3D.DetectionTrigger.DETECT_PERIODICALLY); 
 
 		//Report transform matrices of found tags
 		if(results.length > 0){

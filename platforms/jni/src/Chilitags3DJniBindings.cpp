@@ -129,7 +129,7 @@ JNI(void,setCalibrationImpl)(JNIEnv* env, jclass* class_, jlong ptr, jdoubleArra
 		env->ReleaseDoubleArrayElements(distortionCoeffs,jdistcoeffsBuffer,0);
 }
 
-JNI(jobjectArray,estimateImpl)(JNIEnv* env, jclass* class_, jlong ptr, jbyteArray imageData){
+JNI(jobjectArray,estimateImpl)(JNIEnv* env, jclass* class_, jlong ptr, jbyteArray imageData, jint detectionTrigger){
 
 	//Get a pointer to the image data buffer inside the JVM heap by first pinning it down to prevent garbage collector from touching it
 	//This doesn't cause copying the buffer to another location in the heap unless necessary: We're truly sharing memory most of the time
@@ -163,7 +163,7 @@ JNI(jobjectArray,estimateImpl)(JNIEnv* env, jclass* class_, jlong ptr, jbyteArra
 	}
 
 	//Call Chilitags' estimate on the grayscale image
-	auto result = GET_OBJ(ptr)->estimate(Chilitags3D_downsampled);
+	auto result = GET_OBJ(ptr)->estimate(Chilitags3D_downsampled,static_cast<chilitags::Chilitags::DetectionTrigger>(detectionTrigger));
 
 	//Unpin the image data buffer inside the JVM
 	env->ReleaseByteArrayElements(imageData,buffer,0);
