@@ -84,10 +84,14 @@ on Windows, MacOS X and Android.
 ### Dependencies
 
 Chilitags rely on OpenCV 2.4+.  They have has been recently tested with
-OpenCV 2.4 and on Ubuntu (64 bits) 13.04 and 13.10. The [documentation on
+OpenCV 2.4 and on Ubuntu (64 bits) 13.04, 13.10 and 14.04. The [documentation on
 how to install OpenCV](http://docs.opencv.org/doc/tutorials/introduction/table_of_content_introduction/table_of_content_introduction.html)
 can be found for various platforms and IDE.
 
+Note that Ubuntu 12.04 is not officially supported anymore due to its default
+C++ toolchain not supporting C++11. If you want to compile `chilitags` on this
+operating system, you need to install a compiler supporting enough of C++11 (for instance,
+`gcc-4.7`). You may also need to manually install `opencv >= 2.4`.
 
 ### Set up
 
