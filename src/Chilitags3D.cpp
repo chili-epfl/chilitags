@@ -199,8 +199,9 @@ std::map<std::string, cv::Matx44d> estimate(const std::map<int, Quad> &tags) {
 }
 
 std::map<std::string, cv::Matx44d> estimate(
-    const cv::Mat &inputImage) {
-    return estimate(mChilitags.find(inputImage));
+    const cv::Mat &inputImage,
+    Chilitags::DetectionTrigger detectionTrigger) {
+    return estimate(mChilitags.find(inputImage, detectionTrigger));
 }
 
 void setDefaultTagSize(float defaultSize){
@@ -335,8 +336,9 @@ std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::estimate(
 }
 
 std::map<std::string, cv::Matx44d> chilitags::Chilitags3D::estimate(
-    const cv::Mat &inputImage) {
-    return mImpl->estimate(inputImage);
+    const cv::Mat &inputImage,
+    Chilitags::DetectionTrigger detectionTrigger) {
+    return mImpl->estimate(inputImage, detectionTrigger);
 }
 
 void chilitags::Chilitags3D::setDefaultTagSize(float defaultSize){

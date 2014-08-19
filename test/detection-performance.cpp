@@ -123,10 +123,10 @@ TEST(Integration, Snapshots) {
     cvtest::TS::ptr()->init("");
 
     chilitags::Chilitags chilitags;
-    // We do not want any filtering, to measure the raw performances
-    chilitags.setFilter(0, 0.);
     // We measure chilitags at its best, and compare optimisations later
     chilitags.setPerformance(chilitags::Chilitags::ROBUST);
+    // We do not want any filtering, to measure the raw performances
+    chilitags.setFilter(0, 0.);
 
     map<int, std::string> resolution;
 
@@ -150,7 +150,8 @@ TEST(Integration, Snapshots) {
                 int64 startCount = cv::getTickCount();
                 tags = chilitags.find(image);
                 int64 endCount = cv::getTickCount();
-                referenceDuration[image.rows*image.cols].push_back(((double) endCount - startCount)*1000/cv::getTickFrequency());
+                referenceDuration[image.rows*image.cols].push_back(
+                    ((double) endCount - startCount)*1000/cv::getTickFrequency());
             }
 
             std::vector<int> foundIds;
@@ -237,6 +238,7 @@ TEST(Integration, Snapshots) {
     //chilitags.setMaxInputWidth(640);
     //chilitags.setMinInputWidth(0);
     chilitags.setPerformance(chilitags::Chilitags::FAST);
+
     map<int, vector<double> > perfDurations;
     map<int, int > perfFalseNegatives;
     int perfTotalFalseNegatives = 0;

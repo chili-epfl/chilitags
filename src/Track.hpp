@@ -18,29 +18,38 @@
 *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
 *******************************************************************************/
 
-#ifndef Refine_HPP
-#define Refine_HPP
+#ifndef Track_HPP
+#define Track_HPP
 
-#include <vector>
+#include <map>
 #include <opencv2/core/core.hpp>
+#include "Refine.hpp"
+#include "EnsureGreyscale.hpp"
 
 namespace chilitags {
 
 typedef cv::Matx<float, 4, 2> Quad;
 
-class Refine
+class Track
 {
 public:
 
-Refine();
+Track();
 
-Quad operator()(
-    const cv::Mat &inputImage,
-    const Quad &quad,
-    const double proximityRatio);
+void update(const std::map<int, Quad> &tags);
+void update(const cv::Mat &inputImage, const std::map<int, Quad> &tags);
+std::map<int, Quad> operator()(const cv::Mat &inputImage);
+
+protected:
+
+chilitags::Refine mRefine;
+chilitags::EnsureGreyscale mEnsureGreyscale;
+
+cv::Mat mFromImage;
+cv::Mat mToImage;
+std::map<int, Quad> mFromTags;
 
 };
-
 
 }
 

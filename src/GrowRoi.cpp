@@ -18,30 +18,29 @@
 *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
 *******************************************************************************/
 
-#ifndef Refine_HPP
-#define Refine_HPP
+#include "GrowRoi.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
 
-#include <vector>
-#include <opencv2/core/core.hpp>
-
-namespace chilitags {
-
-typedef cv::Matx<float, 4, 2> Quad;
-
-class Refine
+cv::Rect chilitags::growRoi(const cv::Mat &inputImage, cv::InputArray points, float growthRatio)
 {
-public:
+    // Taking a ROI around the raw corners with some margin
+    cv::Rect roi = cv::boundingRect(points);
+    int xGrowth = (int)(growthRatio*roi.width);
+    int yGrowth = (int)(growthRatio*roi.height);
+    roi.x -= xGrowth;
+    roi.y -= yGrowth;
+    roi.width += 2*xGrowth;
+    roi.height += 2*yGrowth;
 
-Refine();
+    // Making sure the ROI is still in the image
+    int previousRoiX = roi.x;
+    int previousRoiY = roi.y;
+    roi.x = std::max(roi.x, 0);
+    roi.y = std::max(roi.y, 0);
+    roi.width -= roi.x - previousRoiX;
+    roi.height -= roi.y - previousRoiY;
+    roi.width = cv::min(roi.x+roi.width, inputImage.cols)-roi.x;
+    roi.height = cv::min(roi.y+roi.height, inputImage.rows)-roi.y;
 
-Quad operator()(
-    const cv::Mat &inputImage,
-    const Quad &quad,
-    const double proximityRatio);
-
-};
-
-
+    return roi;
 }
-
-#endif

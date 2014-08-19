@@ -29,6 +29,8 @@
 
 #include "Filter.hpp"
 
+#include "Track.hpp"
+
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <iostream>
@@ -51,7 +53,12 @@ Impl() :
 
     mFilter(5, 0.),
 
-    mRefineCorners(true)
+    mTrack(),
+
+    mRefineCorners(true),
+
+    mCallsBeforeDetection(15),
+    mCallsBeforeNextDetection(0)
 {
     setPerformance(FAST);
 }
@@ -79,6 +86,7 @@ void setPerformance(PerformancePreset preset) {
             break;
     }
 }
+
 void setCornerRefinement(bool refineCorners) {
     mRefineCorners = refineCorners;
 }
@@ -91,15 +99,35 @@ void setMinInputWidth(int minWidth) {
     mFindQuads.setMinInputWidth(minWidth);
 }
 
+void setDetectionPeriod(int period) {
+    mCallsBeforeDetection = period;
+}
 
-std::map<int, Quad> find(const cv::Mat &inputImage){
-    auto greyscaleImage = mEnsureGreyscale(inputImage);
+std::map<int, Quad> find(
+    const cv::Mat &inputImage,
+    DetectionTrigger detectionTrigger){
 
+    mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection-1, 0);
+    if (detectionTrigger == DETECT_PERIODICALLY) {
+        detectionTrigger = (mCallsBeforeNextDetection > 0)?TRACK_ONLY:TRACK_AND_DETECT;
+    }
+
+    if (detectionTrigger == TRACK_ONLY) return mTrack(inputImage);
+
+    // now we're going to do a full detection
+    mCallsBeforeNextDetection = mCallsBeforeDetection;
+
+    cv::Mat greyscaleImage = mEnsureGreyscale(inputImage);
     std::map<int, Quad> tags;
+
+    if (detectionTrigger == TRACK_AND_DETECT) {
+        // track first to override tracked tags with actually detected tags
+        tags = mTrack(inputImage);
+    }
 
     if (mRefineCorners) {
         for (const auto & quad : mFindQuads(greyscaleImage)) {
-            auto refinedQuad = mRefine(greyscaleImage, quad);
+            auto refinedQuad = mRefine(greyscaleImage, quad, 1.5/10.);
             auto tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
             if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
             else {
@@ -114,6 +142,15 @@ std::map<int, Quad> find(const cv::Mat &inputImage){
             if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
         }
     }
+
+    if (detectionTrigger == TRACK_AND_DETECT) {
+        // the current input image has already been updated in mTrack()
+        mTrack.update(tags);
+    }
+    else {
+        mTrack.update(greyscaleImage, tags);
+    }
+
     return mFilter(tags);
 };
 
@@ -173,7 +210,12 @@ Decode mDecode;
 
 Filter<int, Quad> mFilter;
 
+Track mTrack;
+
 bool mRefineCorners;
+
+int mCallsBeforeNextDetection;
+int mCallsBeforeDetection;
 
 };
 
@@ -203,8 +245,14 @@ void Chilitags::setMinInputWidth(int minWidth) {
 }
 
 std::map<int, Quad> Chilitags::find(
-    const cv::Mat &inputImage) {
-    return mImpl->find(inputImage);
+    const cv::Mat &inputImage,
+    DetectionTrigger trigger
+    ) {
+    return mImpl->find(inputImage, trigger);
+}
+
+void Chilitags::setDetectionPeriod(int period) {
+    mImpl->setDetectionPeriod(period);
 }
 
 cv::Matx<unsigned char, 6, 6> Chilitags::encode(int id) const {

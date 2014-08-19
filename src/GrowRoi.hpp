@@ -18,29 +18,17 @@
 *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
 *******************************************************************************/
 
-#ifndef Refine_HPP
-#define Refine_HPP
+#ifndef GrowRoi_HPP
+#define GrowRoi_HPP
 
-#include <vector>
 #include <opencv2/core/core.hpp>
 
 namespace chilitags {
 
-typedef cv::Matx<float, 4, 2> Quad;
-
-class Refine
-{
-public:
-
-Refine();
-
-Quad operator()(
+cv::Rect growRoi(
     const cv::Mat &inputImage,
-    const Quad &quad,
-    const double proximityRatio);
-
-};
-
+    cv::InputArray points,
+    float growthRatio);
 
 }
 
