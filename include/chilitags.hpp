@@ -95,7 +95,9 @@ void setFilter(int persistence, double gain);
 enum DetectionTrigger {
 /**
     First track results of the previous call to find(), then run a full
-    detection on the same input image.
+    detection on the same input image. The detected position overrides the
+    position resulting from tracking if the same tag is both tracked and
+    detected. 
 
     This improves the robustness of the detection, e.g. in the case where the
     tag has already been detected previously, but moves too fast to be detected
@@ -104,38 +106,44 @@ enum DetectionTrigger {
     TRACK_AND_DETECT,
 
 /**
-    Disable tracking as a complement to detection. Compared to
-    `TRACK_AND_DETECT`, `DETECT_ONLY` allows a marginally faster processing,
-    but results in poor detection performances as soon as the tags are in
-    movement.  `DETECT_ONLY` is also useful in the case where Chilitags are
-    detected in a sequence of images that are not related to each other, e.g. a
-    batch processing of still images. In this case, tracking is useless at
-    best, and makes false positives at worst.
+    Disable tracking: only full detections are performed. Compared to
+    `TRACK_AND_DETECT`, `DETECT_ONLY` leads to a marginally faster processing,
+    but may result in decreased detection performances when the tags move (due
+    to motion blur).
+
+     `DETECT_ONLY` is however useful when Chilitags processes sequence of
+     unrelated images, e.g.  in the batch processing of still images. In this
+     case, tracking is useless and most likely generates false positives.
 */
     DETECT_ONLY,
 
 /**
-    Perform tracking only. Tracking is drastically faster, but it can at best
-    return tags previously found; it won't find new ones, but can lose some.
+    Perform tracking only. Tracking is drastically faster than full detection,
+    but it can only report tags that have been already detected once: full
+    detection must be run at least once to have some tags to track
 
-    `TRACK_ONLY` lets the user to decide when to run a full detection.  An
-    interesting use case is to call find() with `TRACK_ONLY` as long as an
-    expected (set of) tag(s) is found, and with `DETECT_ONLY` otherwise.
+    Likewise, tracking can not detect new tags. A full detection needs to be
+    run explicitely to detect (and then track) those. `TRACK_ONLY` is hence
+    most useful when full control of when full detections occur is required
+    (typically when precise control the time spend on processing one frame is
+    needed). Use `DETECT_PERIODICALLY` to have automatic re-detection of tags
+    every few frames.
+
+    Another interesting use case is to call `find()` with `TRACK_ONLY` as long
+    as an expected (set of) tag(s) is found, and with `DETECT_ONLY` otherwise.
 */
     TRACK_ONLY,
 
 /**
     Periodically run a full detection.
 
-    `DETECT_PERIODICALLY` allows to specifies a number of calls to find() in
-    which the full detection will be used once, and tracking the rest of the
-    time.
+    `DETECT_PERIODICALLY` lets Chilitags use tracking most of the time, and
+    eventually run a full detection.
 
-    Use setDetectionPeriod() to specify the number of calls to find() in which
-    one full detection should be happen. This number is kept between calls to
-    setDetectionPeriod(). The default is 15, which means that out of 15
-    consecutive calls to find(), 1 will use a full detection, and the 14 others
-    will only track previous results. 
+    `setDetectionPeriod()` allows to specify the number of frames between two
+    full detection. It defaults to 15, i.e. out of 15 consecutive calls to
+    `find()`, 1 will use a full detection, and the 14 others will only track
+    previous results.
 */
     DETECT_PERIODICALLY,
 };
@@ -159,7 +167,7 @@ std::map<int, Quad> find(
 
 /**
     When the detection trigger is Chilitags::DETECT_PERIODICALLY, `period`
-    specifies the number of calls to find() for each full detection. The
+    specifies the number of frames between each full detection. The
     default is 15, which means that out of 15 consecutive calls to find(),
     one will use a full detection, and the 14 others will only track
     previous results.
