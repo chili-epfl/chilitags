@@ -23,7 +23,7 @@ interfaces](http://youtu.be/F_gSwHZ2u1Y).
 Overview
 --------
 
-[![Build Status](https://travis-ci.org/qbonnard/chilitags.svg?branch=master)](https://travis-ci.org/qbonnard/chilitags)
+[![Build Status](https://travis-ci.org/chili-epfl/chilitags.svg?branch=master)](https://travis-ci.org/chili-epfl/chilitags)
 
 ### Features
 
