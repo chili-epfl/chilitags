@@ -23,6 +23,7 @@ interfaces](http://youtu.be/F_gSwHZ2u1Y).
 Overview
 --------
 
+[![Build Status](https://travis-ci.org/qbonnard/chilitags.svg?branch=master)](https://travis-ci.org/qbonnard/chilitags)
 
 ### Features
 
@@ -83,15 +84,14 @@ on Windows, MacOS X and Android.
 
 ### Dependencies
 
-Chilitags rely on OpenCV 2.4+.  They have has been recently tested with
+Chilitags rely on OpenCV 2.4+ and C++11.  They have has been recently tested with
 OpenCV 2.4 and on Ubuntu (64 bits) 13.04, 13.10 and 14.04. The [documentation on
 how to install OpenCV](http://docs.opencv.org/doc/tutorials/introduction/table_of_content_introduction/table_of_content_introduction.html)
 can be found for various platforms and IDE.
 
-Note that Ubuntu 12.04 is not officially supported anymore due to its default
-C++ toolchain not supporting C++11. If you want to compile `chilitags` on this
-operating system, you need to install a compiler supporting enough of C++11 (for instance,
-`gcc-4.7`). You may also need to manually install `opencv >= 2.4`.
+On Ubuntu 12.04, you need to manually install a compiler supporting enough of
+C++11 (for instance, `gcc-4.7`) and `opencv >= 2.4`. The `.travis.yml` file
+contains commands to do this, in the `before_install` section
 
 ### Set up
 
