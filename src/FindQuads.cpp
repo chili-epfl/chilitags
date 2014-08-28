@@ -68,8 +68,10 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
 #endif
 
     // Resize the input image to make it at most mMaxInputWidth wide
+    int scaleToMax=1;
     if (mMaxInputWidth > 0 && greyscaleImage.cols > mMaxInputWidth) {
-        cv::resize(greyscaleImage, mGrayPyramid[0], cv::Size(mMaxInputWidth, greyscaleImage.rows*mMinInputWidth/greyscaleImage.cols), .0, .0, cv::INTER_NEAREST);
+	scaleToMax=greyscaleImage.cols/mMaxInputWidth;
+        cv::resize(greyscaleImage, mGrayPyramid[0], cv::Size(), 1.0/scaleToMax, 1.0/scaleToMax, cv::INTER_NEAREST);
     } else {
         mGrayPyramid[0] = greyscaleImage;
     }
@@ -120,7 +122,7 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
 #ifdef DEBUG_FindQuads
                     drawContour(debugImage, normalisedContour, cv::Scalar(0,255,0), offset);
 #endif
-                    normalisedContour *= scale;
+                    normalisedContour *= (scale*scaleToMax);
                     quads.push_back(normalisedContour.reshape(1));
                 }
 #ifdef DEBUG_FindQuads
