@@ -21,6 +21,7 @@
 #include "FindQuads.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
 
+
 //#define DEBUG_FindQuads
 #ifdef DEBUG_FindQuads
 #include <opencv2/highgui/highgui.hpp>
@@ -68,10 +69,10 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
 #endif
 
     // Resize the input image to make it at most mMaxInputWidth wide
-    int scaleToMax=1;
+    float scaleToMax=1.0f;
     if (mMaxInputWidth > 0 && greyscaleImage.cols > mMaxInputWidth) {
-	scaleToMax=greyscaleImage.cols/mMaxInputWidth;
-        cv::resize(greyscaleImage, mGrayPyramid[0], cv::Size(), 1.0/scaleToMax, 1.0/scaleToMax, cv::INTER_NEAREST);
+	scaleToMax=(float)greyscaleImage.cols/(float)mMaxInputWidth;
+        cv::resize(greyscaleImage, mGrayPyramid[0], cv::Size(), 1.0f/scaleToMax, 1.0f/scaleToMax, cv::INTER_NEAREST);
     } else {
         mGrayPyramid[0] = greyscaleImage;
     }
