@@ -64,23 +64,35 @@ TEST(Integration, MaxWidth) {
     chilitags::Chilitags chilitags;
     int zoom = 300;
     cv::Mat image = chilitags.draw(expectedId, zoom, true);
-    ASSERT_EQ(image.cols, 14*zoom);
+    int tagSize = 2+10+2;
+    ASSERT_EQ(image.cols, tagSize*zoom);
 
     //"burn" the input (initialiaze buffers, read from disk...)
     chilitags.find(image);
 
     //without setMaxInputWidth
-    int64 startCount = cv::getTickCount();
+    auto startCount = cv::getTickCount();
     auto tagsWithout = chilitags.find(image);
-    int64 endCount = cv::getTickCount();
+    auto endCount = cv::getTickCount();
     auto timeWithout = ((double) endCount - startCount)*1000/cv::getTickFrequency();
 
     //with setMaxInputWidth
-    chilitags.setMaxInputWidth(30);
+    int smallerImageSize = image.cols/10;
+    chilitags.setMaxInputWidth(smallerImageSize);
     startCount = cv::getTickCount();
     auto tagsWith = chilitags.find(image);
     endCount = cv::getTickCount();
     auto timeWith = ((double) endCount - startCount)*1000/cv::getTickFrequency();
+
+    // Check that the resize+processing is faster than 150% of the processing
+    // of an image of natively the same size.
+    cv::Mat smallImage = chilitags.draw(expectedId, smallerImageSize/tagSize, true);
+    startCount = cv::getTickCount();
+    chilitags.find(smallImage);
+    endCount = cv::getTickCount();
+    auto referenceTime = ((double) endCount - startCount)*1000/cv::getTickFrequency();
+
+    EXPECT_GT(150., 100.*timeWith/referenceTime);
 
     ASSERT_EQ(tagsWith.size(), tagsWithout.size());
 
@@ -91,10 +103,12 @@ TEST(Integration, MaxWidth) {
         EXPECT_EQ(withIt->first, withoutIt->first);
 
         for (int i : {0,1,2,3}) {
-            EXPECT_GT(0.1, cv::norm(
+            EXPECT_GT(3., cv::norm(
                    withIt->second.row(i) -
                 withoutIt->second.row(i)))
-            << "with i=" << i;
+            << "with i=" << i
+            << ",\n withIt[i]=" << withIt->second.row(i)
+            << ",\n withoutIt[i]=" << withoutIt->second.row(i);
         }
     }
 }
