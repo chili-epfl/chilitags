@@ -34,9 +34,21 @@
 #include <map>
 #include <algorithm>
 
+// TODO
+// - perspective transforms
+// - luminosity (saturate-adding constants to the image?) and contrast (saturate-multiplying?)
+// - sensor noise with salt and pepper
+// - compression artefacts (compress as jpg?)
+// - gaussian blur for bad focus,
+// - motion blur
+// - resolution
+// - pinhole camera distortions
+
 const static int ITERATIONS = 1;
 
 using namespace std;
+
+namespace {
 
 double mean(const vector<double>& vals)
 {
@@ -59,50 +71,6 @@ double sigma(const vector<double>& vals)
     return sqrt(variance(vals));
 }
 
-// TODO
-// - perspective transforms
-// - luminosity (saturate-adding constants to the image?) and contrast (saturate-multiplying?)
-// - sensor noise with salt and pepper
-// - compression artefacts (compress as jpg?)
-// - gaussian blur for bad focus,
-// - motion blur
-// - resolution
-// - pinhole camera distortions
-
-TEST(Integration, Minimal) {
-    int expectedId = 42;
-    chilitags::Chilitags chilitags;
-    // Tag needs to be > 12 px wide;
-    int zoom = 3;
-    cv::Mat image = chilitags.draw(expectedId, zoom, true);
-
-    auto tags = chilitags.find(image);
-
-    ASSERT_EQ(1, tags.size());
-
-    auto actualId = tags.cbegin()->first;
-    EXPECT_EQ(expectedId, actualId);
-
-    float close = zoom*2.0f;
-    float far   = zoom*12.0f;
-    chilitags::Quad expectedCorners = {
-        close, close,
-        far  , close,
-        far  , far  ,
-        close, far
-    };
-
-    // A pixel is a 1x1 square around its center
-    cv::add(expectedCorners, cv::Scalar::all(-0.5), expectedCorners);
-
-    auto actualCorners = tags.cbegin()->second;
-    for (int i : {0,1,2,3}) {
-        EXPECT_GT(0.1, cv::norm(actualCorners.row(i) - expectedCorners.row(i)))
-        << "with i=" << i;
-    }
-}
-
-namespace {
 std::vector<int> my_set_difference(
     const std::vector<int> & v1,
     const std::vector<int> & v2) {
