@@ -48,7 +48,6 @@ void drawContour(cv::Mat &image, cv::Mat &contour, cv::Scalar color, cv::Point o
 chilitags::FindQuads::FindQuads() :
     mGrayPyramid(1),
     mBinaryPyramid(1),
-    mMaxInputWidth(0),
     mMinInputWidth(160)
 {
 #ifdef DEBUG_FindQuads
@@ -68,16 +67,9 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
         CV_8UC3);
 #endif
 
-    // Resize the input image to make it at most mMaxInputWidth wide
-    float scaleToMax=1.0f;
-    if (mMaxInputWidth > 0 && greyscaleImage.cols > mMaxInputWidth) {
-	scaleToMax=(float)greyscaleImage.cols/(float)mMaxInputWidth;
-        cv::resize(greyscaleImage, mGrayPyramid[0], cv::Size(), 1.0f/scaleToMax, 1.0f/scaleToMax, cv::INTER_NEAREST);
-    } else {
-        mGrayPyramid[0] = greyscaleImage;
-    }
+    mGrayPyramid[0] = greyscaleImage;
 
-    // Subsample the possibly resized image by a factor two,
+    // Subsample the image by a factor two,
     // as long as the width is at least mMinInputWidth
     int nPyramidLevel = 1;
     if (mMinInputWidth > 0) {
@@ -123,7 +115,7 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
 #ifdef DEBUG_FindQuads
                     drawContour(debugImage, normalisedContour, cv::Scalar(0,255,0), offset);
 #endif
-                    normalisedContour *= (scale*scaleToMax);
+                    normalisedContour *= scale;
                     quads.push_back(normalisedContour.reshape(1));
                 }
 #ifdef DEBUG_FindQuads

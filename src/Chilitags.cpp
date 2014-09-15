@@ -38,12 +38,30 @@
 // The class that takes care of all the detection of Chilitags.
 namespace chilitags {
 
+namespace {
+    typedef std::map<int, Quad> TagList;
+
+    TagList scaleBy(TagList tags, float factor) {
+        if (factor == 1.0f) return tags;
+        for(auto &tag: tags) {
+            //Maybe this translation should be moved to Refine ?
+            cv::add(tag.second, cv::Scalar::all(-0.5), tag.second);
+            tag.second = factor*tag.second;
+            cv::add(tag.second, cv::Scalar::all(0.5), tag.second);
+        }
+        return tags;
+    }
+}
+
 class Chilitags::Impl
 {
 
 public:
 
 Impl() :
+    mMaxInputWidth(0),
+    mResizedInput(),
+
     mEnsureGreyscale(),
     mFindQuads(),
 
@@ -92,7 +110,7 @@ void setCornerRefinement(bool refineCorners) {
 }
 
 void setMaxInputWidth(int maxWidth) {
-    mFindQuads.setMaxInputWidth(maxWidth);
+    mMaxInputWidth = maxWidth;
 }
 
 void setMinInputWidth(int minWidth) {
@@ -107,22 +125,31 @@ std::map<int, Quad> find(
     const cv::Mat &inputImage,
     DetectionTrigger detectionTrigger){
 
+    // Resize the input image to make it at most mMaxInputWidth wide
+    float scaleFactor = 1.0f;
+    if (mMaxInputWidth > 0 && inputImage.cols > mMaxInputWidth) {
+        scaleFactor =(float) inputImage.cols/(float)mMaxInputWidth;
+        cv::resize(inputImage, mResizedInput, cv::Size(), 1.0f/scaleFactor , 1.0f/scaleFactor , cv::INTER_NEAREST);
+    } else {
+        mResizedInput = inputImage;
+    }
+
     mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection-1, 0);
     if (detectionTrigger == DETECT_PERIODICALLY) {
         detectionTrigger = (mCallsBeforeNextDetection > 0)?TRACK_ONLY:TRACK_AND_DETECT;
     }
 
-    if (detectionTrigger == TRACK_ONLY) return mTrack(inputImage);
+    if (detectionTrigger == TRACK_ONLY) return scaleBy(mTrack(mResizedInput), scaleFactor);
 
     // now we're going to do a full detection
     mCallsBeforeNextDetection = mCallsBeforeDetection;
 
-    cv::Mat greyscaleImage = mEnsureGreyscale(inputImage);
+    cv::Mat greyscaleImage = mEnsureGreyscale(mResizedInput);
     std::map<int, Quad> tags;
 
     if (detectionTrigger == TRACK_AND_DETECT) {
         // track first to override tracked tags with actually detected tags
-        tags = mTrack(inputImage);
+        tags = mTrack(mResizedInput);
     }
 
     if (mRefineCorners) {
@@ -151,7 +178,7 @@ std::map<int, Quad> find(
         mTrack.update(greyscaleImage, tags);
     }
 
-    return mFilter(tags);
+    return scaleBy(mFilter(tags), scaleFactor);
 };
 
 cv::Matx<unsigned char, 6, 6> encode(int id) const {
@@ -200,6 +227,9 @@ cv::Mat draw(int id, int cellSize, bool withMargin, cv::Scalar color) const {
 }
 
 protected:
+
+int mMaxInputWidth;
+cv::Mat mResizedInput;
 
 EnsureGreyscale mEnsureGreyscale;
 FindQuads mFindQuads;
