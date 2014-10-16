@@ -301,11 +301,10 @@ void computeTransformation(const std::string& name,
                  mCameraMatrix, mDistCoeffs,
                  rotation, translation, false,
 #ifdef OPENCV3
-                 cv::SOLVEPNP_ITERATIVE
+                 cv::SOLVEPNP_ITERATIVE);
 #else
-                 cv::ITERATIVE
+                 cv::ITERATIVE);
 #endif
-                 );
 
     cv::Matx33d rotMat;
     cv::Rodrigues(rotation, rotMat);

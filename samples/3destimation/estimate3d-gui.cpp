@@ -135,7 +135,11 @@ int main(int argc, char* argv[])
                     PRECISION*t2DPoints[0],
                     PRECISION*t2DPoints[i],
                     AXIS_COLORS[i-1],
+#ifdef OPENCV3
+                    1, cv::LINE_AA, SHIFT);
+#else
                     1, CV_AA, SHIFT);
+#endif
                 cv::putText(outputImage, AXIS_NAMES[i-1], t2DPoints[i],
                             cv::FONT_HERSHEY_SIMPLEX, 0.5, AXIS_COLORS[i-1]);
             }
