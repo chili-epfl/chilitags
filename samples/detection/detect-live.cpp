@@ -26,6 +26,7 @@
 
 #ifdef OPENCV3
 #include <opencv2/core/utility.hpp> // getTickCount...
+#include <opencv2/imgproc/imgproc.hpp>
 #endif
 
 #include <opencv2/core/core_c.h> // CV_AA
@@ -123,7 +124,7 @@ int main(int argc, char* argv[])
                     outputImage,
                     PRECISION*corners(i),
                     PRECISION*corners((i+1)%4),
-                    COLOR, 1, CV_AA, SHIFT);
+                    COLOR, 1, cv::LINE_AA, SHIFT);
             }
 
             // Other points can be computed from the four corners of the Quad.

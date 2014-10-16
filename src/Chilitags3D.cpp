@@ -287,7 +287,7 @@ void computeTransformation(const std::string& name,
                  imagePoints,
                  mCameraMatrix, mDistCoeffs,
                  rotation, translation, false,
-                 cv::ITERATIVE);
+                 cv::SOLVEPNP_EPNP);
 
     cv::Matx33d rotMat;
     cv::Rodrigues(rotation, rotMat);

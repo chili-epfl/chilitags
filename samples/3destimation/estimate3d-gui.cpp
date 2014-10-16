@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
                     PRECISION*t2DPoints[0],
                     PRECISION*t2DPoints[i],
                     AXIS_COLORS[i-1],
-                    1, CV_AA, SHIFT);
+                    1, cv::LINE_AA, SHIFT);
                 cv::putText(outputImage, AXIS_NAMES[i-1], t2DPoints[i],
                             cv::FONT_HERSHEY_SIMPLEX, 0.5, AXIS_COLORS[i-1]);
             }
