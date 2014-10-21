@@ -492,6 +492,14 @@ const cv::Mat &getCameraMatrix()     const;
 */
 const cv::Mat &getDistortionCoeffs() const;
 
+/**
+    Returns the vertical camera field of view in degrees, based on the known
+    camera calibration.
+
+    Useful to later re-build projection matrices, for instance in OpenGL.
+*/
+float getFOV() const;
+
 ~Chilitags3D();
 
 private:

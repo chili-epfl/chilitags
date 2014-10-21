@@ -18,6 +18,8 @@
 *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
 *******************************************************************************/
 
+#define _USE_MATH_DEFINES
+#include <cmath> // atan
 #include <chilitags.hpp>
 
 #include "Filter.hpp"
@@ -273,6 +275,10 @@ cv::Size readCalibration(const std::string &filename) {
 const cv::Mat &getCameraMatrix()     const {return mCameraMatrix;}
 const cv::Mat &getDistortionCoeffs() const{return mDistCoeffs;}
 
+float getFOV() const{
+    return 2 * atan(mCameraMatrix.at<double>(1,2)/mCameraMatrix.at<double>(0,0)) * 180.f/M_PI;
+}
+
 private:
 void computeTransformation(const std::string& name,
                            const std::vector<cv::Point3f>& objectPoints,
@@ -364,3 +370,5 @@ const cv::Mat &chilitags::Chilitags3D::getCameraMatrix()     const {
     return mImpl->getCameraMatrix();}
 const cv::Mat &chilitags::Chilitags3D::getDistortionCoeffs() const {
     return mImpl->getDistortionCoeffs();}
+float chilitags::Chilitags3D::getFOV() const {
+    return mImpl->getFOV();}
