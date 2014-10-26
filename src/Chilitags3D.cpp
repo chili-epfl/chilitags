@@ -213,12 +213,23 @@ void setDefaultTagSize(float defaultSize){
     };
 }
 
-void read3DConfiguration(const std::string &filename, bool omitOtherTags) {
+void read3DConfiguration(const std::string &filenameOrString, bool omitOtherTags, bool readFromString) {
     mOmitOtherTags = omitOtherTags;
 
-    cv::FileStorage configuration(filename, cv::FileStorage::READ);
+    int mode;
+    if(readFromString)
+        mode = cv::FileStorage::READ + cv::FileStorage::MEMORY;
+    else
+        mode = cv::FileStorage::READ;
+
+    cv::FileStorage configuration(filenameOrString, mode);
     if (!configuration.isOpened()) {
-        std::cerr << "Could not open " << filename << std::endl;
+        if(readFromString){
+            std::cerr << "Could not read tag configuration: " << std::endl;
+            std::cerr << filenameOrString << std::endl;
+        }
+        else
+            std::cerr << "Could not open file: " << filenameOrString << std::endl;
         return;
     }
 
@@ -345,8 +356,8 @@ void chilitags::Chilitags3D::setDefaultTagSize(float defaultSize){
     mImpl->setDefaultTagSize(defaultSize);
 }
 
-void chilitags::Chilitags3D::readTagConfiguration(const std::string &filename, bool omitOtherTags){
-    mImpl->read3DConfiguration(filename, omitOtherTags);
+void chilitags::Chilitags3D::readTagConfiguration(const std::string &filenameOrString, bool omitOtherTags, bool readFromString){
+    mImpl->read3DConfiguration(filenameOrString, omitOtherTags, readFromString);
 }
 
 void chilitags::Chilitags3D::setCalibration(
