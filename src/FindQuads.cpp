@@ -71,7 +71,7 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
 
     // Subsample the image by a factor two,
     // as long as the width is at least mMinInputWidth
-    int nPyramidLevel = 1;
+    unsigned int nPyramidLevel = 1;
     if (mMinInputWidth > 0) {
         while (mGrayPyramid[nPyramidLevel-1].cols/2 >= mMinInputWidth) {
             if (nPyramidLevel >= mGrayPyramid.size()) mGrayPyramid.push_back(cv::Mat());
@@ -81,7 +81,7 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
     }
 
     while (mBinaryPyramid.size() < nPyramidLevel) mBinaryPyramid.push_back(cv::Mat());
-    for (int i = 0; i < nPyramidLevel; ++i) {
+    for (unsigned int i = 0; i < nPyramidLevel; ++i) {
         cv::Canny(mGrayPyramid[i], mBinaryPyramid[i], 100, 200, 3);
     }
 
