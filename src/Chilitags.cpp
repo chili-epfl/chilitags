@@ -100,7 +100,7 @@ void setPerformance(PerformancePreset preset) {
             setCornerRefinement(true);
             mFindQuads.setMinInputWidth(160);
             break;
-        defaut:
+        default:
             break;
     }
 }
