@@ -434,8 +434,10 @@ std::map<std::string, cv::Matx44d> estimate(
     \param readFromString If true, will read tag configuration directly from the
     given string. If false (default) will open the file with the given name and
     try to read the configuration from there.
+
+    \return Whether reading the configuration was successful
  */
-void readTagConfiguration(
+bool readTagConfiguration(
     const std::string &filenameOrString,
     bool omitOtherTags = false,
     bool readFromString = false);
