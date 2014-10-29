@@ -22,6 +22,7 @@
 
 #ifdef OPENCV3
 #include <opencv2/core/utility.hpp> // getTickCount...
+#include <opencv2/imgproc/imgproc.hpp>
 #endif
 
 #include <opencv2/core/core_c.h> // CV_AA
@@ -156,7 +157,7 @@ void drawTags(
                 outputImage,
                 PRECISION*corners(i),
                 PRECISION*corners((i+1)%4),
-                COLOR, detection?3:1, CV_AA, SHIFT);
+                COLOR, detection?3:1, cv::LINE_AA, SHIFT);
         }
 
         cv::Point2f center = 0.5*(corners(0) + corners(2));
