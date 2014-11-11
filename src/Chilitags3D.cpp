@@ -300,7 +300,12 @@ void computeTransformation(const std::string& name,
                  imagePoints,
                  mCameraMatrix, mDistCoeffs,
                  rotation, translation, false,
-                 cv::ITERATIVE);
+#ifdef OPENCV3
+                 cv::SOLVEPNP_ITERATIVE
+#else
+                 cv::ITERATIVE
+#endif
+                 );
 
     cv::Matx33d rotMat;
     cv::Rodrigues(rotation, rotMat);
