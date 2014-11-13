@@ -84,7 +84,7 @@ std::vector<Id> FindOutdated<Id>::operator()(const std::map<Id, Coordinates > &t
 }
 
 template<typename Id, typename Coordinates>
-Filter<Id, Coordinates>::Filter(int persistence, double gain):
+Filter<Id, Coordinates>::Filter(int persistence, float gain):
 mFindOutdated(persistence),
 mGain(gain),
 mFilteredCoordinates()
@@ -99,7 +99,7 @@ const std::map<Id, Coordinates> & Filter<Id, Coordinates>::operator()(
         mFilteredCoordinates.erase(tagToForget);
     }
 
-    const double gainComplement = 1.0-mGain;
+    const float gainComplement = 1.0f - mGain;
 
     auto filteredIt = mFilteredCoordinates.begin();
     for (const auto &tag : tags) {
@@ -112,7 +112,7 @@ const std::map<Id, Coordinates> & Filter<Id, Coordinates>::operator()(
             && filteredIt->first == tag.first) {
             cv::addWeighted(filteredIt->second, mGain,
                             tag.second, gainComplement,
-                            0.0, filteredIt->second);
+                            0.0f, filteredIt->second);
         }
         else {
             filteredIt = mFilteredCoordinates.insert(filteredIt, tag);
@@ -126,6 +126,6 @@ template class FindOutdated<int>;
 template class Filter<int, Quad>;
 
 template class FindOutdated<std::string>;
-template class Filter<std::string, cv::Matx44d>;
+template class Filter<std::string, cv::Matx44f>;
 
 }

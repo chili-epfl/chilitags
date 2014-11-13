@@ -30,16 +30,16 @@
 
 namespace {
 const int MATRIX_SIZE = 10;
-const int MIN_TAG_SIZE = 1.1*MATRIX_SIZE;
+const int MIN_TAG_SIZE = 1.1f*MATRIX_SIZE;
 
 #ifdef DEBUG_FindQuads
 void drawContour(cv::Mat &image, cv::Mat &contour, cv::Scalar color, cv::Point offset) {
     std::vector<std::vector<cv::Point> >contours;
     contours.push_back(contour);
     cv::drawContours(image, contours, 0, color, 1, CV_AA, cv::noArray(), INT_MAX, offset);
-    double perimeter = std::abs(cv::arcLength(contour, true));
+    float perimeter = std::abs(cv::arcLength(contour, true));
     cv::putText(image, cv::format("%.1f", perimeter), offset+contours[0][0],
-                cv::FONT_HERSHEY_SIMPLEX, 1.0, color);
+                cv::FONT_HERSHEY_SIMPLEX, 1.0f, color);
 }
 #endif
 
@@ -75,7 +75,7 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
     if (mMinInputWidth > 0) {
         while (mGrayPyramid[nPyramidLevel-1].cols/2 >= mMinInputWidth) {
             if (nPyramidLevel >= mGrayPyramid.size()) mGrayPyramid.push_back(cv::Mat());
-            cv::resize(mGrayPyramid[nPyramidLevel-1], mGrayPyramid[nPyramidLevel], cv::Size(), .5, .5, cv::INTER_NEAREST);
+            cv::resize(mGrayPyramid[nPyramidLevel-1], mGrayPyramid[nPyramidLevel], cv::Size(), 0.5f, 0.5f, cv::INTER_NEAREST);
             ++nPyramidLevel;
         }
     }
@@ -99,13 +99,13 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
              contour != contours.end();
              ++contour)
         {
-            double perimeter = std::abs(cv::arcLength(*contour, true));
-            double area = std::abs(cv::contourArea(*contour));
+            float perimeter = std::abs(cv::arcLength(*contour, true));
+            float area = std::abs(cv::contourArea(*contour));
 
             if (perimeter > 4*MIN_TAG_SIZE && area > MIN_TAG_SIZE*MIN_TAG_SIZE)
             {
                 cv::Mat approxContour;
-                cv::approxPolyDP( *contour, approxContour, perimeter*0.05, true);
+                cv::approxPolyDP( *contour, approxContour, perimeter*0.05f, true);
 
                 cv::Mat normalisedContour;
                 cv::convexHull(approxContour, normalisedContour, false);
@@ -134,7 +134,7 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
         }
 #ifdef DEBUG_FindQuads
         cv::putText(debugImage, cv::format("%d, %d", quads.size(), contours.size()), offset+cv::Point(32,32),
-                    cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(255));
+                    cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar::all(255));
 #endif
     }
 #ifdef DEBUG_FindQuads

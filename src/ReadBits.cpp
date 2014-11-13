@@ -32,7 +32,7 @@
 namespace std{
 template <typename T>
 inline T round(const T &x){
-  return static_cast<T>(std::floor(static_cast<double>(x) + 0.5));
+  return static_cast<T>(std::floor(static_cast<float>(x) + 0.5f));
 }
 }
 #endif
@@ -43,10 +43,10 @@ static const int DATA_SIZE = 6;
 static const int TAG_MARGIN = 2;
 static const float TAG_SIZE = 2*TAG_MARGIN+DATA_SIZE;
 static const chilitags::Quad NORMALIZED_CORNERS = {
-          0.,       0.,
-    TAG_SIZE,       0.,
+         0.f,      0.f,
+    TAG_SIZE,      0.f,
     TAG_SIZE, TAG_SIZE,
-          0., TAG_SIZE
+         0.f, TAG_SIZE
 };
 
 }
@@ -62,8 +62,8 @@ chilitags::ReadBits::ReadBits() :
         for (int x = 0; x < DATA_SIZE; ++x)
         {
             mSamplePoints.push_back(cv::Point2f(
-                TAG_MARGIN + x + .5,
-                TAG_MARGIN + y + .5));
+                TAG_MARGIN + x + 0.5f,
+                TAG_MARGIN + y + 0.5f));
         }
     }
 
@@ -84,7 +84,7 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
     cv::convexHull(cornersCopy, convexHull, true);
     if (convexHull.rows != 4) {
         cornersCopy = convexHull;
-        cornersCopy.push_back(.5f*(cornersCopy(0)+cornersCopy(1)));
+        cornersCopy.push_back(0.5f*(cornersCopy(0)+cornersCopy(1)));
     }
 
     auto roi = cv::boundingRect(cornersCopy);

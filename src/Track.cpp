@@ -57,7 +57,7 @@ std::map<int, chilitags::Quad> chilitags::Track::operator()(
     for (auto tag : mFromTags) {
         chilitags::Quad result;
 
-        static const float GROWTH_RATIO = 20.f/10.f;
+        static const float GROWTH_RATIO = 20.0f/10.0f;
         cv::Rect roi = growRoi(mToImage, cv::Mat_<cv::Point2f>(tag.second), GROWTH_RATIO);
 
         cv::Point2f roiOffset = roi.tl();
@@ -72,7 +72,7 @@ std::map<int, chilitags::Quad> chilitags::Track::operator()(
             status, errors,
             //TODO play with parameters (with tests)
             cv::Size(21,21), 3,
-            cv::TermCriteria(cv::TermCriteria::COUNT+cv::TermCriteria::EPS, 30, 0.01)
+            cv::TermCriteria(cv::TermCriteria::COUNT+cv::TermCriteria::EPS, 30, 0.01f)
             );
 
         for (int i : {0,1,2,3}) {
@@ -81,7 +81,7 @@ std::map<int, chilitags::Quad> chilitags::Track::operator()(
         }
 
         if (cv::sum(cv::Mat(status))[0] == status.size()) {
-            trackedTags[tag.first] = mRefine(mToImage, result, .5/10.);
+            trackedTags[tag.first] = mRefine(mToImage, result, 0.5f/10.0f);
         }
     }
 

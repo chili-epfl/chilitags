@@ -57,13 +57,13 @@ std::map<Id, int> mDisappearanceTime;
 template<typename Id, typename Coordinates>
 class Filter {
 public:
-    Filter(int persistence, double gain);
+    Filter(int persistence, float gain);
 
     void setPersistence(int persistence) {
         mFindOutdated.setPersistence(persistence);
     }
 
-    void setGain(double gain) {
+    void setGain(float gain) {
         mGain = gain;
     }
 
@@ -72,7 +72,7 @@ public:
 
 protected:
     FindOutdated<Id> mFindOutdated;
-    double mGain;
+    float mGain;
     std::map<Id, Coordinates> mFilteredCoordinates;
 };
 
