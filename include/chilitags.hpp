@@ -78,7 +78,7 @@ Chilitags();
     previous (filtered) position in the new filtered position. 0 means that the
     latest position of the tag is returned.
  */
-void setFilter(int persistence, double gain);
+void setFilter(int persistence, float gain);
 
 /**
     Values of the parameter to tell find() how to combine tracking and full
@@ -365,7 +365,7 @@ Chilitags3D(cv::Size cameraResolution = cv::Size(640, 480));
     mechanism only after the estimation of the pose. The same goes for the
     position filtering. Note that for independent tags, it should not matter.
  */
-void setFilter(int persistence, double gain);
+void setFilter(int persistence, float gain);
 
 /** Accessor to the underlying (2D) Chilitags detection. */
 const Chilitags &getChilitags() const;
@@ -386,7 +386,7 @@ Chilitags &getChilitags();
     \endverbatim
     \param tags a list of tags, as returned by Chilitags::find().
  */
-std::map<std::string, cv::Matx44d> estimate(const std::map<int, Quad> & tags);
+std::map<std::string, cv::Matx44f> estimate(const std::map<int, Quad> & tags);
 
 /**
     This is a convenience variant of estimate() which also takes care of the
@@ -411,7 +411,7 @@ std::map<std::string, cv::Matx44d> estimate(const std::map<int, Quad> & tags);
     can lose some. See Chilitags::DetectionTrigger for a description of the
     possible values.
  */
-std::map<std::string, cv::Matx44d> estimate(
+std::map<std::string, cv::Matx44f> estimate(
     const cv::Mat &inputImage,
     Chilitags::DetectionTrigger detectionTrigger = Chilitags::DETECT_ONLY);
 

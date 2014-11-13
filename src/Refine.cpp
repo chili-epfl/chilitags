@@ -40,7 +40,7 @@ chilitags::Refine::Refine()
 chilitags::Quad chilitags::Refine::operator()(
     const cv::Mat &inputImage,
     const Quad &quad,
-    const double proximityRatio)
+    const float proximityRatio)
 {
     cv::Mat_<cv::Point2f> refinedQuad(quad);
 
@@ -54,19 +54,19 @@ chilitags::Quad chilitags::Refine::operator()(
     cv::Point2f roiOffset = roi.tl();
     for (int i : {0,1,2,3}) refinedQuad(i) -= roiOffset;
 
-    double averageSideLength = cv::arcLength(refinedQuad, true) / 4.0;
-    double cornerNeighbourhood = proximityRatio*averageSideLength;
+    float averageSideLength = cv::arcLength(refinedQuad, true) / 4.0f;
+    float cornerNeighbourhood = proximityRatio*averageSideLength;
 
     // ensure the cornerSubPixel search window is smaller that the ROI
-    cornerNeighbourhood = cv::min(cornerNeighbourhood, ((double) roi.width-5)/2);
-    cornerNeighbourhood = cv::min(cornerNeighbourhood, ((double) roi.height-5)/2);
-    cornerNeighbourhood = cv::max(cornerNeighbourhood, 1.0);
+    cornerNeighbourhood = cv::min(cornerNeighbourhood, (roi.width - 5.0f)/2.0f);
+    cornerNeighbourhood = cv::min(cornerNeighbourhood, (roi.height - 5.0f)/2.0f);
+    cornerNeighbourhood = cv::max(cornerNeighbourhood, 1.0f);
 
     cv::cornerSubPix(inputImage(roi), refinedQuad,
                      cv::Size(cornerNeighbourhood, cornerNeighbourhood),
                      cv::Size(-1, -1), cv::TermCriteria(
                          cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS,
-                         5, 0.01));
+                         5, 0.01f));
 
 #ifdef DEBUG_Refine
     cv::Mat debugImage = inputImage(roi).clone();

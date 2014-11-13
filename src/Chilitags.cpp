@@ -39,9 +39,9 @@ namespace {
         if (factor == 1.0f) return tags;
         for(auto &tag: tags) {
             //Maybe this translation should be moved to Refine ?
-            cv::add(tag.second, cv::Scalar::all(-0.5), tag.second);
+            cv::add(tag.second, cv::Scalar::all(-0.5f), tag.second);
             tag.second = factor*tag.second;
-            cv::add(tag.second, cv::Scalar::all(0.5), tag.second);
+            cv::add(tag.second, cv::Scalar::all(0.5f), tag.second);
         }
         return tags;
     }
@@ -58,7 +58,8 @@ Impl() :
 
     mEnsureGreyscale(),
     mDecode(),
-    mFilter(5, 0.),
+
+    mFilter(5, 0.f),
     mDetect(),
     mTrack(),
 
@@ -68,7 +69,7 @@ Impl() :
     setPerformance(FAST);
 }
 
-void setFilter(int persistence, double gain) {
+void setFilter(int persistence, float gain) {
     mFilter.setPersistence(persistence);
     mFilter.setGain(gain);
 }
@@ -224,7 +225,7 @@ Chilitags::Chilitags() :
 {
 }
 
-void Chilitags::setFilter(int persistence, double gain) {
+void Chilitags::setFilter(int persistence, float gain) {
     mImpl->setFilter(persistence, gain);
 }
 

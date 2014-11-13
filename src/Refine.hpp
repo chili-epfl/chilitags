@@ -38,7 +38,7 @@ Refine();
 Quad operator()(
     const cv::Mat &inputImage,
     const Quad &quad,
-    const double proximityRatio);
+    const float proximityRatio);
 
 };
 
