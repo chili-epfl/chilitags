@@ -36,16 +36,16 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 ##           Options                   ###
 ##########################################
 
-option(WITH_SAMPLES			"compile misc demos" OFF)
-option(WITH_TESTS			"build tests" OFF)
-if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider using it. 
-	option(WITH_TOOLS			        "provides the marker generation tool" OFF)
-	option(WITH_JNI_BINDINGS		    "JNI bindings compatible with ordinary Java and Android" ON)
-	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" ON)
-    
+option(WITH_SAMPLES                     "compile misc demos" OFF)
+option(WITH_TESTS                       "build tests" OFF)
+if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider using it.
+    option(WITH_TOOLS                   "provides the marker generation tool" OFF)
+    option(WITH_JNI_BINDINGS            "JNI bindings compatible with ordinary Java and Android" ON)
+    option(ANDROID_INSTALL_LIBRARIES    "Whether to install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" ON)
+
     #Set Android install path
     set(ANDROID_PROJECT_ROOT "/path/to/android/project" CACHE STRING "The path to the root of the target Android project")
-    
+
     #Environment variables required by OpenCV for Android
     if(NOT DEFINED ENV{ANDROID_STANDALONE_TOOLCHAIN})
         message(FATAL_ERROR "Please set the ANDROID_STANDALONE_TOOLCHAIN environment variable to your standalone toolchain root first, e.g /opt/android-toolchain")
@@ -60,9 +60,9 @@ if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider usin
         message(FATAL_ERROR "Please define the ANDROID_TOOLCHAIN_NAME environment variable first, e.g arm-linux-androideabi-4.8")
     endif()
 else()
-	option(WITH_TOOLS			        "provides the marker generation tool" ON)
-	option(WITH_JNI_BINDINGS		    "JNI bindings compatible with ordinary Java and Android" OFF)
-	option(ANDROID_INSTALL_LIBRARIES	"Whether to install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" OFF)
+    option(WITH_TOOLS                   "provides the marker generation tool" ON)
+    option(WITH_JNI_BINDINGS            "JNI bindings compatible with ordinary Java and Android" OFF)
+    option(ANDROID_INSTALL_LIBRARIES    "Whether to install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" OFF)
 endif()
 
 if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
@@ -76,45 +76,30 @@ add_subdirectory(src)
 include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
 
 if (WITH_TOOLS)
-
     if(NOT OPENCV_HIGHGUI_FOUND)
         message(FATAL_ERROR "OpenCV compiled without support for highgui! Can not compile detector.")
     endif()
 
-	add_subdirectory(tools)
+    add_subdirectory(tools)
 endif()
 
 if (WITH_SAMPLES)
-
     if(NOT OPENCV_HIGHGUI_FOUND)
         message(FATAL_ERROR "OpenCV compiled without support for highgui! Can not compile creator.")
     endif()
 
-	add_subdirectory(samples)
+    add_subdirectory(samples)
 endif()
 
-if (WITH_TESTS)
-
-    if(NOT OPENCV_TS_FOUND)
-        message(FATAL_ERROR "OpenCV compiled without support for ts! Can not compile tests.")
-    endif()
-
-	set(TEST_DATA
-		"../../../chilitags-testdata/"
-		CACHE
-		PATH
-		"specify the root directory of the test data (absolute, or relative to the execution directory of the tests)")
-	enable_testing()
-	add_subdirectory(test)
+if(WITH_TESTS)
+    add_subdirectory(test)
 endif()
 
 if(WITH_JNI_BINDINGS)
-
     add_subdirectory(platforms/jni/src)
 endif()
 
 if(ANDROID_INSTALL_LIBRARIES)
-
     if(NOT ANDROID_PROJECT_ROOT)
         message(FATAL_ERROR "ANDROID_PROJECT_ROOT undefined, can't install libraries inside Android project.")
     endif()
