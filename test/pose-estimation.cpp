@@ -35,16 +35,16 @@ namespace {
 
 //As assumed by Chilitags3D
 const cv::Size CAMERA_SIZE(640,480);
-const double FOCAL_LENGTH = 700.;
+const float FOCAL_LENGTH = 700.0f;
 
-const cv::Matx44d projectionMatrix = {
-    FOCAL_LENGTH,   0,              (double) CAMERA_SIZE.width/2,   0,
-    0,              FOCAL_LENGTH,   (double) CAMERA_SIZE.height/2,  0,
+const cv::Matx44f projectionMatrix = {
+    FOCAL_LENGTH,   0,              (float) CAMERA_SIZE.width/2,   0,
+    0,              FOCAL_LENGTH,   (float) CAMERA_SIZE.height/2,  0,
     0,              0,              1,                              0,
     0,              0,              1,                              0,
 };
 
-cv::Matx44d makeTransformation(
+cv::Matx44f makeTransformation(
         float rx, float ry, float rz,
         float tx, float ty, float tz){
 
@@ -64,17 +64,17 @@ cv::Matx44d makeTransformation(
     };
 }
 
-chilitags::Quad makeTransformedCorners(cv::Matx44d transformation, float size) {
+chilitags::Quad makeTransformedCorners(cv::Matx44f transformation, float size) {
 
-    cv::Vec4d homogenousPoint0 = {   0,    0, 0.f, 1.f};
-    cv::Vec4d homogenousPoint1 = {size,    0, 0.f, 1.f};
-    cv::Vec4d homogenousPoint2 = {size, size, 0.f, 1.f};
-    cv::Vec4d homogenousPoint3 = {   0, size, 0.f, 1.f};
+    cv::Vec4f homogenousPoint0 = {   0,    0, 0.f, 1.f};
+    cv::Vec4f homogenousPoint1 = {size,    0, 0.f, 1.f};
+    cv::Vec4f homogenousPoint2 = {size, size, 0.f, 1.f};
+    cv::Vec4f homogenousPoint3 = {   0, size, 0.f, 1.f};
 
-    cv::Vec4d transformedPoint0 = projectionMatrix*transformation*homogenousPoint0;
-    cv::Vec4d transformedPoint1 = projectionMatrix*transformation*homogenousPoint1;
-    cv::Vec4d transformedPoint2 = projectionMatrix*transformation*homogenousPoint2;
-    cv::Vec4d transformedPoint3 = projectionMatrix*transformation*homogenousPoint3;
+    cv::Vec4f transformedPoint0 = projectionMatrix*transformation*homogenousPoint0;
+    cv::Vec4f transformedPoint1 = projectionMatrix*transformation*homogenousPoint1;
+    cv::Vec4f transformedPoint2 = projectionMatrix*transformation*homogenousPoint2;
+    cv::Vec4f transformedPoint3 = projectionMatrix*transformation*homogenousPoint3;
 
     transformedPoint0 /= transformedPoint0(3);
     transformedPoint1 /= transformedPoint1(3);
@@ -114,7 +114,7 @@ TEST(Estimate3dPose, FreeTags) {
 
     std::string actualID = result.cbegin()->first;
     EXPECT_EQ(cv::format("tag_%d", tagId), actualID);
-    cv::Matx44d actualTransformation = result.cbegin()->second;
+    cv::Matx44f actualTransformation = result.cbegin()->second;
     EXPECT_GT(1e-3, cv::norm(actualTransformation-expectedTransformation))
         << "\nExpected:\n" << cv::Mat(expectedTransformation)
         << "\nActual:\n" << cv::Mat(actualTransformation);
@@ -125,7 +125,7 @@ TEST(Estimate3dPose, Configurations) {
 
     std::vector<int> ids = {2, 3};
     std::vector<float> sizes = {20,30};
-    std::vector<cv::Matx44d> tagTransformations = {
+    std::vector<cv::Matx44f> tagTransformations = {
         objectTransformation*makeTransformation(0, 0, 0, -50, -100, 0),
         objectTransformation*makeTransformation(0, 0, 0, +50, -100, 0),
     };
@@ -135,7 +135,7 @@ TEST(Estimate3dPose, Configurations) {
         tags[ids[i]] = makeTransformedCorners(tagTransformations[i], sizes[i]);
     }
 
-    std::map<std::string, cv::Matx44d> expected = {
+    std::map<std::string, cv::Matx44f> expected = {
         {    "tag_2", tagTransformations[0]},
         {"myobject3", objectTransformation },
     };

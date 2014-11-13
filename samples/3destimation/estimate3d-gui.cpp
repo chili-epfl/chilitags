@@ -62,11 +62,11 @@ int main(int argc, char* argv[])
     /* Setting up pose estimation */
     /******************************/
 #ifdef OPENCV3
-    double inputWidth  = capture.get(cv::CAP_PROP_FRAME_WIDTH);
-    double inputHeight = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
+    float inputWidth  = capture.get(cv::CAP_PROP_FRAME_WIDTH);
+    float inputHeight = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
 #else
-    double inputWidth  = capture.get(CV_CAP_PROP_FRAME_WIDTH);
-    double inputHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+    float inputWidth  = capture.get(CV_CAP_PROP_FRAME_WIDTH);
+    float inputHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
 #endif
 
     chilitags::Chilitags3D chilitags3D(Size(inputWidth, inputHeight));
@@ -84,9 +84,9 @@ int main(int argc, char* argv[])
 #endif
     }
 
-    cv::Mat projectionMat = cv::Mat::zeros(4,4,CV_64F);
+    cv::Mat projectionMat = cv::Mat::zeros(4,4,CV_32F);
     chilitags3D.getCameraMatrix().copyTo(projectionMat(cv::Rect(0,0,3,3)));
-    cv::Matx44d projection = projectionMat;
+    cv::Matx44f projection = projectionMat;
     projection(3,2) = 1;
 
     /*****************************/
@@ -102,14 +102,14 @@ int main(int argc, char* argv[])
         for (auto& kv : chilitags3D.estimate(inputImage)) {
 
             static const float DEFAULT_SIZE = 20.f;
-            static const cv::Vec4d UNITS[4] {
+            static const cv::Vec4f UNITS[4] {
                 {0.f, 0.f, 0.f, 1.f},
                 {DEFAULT_SIZE, 0.f, 0.f, 1.f},
                 {0.f, DEFAULT_SIZE, 0.f, 1.f},
                 {0.f, 0.f, DEFAULT_SIZE, 1.f},
             };
 
-            cv::Matx44d transformation = kv.second;
+            cv::Matx44f transformation = kv.second;
             cv::Vec4f referential[4] = {
                 projection*transformation*UNITS[0],
                 projection*transformation*UNITS[1],
@@ -141,11 +141,11 @@ int main(int argc, char* argv[])
                     1, CV_AA, SHIFT);
 #endif
                 cv::putText(outputImage, AXIS_NAMES[i-1], t2DPoints[i],
-                            cv::FONT_HERSHEY_SIMPLEX, 0.5, AXIS_COLORS[i-1]);
+                            cv::FONT_HERSHEY_SIMPLEX, 0.5f, AXIS_COLORS[i-1]);
             }
 
             cv::putText(outputImage, kv.first, t2DPoints[0],
-                        cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255,255,255));
+                        cv::FONT_HERSHEY_SIMPLEX, 0.5f, cv::Scalar(255,255,255));
         }
 
         cv::imshow("Pose Estimation", outputImage);

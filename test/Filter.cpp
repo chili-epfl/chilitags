@@ -40,9 +40,9 @@ namespace {
     const std::map<int, chilitags::Quad> ONLY_TAG_42 = {{42, {}}};
     const std::map<int, chilitags::Quad> ONLY_TAG_43 = {{43, {}}};
 
-    const std::map<std::string, cv::Matx44d> EMPTY_OBJECT_LIST;
-    const std::map<std::string, cv::Matx44d> ONLY_OBJECT_42 = {{"42", {}}};
-    const std::map<std::string, cv::Matx44d> ONLY_OBJECT_43 = {{"43", {}}};
+    const std::map<std::string, cv::Matx44f> EMPTY_OBJECT_LIST;
+    const std::map<std::string, cv::Matx44f> ONLY_OBJECT_42 = {{"42", {}}};
+    const std::map<std::string, cv::Matx44f> ONLY_OBJECT_43 = {{"43", {}}};
 }
 
 TEST(FindOutdated2D, ZeroPersistence) {
@@ -125,12 +125,12 @@ TEST(FindOutdated3D, ChangePersistence) {
 }
 
 TEST(Filter, ZeroGain) {
-    chilitags::Filter<int, chilitags::Quad> filter(0, 0.);
+    chilitags::Filter<int, chilitags::Quad> filter(0, 0.0f);
     chilitags::Quad coordinates {
-        1.,2.,
-        3.,4.,
-        5.,6.,
-        7.,8.,
+        1.0f,2.0f,
+        3.0f,4.0f,
+        5.0f,6.0f,
+        7.0f,8.0f,
     };
     chilitags::Quad expected;
     std::map<int, chilitags::Quad> tags;
@@ -140,23 +140,23 @@ TEST(Filter, ZeroGain) {
     results = filter(tags);
     expected = coordinates;
     EXPECT_EQ(results.size(), tags.size());
-    EXPECT_EQ(0., cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
+    EXPECT_EQ(0.0f, cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
     
-    coordinates = cv::Mat(cv::Mat(coordinates) + 9.);
+    coordinates = cv::Mat(cv::Mat(coordinates) + 9.0f);
     tags = {{0, coordinates}};
     results = filter(tags);
     expected = coordinates;
     EXPECT_EQ(results.size(), tags.size());
-    EXPECT_EQ(0., cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
+    EXPECT_EQ(0.0f, cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
 }
 
 TEST(Filter, NonZeroGain) {
-    chilitags::Filter<int, chilitags::Quad> filter(0, 0.1);
+    chilitags::Filter<int, chilitags::Quad> filter(0, 0.1f);
     chilitags::Quad coordinates {
-        1.,2.,
-        3.,4.,
-        5.,6.,
-        7.,8.,
+        1.0f,2.0f,
+        3.0f,4.0f,
+        5.0f,6.0f,
+        7.0f,8.0f,
     };
     chilitags::Quad expected;
     std::map<int, chilitags::Quad> tags;
@@ -166,14 +166,14 @@ TEST(Filter, NonZeroGain) {
     results = filter(tags);
     expected = coordinates;
     EXPECT_EQ(results.size(), tags.size());
-    EXPECT_EQ(0., cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
+    EXPECT_EQ(0.0f, cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
     
-    chilitags::Quad coordinates2 = cv::Mat(cv::Mat(coordinates) + 9.);
+    chilitags::Quad coordinates2 = cv::Mat(cv::Mat(coordinates) + 9.0f);
     tags = {{0, coordinates2}};
     results = filter(tags);
-    expected = cv::Mat(0.1*cv::Mat(coordinates)+.9*cv::Mat(coordinates2));
+    expected = cv::Mat(0.1f*cv::Mat(coordinates)+0.9f*cv::Mat(coordinates2));
     EXPECT_EQ(results.size(), tags.size());
-    EXPECT_EQ(0., cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
+    EXPECT_EQ(0.0f, cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
 }
 
 CV_TEST_MAIN(".")
