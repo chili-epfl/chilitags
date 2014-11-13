@@ -306,13 +306,15 @@ void computeTransformation(const std::string& name,
                  cv::ITERATIVE);
 #endif
 
-    cv::Matx33f rotMat;
+    //std::cout << rotation.size().width << " " << rotation.size().height << " " << translation.size().width << " " << translation.size().height << std::endl;
+
+    cv::Matx33d rotMat;
     cv::Rodrigues(rotation, rotMat);
 
     objects[name] = {
-        rotMat(0,0) , rotMat(0,1) , rotMat(0,2) , translation.at<float>(0) ,
-        rotMat(1,0) , rotMat(1,1) , rotMat(1,2) , translation.at<float>(1) ,
-        rotMat(2,0) , rotMat(2,1) , rotMat(2,2) , translation.at<float>(2) ,
+        (float)rotMat(0,0) , (float)rotMat(0,1) , (float)rotMat(0,2) , (float)translation.at<double>(0) ,
+        (float)rotMat(1,0) , (float)rotMat(1,1) , (float)rotMat(1,2) , (float)translation.at<double>(1) ,
+        (float)rotMat(2,0) , (float)rotMat(2,1) , (float)rotMat(2,2) , (float)translation.at<double>(2) ,
                   0 ,           0 ,           0 ,                         1 ,
     };
 }
