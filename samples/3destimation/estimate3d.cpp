@@ -60,11 +60,11 @@ int main(int argc, char* argv[])
     /* Setting up pose estimation */
     /******************************/
 #ifdef OPENCV3
-    double inputWidth  = capture.get(cv::CAP_PROP_FRAME_WIDTH);
-    double inputHeight = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
+    float inputWidth  = capture.get(cv::CAP_PROP_FRAME_WIDTH);
+    float inputHeight = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
 #else
-    double inputWidth  = capture.get(CV_CAP_PROP_FRAME_WIDTH);
-    double inputHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+    float inputWidth  = capture.get(CV_CAP_PROP_FRAME_WIDTH);
+    float inputHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
 #endif
 
     chilitags::Chilitags3D chilitags3D(Size(inputWidth, inputHeight));

@@ -50,11 +50,11 @@ TEST(Integration, Minimal) {
     };
 
     // A pixel is a 1x1 square around its center
-    cv::add(expectedCorners, cv::Scalar::all(-0.5), expectedCorners);
+    cv::add(expectedCorners, cv::Scalar::all(-0.5f), expectedCorners);
 
     auto actualCorners = tags.cbegin()->second;
     for (int i : {0,1,2,3}) {
-        EXPECT_GT(0.1, cv::norm(actualCorners.row(i) - expectedCorners.row(i)))
+        EXPECT_GT(0.1f, cv::norm(actualCorners.row(i) - expectedCorners.row(i)))
         << "with i=" << i;
     }
 }
@@ -74,7 +74,7 @@ TEST(Integration, MaxWidth) {
     auto startCount = cv::getTickCount();
     auto tagsWithout = chilitags.find(image);
     auto endCount = cv::getTickCount();
-    auto timeWithout = ((double) endCount - startCount)*1000/cv::getTickFrequency();
+    auto timeWithout = ((float) endCount - startCount)*1000/cv::getTickFrequency();
 
     //with setMaxInputWidth
     int smallerImageSize = image.cols/10;
@@ -82,7 +82,7 @@ TEST(Integration, MaxWidth) {
     startCount = cv::getTickCount();
     auto tagsWith = chilitags.find(image);
     endCount = cv::getTickCount();
-    auto timeWith = ((double) endCount - startCount)*1000/cv::getTickFrequency();
+    auto timeWith = ((float) endCount - startCount)*1000/cv::getTickFrequency();
 
     // Check that the resize+processing is faster than 150% of the processing
     // of an image of natively the same size.
@@ -90,9 +90,9 @@ TEST(Integration, MaxWidth) {
     startCount = cv::getTickCount();
     chilitags.find(smallImage);
     endCount = cv::getTickCount();
-    auto referenceTime = ((double) endCount - startCount)*1000/cv::getTickFrequency();
+    auto referenceTime = ((float) endCount - startCount)*1000/cv::getTickFrequency();
 
-    EXPECT_GT(150., 100.*timeWith/referenceTime);
+    EXPECT_GT(150.0f, 100.0f*timeWith/referenceTime);
 
     ASSERT_EQ(tagsWith.size(), tagsWithout.size());
 
@@ -103,7 +103,7 @@ TEST(Integration, MaxWidth) {
         EXPECT_EQ(withIt->first, withoutIt->first);
 
         for (int i : {0,1,2,3}) {
-            EXPECT_GT(3., cv::norm(
+            EXPECT_GT(3.0f, cv::norm(
                    withIt->second.row(i) -
                 withoutIt->second.row(i)))
             << "with i=" << i

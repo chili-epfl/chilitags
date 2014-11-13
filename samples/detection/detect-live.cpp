@@ -30,6 +30,7 @@
 #endif
 
 #include <opencv2/core/core_c.h> // CV_AA
+#include <opencv2/core/core.hpp>
 
 // OpenCV goodness for I/O
 #include <opencv2/highgui/highgui.hpp>
@@ -76,7 +77,7 @@ int main(int argc, char* argv[])
     // at the same position. When tags disappear for more than 5 frames,
     // Chilitags actually removes it.
     // Here, we cancel this to show the raw detection results.
-    chilitags.setFilter(0, 0.);
+    chilitags.setFilter(0, 0.0f);
 
     cv::namedWindow("DisplayChilitags");
     // Main loop, exiting when 'q is pressed'
@@ -96,7 +97,7 @@ int main(int argc, char* argv[])
 
         // Measure the processing time needed for the detection
         int64 endTime = cv::getTickCount();
-        double processingTime = 1000.0*((double) endTime - startTime)/cv::getTickFrequency();
+        float processingTime = 1000.0f*((float) endTime - startTime)/cv::getTickFrequency();
 
 
         // Now we start using the result of the detection.
@@ -138,9 +139,9 @@ int main(int argc, char* argv[])
             // (i.e. clockwise, starting from top-left)
             // Using this, we can compute (an approximation of) the center of
             // tag.
-            cv::Point2f center = 0.5*(corners(0) + corners(2));
+            cv::Point2f center = 0.5f*(corners(0) + corners(2));
             cv::putText(outputImage, cv::format("%d", id), center,
-                        cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
+                        cv::FONT_HERSHEY_SIMPLEX, 0.5f, COLOR);
         }
 
         // Some stats on the current frame (resolution and processing time)
@@ -149,7 +150,7 @@ int main(int argc, char* argv[])
                                outputImage.cols, outputImage.rows,
                                processingTime),
                     cv::Point(32,32),
-                    cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
+                    cv::FONT_HERSHEY_SIMPLEX, 0.5f, COLOR);
 
         // Finally...
         cv::imshow("DisplayChilitags", outputImage);

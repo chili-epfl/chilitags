@@ -50,23 +50,23 @@ using namespace std;
 
 namespace {
 
-double mean(const vector<double>& vals)
+float mean(const vector<float>& vals)
 {
-    double sum = 0.;
+    float sum = 0.0f;
     for(auto v : vals) sum += v;
     return sum/vals.size();
 }
 
-double variance(const vector<double>& vals)
+float variance(const vector<float>& vals)
 {
-    double current_mean = mean(vals);
-    double temp = 0;
+    float current_mean = mean(vals);
+    float temp = 0;
     for(auto v : vals)
         temp += (current_mean-v)*(current_mean-v);
     return temp/vals.size();
 }
 
-double sigma(const vector<double>& vals)
+float sigma(const vector<float>& vals)
 {
     return sqrt(variance(vals));
 }
@@ -94,7 +94,7 @@ TEST(Integration, Snapshots) {
     // We measure chilitags at its best, and compare optimisations later
     chilitags.setPerformance(chilitags::Chilitags::ROBUST);
     // We do not want any filtering, to measure the raw performances
-    chilitags.setFilter(0, 0.);
+    chilitags.setFilter(0, 0.0f);
 
     map<int, std::string> resolution;
 
@@ -104,7 +104,7 @@ TEST(Integration, Snapshots) {
     int totalFalseNegatives = 0;
     int total = 0;
 
-    map<int, vector<double> > referenceDuration;
+    map<int, vector<float> > referenceDuration;
     map<int, int> referenceFalseNegatives;
 
     for (auto testCase : TestMetadata::all) {
@@ -119,7 +119,7 @@ TEST(Integration, Snapshots) {
                 tags = chilitags.find(image);
                 int64 endCount = cv::getTickCount();
                 referenceDuration[image.rows*image.cols].push_back(
-                    ((double) endCount - startCount)*1000/cv::getTickFrequency());
+                    ((float) endCount - startCount)*1000/cv::getTickFrequency());
             }
 
             std::vector<int> foundIds;
@@ -207,7 +207,7 @@ TEST(Integration, Snapshots) {
     //chilitags.setMinInputWidth(0);
     chilitags.setPerformance(chilitags::Chilitags::FAST);
 
-    map<int, vector<double> > perfDurations;
+    map<int, vector<float> > perfDurations;
     map<int, int > perfFalseNegatives;
     int perfTotalFalseNegatives = 0;
     for (auto testCase : TestMetadata::all) {
@@ -220,7 +220,7 @@ TEST(Integration, Snapshots) {
                 int64 startCount = cv::getTickCount();
                 tags = chilitags.find(image);
                 int64 endCount = cv::getTickCount();
-                perfDurations[image.rows*image.cols].push_back(((double) endCount - startCount)*1000/cv::getTickFrequency());
+                perfDurations[image.rows*image.cols].push_back(((float) endCount - startCount)*1000/cv::getTickFrequency());
             }
 
             std::vector<int> foundIds;
@@ -248,7 +248,7 @@ TEST(Integration, Snapshots) {
             perfDurationsIt->second.begin(), perfDurationsIt->second.end(),
             durations.second.begin(),
             perfDurationsIt->second.begin(),
-            [](double a, double b){return 100.*(a-b)/b;});
+            [](float a, float b){return 100.0f*(a-b)/b;});
 
         bool increased = perfFalseNegativesIt->second > referenceFalseNegativesIt->second;
         cout 

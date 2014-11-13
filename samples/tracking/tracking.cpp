@@ -75,12 +75,12 @@ int main(int argc, char* argv[])
 
     // This one is the reference Chilitags
     chilitags::Chilitags detectedChilitags;
-    detectedChilitags.setFilter(0, 0.);
+    detectedChilitags.setFilter(0, 0.0f);
 
     // This one will be called with JUST_TRACK when it has previously detected
     // something
     chilitags::Chilitags trackedChilitags;
-    trackedChilitags.setFilter(0, 0.);
+    trackedChilitags.setFilter(0, 0.0f);
 
     cv::namedWindow("DisplayChilitags");
 
@@ -164,12 +164,12 @@ void drawTags(
 #endif
         }
 
-        cv::Point2f center = 0.5*(corners(0) + corners(2));
+        cv::Point2f center = 0.5f*(corners(0) + corners(2));
         cv::putText(outputImage, cv::format("%d", tag.first), center,
                     cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
     }
 
-    double processingTime = 1000.0*((double) endTime - startTime)/cv::getTickFrequency();
+    float processingTime = 1000.0f*((float) endTime - startTime)/cv::getTickFrequency();
     cv::putText(outputImage,
                 cv::format("%dx%d %4.0f ms (press '%c' to toggle %s)",
                            outputImage.cols, outputImage.rows,
@@ -178,5 +178,5 @@ void drawTags(
                            detection?"simple detection":"tracking"
                            ),
                 cv::Point(32,detection?32:64),
-                cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
+                cv::FONT_HERSHEY_SIMPLEX, 0.5f, COLOR);
 }
