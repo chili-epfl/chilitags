@@ -14,11 +14,6 @@ before_install:
     - sudo apt-get install -qq openjdk-7-jdk
     - export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 
-install:
-    - wget https://github.com/chili-epfl/chilitags-testdata/archive/master.zip
-    - unzip master.zip
-    - mv chilitags-testdata-master ../chilitags-testdata
-
 before_script:
     - mkdir build
     - cd build
@@ -26,7 +21,7 @@ before_script:
 script:
     - cmake -DWITH_TESTS=ON -DWITH_TOOLS=ON -DWITH_SAMPLES=ON -DWITH_JNI_BINDINGS=ON ..
     - make
-    - make test ARGS=-V
+    - cd test && ctest
 
 branches:
     only:
