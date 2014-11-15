@@ -38,10 +38,11 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 
 option(WITH_SAMPLES                     "compile misc demos" OFF)
 option(WITH_TESTS                       "build tests" OFF)
+option(WITH_JNI_BINDINGS                "JNI bindings compatible with ordinary Java and Android" OFF)
+option(ANDROID_INSTALL_LIBRARIES        "Whether to install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" OFF)
+
 if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider using it.
     option(WITH_TOOLS                   "provides the marker generation tool" OFF)
-    option(WITH_JNI_BINDINGS            "JNI bindings compatible with ordinary Java and Android" ON)
-    option(ANDROID_INSTALL_LIBRARIES    "Whether to install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" ON)
 
     #Set Android install path
     set(ANDROID_PROJECT_ROOT "/path/to/android/project" CACHE STRING "The path to the root of the target Android project")
@@ -61,8 +62,6 @@ if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider usin
     endif()
 else()
     option(WITH_TOOLS                   "provides the marker generation tool" ON)
-    option(WITH_JNI_BINDINGS            "JNI bindings compatible with ordinary Java and Android" OFF)
-    option(ANDROID_INSTALL_LIBRARIES    "Whether to install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" OFF)
 endif()
 
 if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
