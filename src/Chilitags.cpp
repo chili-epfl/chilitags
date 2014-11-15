@@ -21,14 +21,8 @@
 #include <chilitags.hpp>
 
 #include "EnsureGreyscale.hpp"
-#include "FindQuads.hpp"
-
-#include "ReadBits.hpp"
-#include "Decode.hpp"
-#include "Refine.hpp"
-
 #include "Filter.hpp"
-
+#include "Detect.hpp"
 #include "Track.hpp"
 
 #include <opencv2/imgproc/imgproc.hpp>
@@ -63,17 +57,10 @@ Impl() :
     mResizedInput(),
 
     mEnsureGreyscale(),
-    mFindQuads(),
-
-    mRefine(),
-    mReadBits(),
     mDecode(),
-
     mFilter(5, 0.),
-
+    mDetect(),
     mTrack(),
-
-    mRefineCorners(true),
 
     mCallsBeforeDetection(15),
     mCallsBeforeNextDetection(0)
@@ -89,16 +76,16 @@ void setFilter(int persistence, double gain) {
 void setPerformance(PerformancePreset preset) {
     switch (preset) {
         case FASTER:
-            setCornerRefinement(false);
-            mFindQuads.setMinInputWidth(0);
+            mDetect.setCornerRefinement(false);
+            mDetect.setMinInputWidth(0);
             break;
         case FAST:
-            setCornerRefinement(true);
-            mFindQuads.setMinInputWidth(0);
+            mDetect.setCornerRefinement(true);
+            mDetect.setMinInputWidth(0);
             break;
         case ROBUST:
-            setCornerRefinement(true);
-            mFindQuads.setMinInputWidth(160);
+            mDetect.setCornerRefinement(true);
+            mDetect.setMinInputWidth(160);
             break;
         default:
             break;
@@ -106,7 +93,7 @@ void setPerformance(PerformancePreset preset) {
 }
 
 void setCornerRefinement(bool refineCorners) {
-    mRefineCorners = refineCorners;
+    mDetect.setCornerRefinement(refineCorners);
 }
 
 void setMaxInputWidth(int maxWidth) {
@@ -114,7 +101,7 @@ void setMaxInputWidth(int maxWidth) {
 }
 
 void setMinInputWidth(int minWidth) {
-    mFindQuads.setMinInputWidth(minWidth);
+    mDetect.setMinInputWidth(minWidth);
 }
 
 void setDetectionPeriod(int period) {
@@ -130,7 +117,8 @@ std::map<int, Quad> find(
     if (mMaxInputWidth > 0 && inputImage.cols > mMaxInputWidth) {
         scaleFactor =(float) inputImage.cols/(float)mMaxInputWidth;
         cv::resize(inputImage, mResizedInput, cv::Size(), 1.0f/scaleFactor , 1.0f/scaleFactor , cv::INTER_NEAREST);
-    } else {
+    }
+    else {
         mResizedInput = inputImage;
     }
 
@@ -139,7 +127,8 @@ std::map<int, Quad> find(
         detectionTrigger = (mCallsBeforeNextDetection > 0)?TRACK_ONLY:TRACK_AND_DETECT;
     }
 
-    if (detectionTrigger == TRACK_ONLY) return scaleBy(mTrack(mResizedInput), scaleFactor);
+    if (detectionTrigger == TRACK_ONLY)
+        return scaleBy(mTrack(mResizedInput), scaleFactor);
 
     // now we're going to do a full detection
     mCallsBeforeNextDetection = mCallsBeforeDetection;
@@ -152,23 +141,7 @@ std::map<int, Quad> find(
         tags = mTrack(mResizedInput);
     }
 
-    if (mRefineCorners) {
-        for (const auto & quad : mFindQuads(greyscaleImage)) {
-            auto refinedQuad = mRefine(greyscaleImage, quad, 1.5/10.);
-            auto tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
-            if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
-            else {
-                tag = mDecode(mReadBits(greyscaleImage, quad), quad);
-                if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
-            }
-        }
-    }
-    else {
-        for (const auto & quad : mFindQuads(greyscaleImage)) {
-            auto tag = mDecode(mReadBits(greyscaleImage, quad), quad);
-            if (tag.first != Decode::INVALID_TAG) tags[tag.first] = tag.second;
-        }
-    }
+    mDetect(greyscaleImage, tags);
 
     if (detectionTrigger == TRACK_AND_DETECT) {
         // the current input image has already been updated in mTrack()
@@ -232,17 +205,14 @@ int mMaxInputWidth;
 cv::Mat mResizedInput;
 
 EnsureGreyscale mEnsureGreyscale;
-FindQuads mFindQuads;
 
-Refine mRefine;
-ReadBits mReadBits;
 Decode mDecode;
 
 Filter<int, Quad> mFilter;
 
-Track mTrack;
+Detect mDetect;
 
-bool mRefineCorners;
+Track mTrack;
 
 int mCallsBeforeNextDetection;
 int mCallsBeforeDetection;
