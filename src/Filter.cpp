@@ -122,8 +122,6 @@ const std::map<Id, Coordinates> & Filter<Id, Coordinates>::operator()(
     return mFilteredCoordinates;
 }
 
-typedef cv::Matx<float, 4, 2> Quad;
-
 template class FindOutdated<int>;
 template class Filter<int, Quad>;
 

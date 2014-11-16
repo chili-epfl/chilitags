@@ -24,9 +24,9 @@
 #include <vector>
 #include <opencv2/core/core.hpp>
 
-namespace chilitags {
+#include <chilitags.hpp>
 
-typedef cv::Matx<float, 4, 2> Quad;
+namespace chilitags {
 
 class FindQuads
 {

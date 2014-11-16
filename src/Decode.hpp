@@ -21,13 +21,13 @@
 #ifndef Decode_HPP
 #define Decode_HPP
 
+#include <chilitags.hpp>
 #include "Codec.hpp"
+
 #include <opencv2/core/core.hpp>
 #include <vector>
 
 namespace chilitags {
-
-typedef cv::Matx<float, 4, 2> Quad;
 
 class Decode
 {

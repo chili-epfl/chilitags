@@ -23,12 +23,12 @@
 
 #include <map>
 #include <opencv2/core/core.hpp>
+
+#include <chilitags.hpp>
 #include "Refine.hpp"
 #include "EnsureGreyscale.hpp"
 
 namespace chilitags {
-
-typedef cv::Matx<float, 4, 2> Quad;
 
 class Track
 {

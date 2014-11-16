@@ -27,6 +27,8 @@
 #include <map>
 #include <vector>
 
+#include <chilitags.hpp>
+
 namespace chilitags {
 
 template<typename Id>

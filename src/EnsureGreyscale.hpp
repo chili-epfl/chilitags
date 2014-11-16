@@ -23,6 +23,8 @@
 
 #include <opencv2/core/core.hpp>
 
+#include <chilitags.hpp>
+
 namespace chilitags {
 
 class EnsureGreyscale
