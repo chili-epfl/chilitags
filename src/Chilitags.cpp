@@ -52,7 +52,7 @@ public:
 
 Impl() :
     mMaxInputWidth(0),
-    mResizedInput(),
+    mResizedGrayscaleInput(),
 
     mEnsureGreyscale(),
     mDecode(),
@@ -115,10 +115,12 @@ TagCornerMap find(
     float scaleFactor = 1.0f;
     if (mMaxInputWidth > 0 && inputImage.cols > mMaxInputWidth) {
         scaleFactor =(float) inputImage.cols/(float)mMaxInputWidth;
+        static cv::Mat mResizedInput;
         cv::resize(inputImage, mResizedInput, cv::Size(), 1.0f/scaleFactor , 1.0f/scaleFactor , cv::INTER_NEAREST);
+        mResizedGrayscaleInput = mEnsureGreyscale(mResizedInput);
     }
     else {
-        mResizedInput = inputImage;
+        mResizedGrayscaleInput = mEnsureGreyscale(inputImage);
     }
 
     mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection-1, 0);
@@ -127,28 +129,21 @@ TagCornerMap find(
     }
 
     if (detectionTrigger == TRACK_ONLY)
-        return scaleBy(mTrack(mResizedInput), scaleFactor);
+        return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
 
     // now we're going to do a full detection
     mCallsBeforeNextDetection = mCallsBeforeDetection;
 
-    cv::Mat greyscaleImage = mEnsureGreyscale(mResizedInput);
     TagCornerMap tags;
 
-    if (detectionTrigger == TRACK_AND_DETECT) {
-        // track first to override tracked tags with actually detected tags
-        tags = mTrack(mResizedInput);
-    }
+    // track first to override tracked tags with actually detected tags
+    if (detectionTrigger == TRACK_AND_DETECT)
+        tags = mTrack(mResizedGrayscaleInput);
 
-    mDetect(greyscaleImage, tags);
+    mDetect(mResizedGrayscaleInput, tags);
 
-    if (detectionTrigger == TRACK_AND_DETECT) {
-        // the current input image has already been updated in mTrack()
+    if (detectionTrigger == TRACK_AND_DETECT)
         mTrack.update(tags);
-    }
-    else {
-        mTrack.update(greyscaleImage, tags);
-    }
 
     return scaleBy(mFilter(tags), scaleFactor);
 };
@@ -201,7 +196,7 @@ cv::Mat draw(int id, int cellSize, bool withMargin, cv::Scalar color) const {
 protected:
 
 int mMaxInputWidth;
-cv::Mat mResizedInput;
+cv::Mat mResizedGrayscaleInput;
 
 EnsureGreyscale mEnsureGreyscale;
 

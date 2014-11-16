@@ -26,7 +26,6 @@
 
 #include <chilitags.hpp>
 #include "Refine.hpp"
-#include "EnsureGreyscale.hpp"
 
 namespace chilitags {
 
@@ -37,16 +36,14 @@ public:
 Track();
 
 void update(TagCornerMap const& tags);
-void update(const cv::Mat &inputImage, TagCornerMap const& tags);
-TagCornerMap operator()(const cv::Mat &inputImage);
+TagCornerMap operator()(cv::Mat const& inputImage);
 
 protected:
 
 Refine mRefine;
-EnsureGreyscale mEnsureGreyscale;
 
-cv::Mat mFromImage;
-cv::Mat mToImage;
+cv::Mat mPrevFrame;
+cv::Mat mCurrentFrame;
 TagCornerMap mFromTags;
 
 };

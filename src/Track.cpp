@@ -27,9 +27,8 @@ namespace chilitags{
 
 Track::Track():
 mRefine(),
-mEnsureGreyscale(),
-mFromImage(),
-mToImage(),
+mPrevFrame(),
+mCurrentFrame(),
 mFromTags()
 {
 }
@@ -38,18 +37,12 @@ void Track::update(const TagCornerMap &tags) {
     mFromTags = tags;
 }
 
-void Track::update(
-    const cv::Mat &inputImage,
-    const TagCornerMap &tags) {
-    mToImage = inputImage;
-    mFromTags = tags;
-}
+TagCornerMap chilitags::Track::operator()(cv::Mat const& grayscaleInputImage)
+{
 
-TagCornerMap Track::operator()(
-    const cv::Mat &inputImage) {
-
-    mEnsureGreyscale(mToImage).copyTo(mFromImage);
-    mToImage = mEnsureGreyscale(inputImage);
+    //Swap current and previous frames and get new frame
+    mCurrentFrame.copyTo(mPrevFrame);
+    grayscaleInputImage.copyTo(mCurrentFrame);
 
     std::vector<uchar> status;
     std::vector<float> errors;
@@ -59,8 +52,7 @@ TagCornerMap Track::operator()(
         Quad result;
 
         static const float GROWTH_RATIO = 20.0f/10.0f;
-        cv::Rect roi = growRoi(mToImage, cv::Mat_<cv::Point2f>(tag.second), GROWTH_RATIO);
-
+        cv::Rect roi = growRoi(mCurrentFrame, cv::Mat_<cv::Point2f>(tag.second), GROWTH_RATIO);
         cv::Point2f roiOffset = roi.tl();
         for (int i : {0,1,2,3}) {
             tag.second(i,0) -= roiOffset.x;
@@ -68,7 +60,7 @@ TagCornerMap Track::operator()(
         }
 
         cv::calcOpticalFlowPyrLK(
-            mFromImage(roi), mToImage(roi),
+            mPrevFrame(roi), mCurrentFrame(roi),
             tag.second, result,
             status, errors,
             //TODO play with parameters (with tests)
@@ -82,7 +74,7 @@ TagCornerMap Track::operator()(
         }
 
         if (cv::sum(cv::Mat(status))[0] == status.size()) {
-            trackedTags[tag.first] = mRefine(mToImage, result, 0.5f/10.0f);
+            trackedTags[tag.first] = mRefine(mCurrentFrame, result, 0.5f/10.0f);
         }
     }
 
