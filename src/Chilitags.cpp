@@ -157,6 +157,14 @@ TagCornerMap find(
                 mTrack.update(tags);
                 return scaleBy(mFilter(tags), scaleFactor);
             }
+
+        case BACKGROUND_DETECT_PERIODICALLY:
+
+            return tags;
+
+        case BACKGROUND_DETECT_ALWAYS:
+
+            return tags;
     }
 }
 
