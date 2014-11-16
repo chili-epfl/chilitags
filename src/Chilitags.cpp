@@ -160,19 +160,20 @@ TagCornerMap find(
 
         case BACKGROUND_DETECT_PERIODICALLY:
             mDetect.launchBackgroundThread(mTrack);
-
             mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection - 1, 0);
 
+            //If the detection period is reached, deliver new frame to background detection thread
             if(mCallsBeforeNextDetection == 0){
                 mCallsBeforeNextDetection = mCallsBeforeDetection;
                 mDetect(mResizedGrayscaleInput, tags); //This does not update tags, nor does it block for computation
             }
-            return mTrack(mResizedGrayscaleInput);
+            return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
 
         case BACKGROUND_DETECT_ALWAYS:
-
-            return tags;
-    }
+            mDetect.launchBackgroundThread(mTrack);
+            mDetect(mResizedGrayscaleInput, tags); //This does not update tags, nor does it block for computation
+            return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
+   }
 }
 
 cv::Matx<unsigned char, 6, 6> encode(int id) const {
