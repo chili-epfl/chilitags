@@ -34,7 +34,8 @@ Detect::Detect() :
     mBackgroundThread(),
     mBackgroundRunning(false),
     mNeedFrame(true),
-    mFrameDelivered(false)
+    mInputCond(PTHREAD_COND_INITIALIZER),
+    mInputLock(PTHREAD_MUTEX_INITIALIZER)
 {
 }
 
@@ -73,14 +74,17 @@ void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags)
         tags = mTags; //TODO: We can do better than copy back here
     }
 
-    //Detection thread running in the background, just deliver the frames and tags
+    //Detection thread running in the background, just deliver the frame and tags
     else{
         if(mNeedFrame){
-            pthread_mutex_lock(&inputLock);
+            pthread_mutex_lock(&mInputLock);
+
             greyscaleImage.copyTo(mFrame);
             mTags = tags; //TODO: Do we really need to deliver tags here?
-            mFrameDelivered = true;
-            pthread_mutex_unlock(&inputLock);
+
+            //Wake up detection thread if it's waiting for the input frame
+            pthread_cond_signal(&mInputCond);
+            pthread_mutex_unlock(&mInputLock);
         }
     }
 }
@@ -94,15 +98,17 @@ void* Detect::dispatchRun(void* args)
 void Detect::run()
 {
     while(mBackgroundShouldRun){
-        while(!mFrameDelivered); //TODO: Replace this disgusting thing with a wait condition
+        pthread_mutex_lock(&mInputLock);
 
-        pthread_mutex_lock(&inputLock);
+        //Wait for the input frame to arrive
+        pthread_cond_wait(&mInputCond, &mInputLock);
+
         mNeedFrame = false;
         doDetection();
         mTrack->update(mTags);
         mNeedFrame = true;
-        mFrameDelivered = false;
-        pthread_mutex_unlock(&inputLock);
+
+        pthread_mutex_unlock(&mInputLock);
     }
     mBackgroundRunning = false;
 }

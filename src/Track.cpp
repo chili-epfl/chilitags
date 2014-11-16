@@ -31,20 +31,20 @@ mRefine(),
 mPrevFrame(),
 mCurrentFrame(),
 mFromTags(),
-inputLock(PTHREAD_MUTEX_INITIALIZER)
+mInputLock(PTHREAD_MUTEX_INITIALIZER)
 {
 }
 
 void Track::update(TagCornerMap const& tags)
 {
-    pthread_mutex_lock(&inputLock);
+    pthread_mutex_lock(&mInputLock);
 
     //TODO: Hopefully there is a faster way to do this but might not worth the performance improvement; also `std::map::insert()` will not overwrite already existing key value pairs
 
     for(const auto& tag : tags)
         mFromTags[tag.first] = tag.second;
 
-    pthread_mutex_unlock(&inputLock);
+    pthread_mutex_unlock(&mInputLock);
 }
 
 TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
@@ -59,7 +59,7 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
     std::vector<float> errors;
 
     //Do the tracking
-    pthread_mutex_lock(&inputLock);
+    pthread_mutex_lock(&mInputLock);
     TagCornerMap trackedTags;
     for (auto tag : mFromTags) {
         Quad result;
@@ -93,7 +93,7 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
 
     mFromTags = std::move(trackedTags);
     std::map<int, Quad> tagsCopy = mFromTags; //TODO: Try to get around this copy
-    pthread_mutex_unlock(&inputLock);
+    pthread_mutex_unlock(&mInputLock);
 
     return tagsCopy;
 }

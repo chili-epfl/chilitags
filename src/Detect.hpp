@@ -68,9 +68,9 @@ protected:
     bool mBackgroundRunning;
     bool mBackgroundShouldRun;
     bool mNeedFrame;
-    bool mFrameDelivered;
 
-    pthread_mutex_t inputLock = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t mInputCond;
+    pthread_mutex_t mInputLock;
 
     void doDetection();
 
