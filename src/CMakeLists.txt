@@ -32,8 +32,8 @@ add_library(
 )
 
 
-target_link_libraries(chilitags ${OpenCV_LIBS})
-target_link_libraries(chilitags_static ${OpenCV_LIBS})
+target_link_libraries(chilitags ${OpenCV_LIBS} pthread)
+target_link_libraries(chilitags_static ${OpenCV_LIBS} pthread)
 
 
 install (TARGETS chilitags chilitags_static

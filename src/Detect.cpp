@@ -28,39 +28,108 @@ Detect::Detect() :
     mFindQuads(),
     mRefine(),
     mReadBits(),
-    mDecode()
+    mDecode(),
+    mFrame(),
+    mTags(),
+    mBackgroundThread(),
+    mBackgroundRunning(false),
+    mNeedFrame(true),
+    mFrameDelivered(false)
 {
 }
 
-void Detect::setMinInputWidth(int minWidth) {
+void Detect::setMinInputWidth(int minWidth)
+{
     mFindQuads.setMinInputWidth(minWidth);
 }
 
-void Detect::setCornerRefinement(bool refineCorners) {
+void Detect::setCornerRefinement(bool refineCorners)
+{
     mRefineCorners = refineCorners;
 }
 
-void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags) {
+void Detect::launchBackgroundThread(Track& track)
+{
+    if(!mBackgroundRunning){
+        mTrack = &track;
+        mBackgroundShouldRun = true;
+        mBackgroundRunning = true;
+        if(pthread_create(&mBackgroundThread, NULL, dispatchRun, (void*)this)){
+            mBackgroundShouldRun = false;
+            mBackgroundRunning = false;
+            //TODO: Alarm that background thread could not be created
+        }
+    }
+}
+
+void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags)
+{
+
+    //Run single threaded
+    if(!mBackgroundRunning){
+        mFrame = greyscaleImage;
+        mTags = tags;
+        doDetection();
+        tags = mTags; //TODO: We can do better than copy back here
+    }
+
+    //Detection thread running in the background, just deliver the frames and tags
+    else{
+        if(mNeedFrame){
+            pthread_mutex_lock(&inputLock);
+            greyscaleImage.copyTo(mFrame);
+            mTags = tags; //TODO: Do we really need to deliver tags here?
+            mFrameDelivered = true;
+            pthread_mutex_unlock(&inputLock);
+        }
+    }
+}
+
+void* Detect::dispatchRun(void* args)
+{
+    static_cast<Detect*>(args)->run();
+    return NULL;
+}
+
+void Detect::run()
+{
+    while(mBackgroundShouldRun){
+        while(!mFrameDelivered); //TODO: Replace this disgusting thing with a wait condition
+
+        pthread_mutex_lock(&inputLock);
+        mNeedFrame = false;
+        doDetection();
+        mTrack->update(mTags);
+        mNeedFrame = true;
+        mFrameDelivered = false;
+        pthread_mutex_unlock(&inputLock);
+    }
+    mBackgroundRunning = false;
+}
+
+void Detect::doDetection()
+{
     if(mRefineCorners){
-        for(const auto& quad : mFindQuads(greyscaleImage)){
-            auto refinedQuad = mRefine(greyscaleImage, quad, 1.5f/10.0f);
-            auto tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
+        for(const auto& quad : mFindQuads(mFrame)){
+            auto refinedQuad = mRefine(mFrame, quad, 1.5/10.);
+            auto tag = mDecode(mReadBits(mFrame, refinedQuad), refinedQuad);
             if(tag.first != Decode::INVALID_TAG)
-                tags[tag.first] = tag.second;
+                mTags[tag.first] = tag.second;
             else{
-                tag = mDecode(mReadBits(greyscaleImage, quad), quad);
+                tag = mDecode(mReadBits(mFrame, quad), quad);
                 if(tag.first != Decode::INVALID_TAG)
-                    tags[tag.first] = tag.second;
+                    mTags[tag.first] = tag.second;
             }
         }
     }
     else{
-        for(const auto& quad : mFindQuads(greyscaleImage)){
-            auto tag = mDecode(mReadBits(greyscaleImage, quad), quad);
+        for(const auto& quad : mFindQuads(mFrame)){
+            auto tag = mDecode(mReadBits(mFrame, quad), quad);
             if(tag.first != Decode::INVALID_TAG)
-                tags[tag.first] = tag.second;
+                mTags[tag.first] = tag.second;
         }
     }
 }
 
 } /* namespace chilitags */
+

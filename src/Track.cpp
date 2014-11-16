@@ -1,6 +1,7 @@
 /*******************************************************************************
 *   Copyright 2013-2014 EPFL                                                   *
 *   Copyright 2013-2014 Quentin Bonnard                                        *
+*   Copyright 2013-2014 Ayberk Özgür                                           *
 *                                                                              *
 *   This file is part of chilitags.                                            *
 *                                                                              *
@@ -29,24 +30,36 @@ Track::Track():
 mRefine(),
 mPrevFrame(),
 mCurrentFrame(),
-mFromTags()
+mFromTags(),
+inputLock(PTHREAD_MUTEX_INITIALIZER)
 {
 }
 
-void Track::update(const TagCornerMap &tags) {
-    mFromTags = tags;
+void Track::update(TagCornerMap const& tags)
+{
+    pthread_mutex_lock(&inputLock);
+
+    //TODO: Hopefully there is a faster way to do this but might not worth the performance improvement; also `std::map::insert()` will not overwrite already existing key value pairs
+
+    for(const auto& tag : tags)
+        mFromTags[tag.first] = tag.second;
+
+    pthread_mutex_unlock(&inputLock);
 }
 
-TagCornerMap chilitags::Track::operator()(cv::Mat const& grayscaleInputImage)
+TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
 {
 
     //Swap current and previous frames and get new frame
     mCurrentFrame.copyTo(mPrevFrame);
     grayscaleInputImage.copyTo(mCurrentFrame);
+    //TODO: We can get by with only one copy here since track is always in the same thread as the one that delivers the input images
 
     std::vector<uchar> status;
     std::vector<float> errors;
 
+    //Do the tracking
+    pthread_mutex_lock(&inputLock);
     TagCornerMap trackedTags;
     for (auto tag : mFromTags) {
         Quad result;
@@ -79,7 +92,10 @@ TagCornerMap chilitags::Track::operator()(cv::Mat const& grayscaleInputImage)
     }
 
     mFromTags = std::move(trackedTags);
-    return mFromTags;
+    std::map<int, Quad> tagsCopy = mFromTags; //TODO: Try to get around this copy
+    pthread_mutex_unlock(&inputLock);
+
+    return tagsCopy;
 }
 
 } /* namespace chilitags */

@@ -23,11 +23,15 @@
 #define DETECT_HPP
 
 #include <map>
+#include <pthread.h>
+
 #include <opencv2/core/core.hpp>
+
 #include "FindQuads.hpp"
 #include "Decode.hpp"
 #include "Refine.hpp"
 #include "ReadBits.hpp"
+#include "Track.hpp"
 
 namespace chilitags {
 
@@ -41,15 +45,37 @@ public:
 
     void setCornerRefinement(bool refineCorners);
 
+    void launchBackgroundThread(Track& track);
+
     void operator()(cv::Mat const& inputImage, TagCornerMap& tags);
 
 protected:
 
     bool mRefineCorners;
+
     FindQuads mFindQuads;
     Refine mRefine;
     ReadBits mReadBits;
     Decode mDecode;
+
+    cv::Mat mFrame;
+    std::map<int, Quad> mTags;
+
+    Track* mTrack;
+
+    pthread_t mBackgroundThread;
+
+    bool mBackgroundRunning;
+    bool mBackgroundShouldRun;
+    bool mNeedFrame;
+    bool mFrameDelivered;
+
+    pthread_mutex_t inputLock = PTHREAD_MUTEX_INITIALIZER;
+
+    void doDetection();
+
+    static void* dispatchRun(void* args);
+    void run();
 };
 
 } /* namespace chilitags */

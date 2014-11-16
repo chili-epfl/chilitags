@@ -1,6 +1,7 @@
 /*******************************************************************************
 *   Copyright 2013-2014 EPFL                                                   *
 *   Copyright 2013-2014 Quentin Bonnard                                        *
+*   Copyright 2013-2014 Ayberk Özgür                                           *
 *                                                                              *
 *   This file is part of chilitags.                                            *
 *                                                                              *
@@ -21,7 +22,10 @@
 #ifndef Track_HPP
 #define Track_HPP
 
+#include <iostream>
 #include <map>
+#include <pthread.h>
+
 #include <opencv2/core/core.hpp>
 
 #include <chilitags.hpp>
@@ -35,6 +39,7 @@ public:
 
 Track();
 
+//Both these methods are thread-safe
 void update(TagCornerMap const& tags);
 TagCornerMap operator()(cv::Mat const& inputImage);
 
@@ -45,6 +50,8 @@ Refine mRefine;
 cv::Mat mPrevFrame;
 cv::Mat mCurrentFrame;
 TagCornerMap mFromTags;
+
+pthread_mutex_t inputLock;
 
 };
 

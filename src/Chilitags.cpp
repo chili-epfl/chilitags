@@ -159,8 +159,15 @@ TagCornerMap find(
             }
 
         case BACKGROUND_DETECT_PERIODICALLY:
+            mDetect.launchBackgroundThread(mTrack);
 
-            return tags;
+            mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection - 1, 0);
+
+            if(mCallsBeforeNextDetection == 0){
+                mCallsBeforeNextDetection = mCallsBeforeDetection;
+                mDetect(mResizedGrayscaleInput, tags); //This does not update tags, nor does it block for computation
+            }
+            return mTrack(mResizedGrayscaleInput);
 
         case BACKGROUND_DETECT_ALWAYS:
 
