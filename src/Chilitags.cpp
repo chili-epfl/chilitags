@@ -123,30 +123,42 @@ TagCornerMap find(
         mResizedGrayscaleInput = mEnsureGreyscale(inputImage);
     }
 
-    mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection-1, 0);
-    if (detectionTrigger == DETECT_PERIODICALLY) {
-        detectionTrigger = (mCallsBeforeNextDetection > 0)?TRACK_ONLY:TRACK_AND_DETECT;
-    }
-
-    if (detectionTrigger == TRACK_ONLY)
-        return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
-
-    // now we're going to do a full detection
-    mCallsBeforeNextDetection = mCallsBeforeDetection;
-
+    // Do detection/tracking/both depending on detection trigger
     TagCornerMap tags;
+    switch(detectionTrigger){
 
-    // track first to override tracked tags with actually detected tags
-    if (detectionTrigger == TRACK_AND_DETECT)
-        tags = mTrack(mResizedGrayscaleInput);
+        case DETECT_ONLY:
+            mDetect(mResizedGrayscaleInput, tags);
+            return scaleBy(mFilter(tags), scaleFactor);
 
-    mDetect(mResizedGrayscaleInput, tags);
+        case TRACK_ONLY:
+            return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
 
-    if (detectionTrigger == TRACK_AND_DETECT)
-        mTrack.update(tags);
+        case TRACK_AND_DETECT:
 
-    return scaleBy(mFilter(tags), scaleFactor);
-};
+            //Track and do one detection on top, overwriting track results
+            tags = mTrack(mResizedGrayscaleInput);
+            mDetect(mResizedGrayscaleInput, tags);
+            mTrack.update(tags);
+            return scaleBy(mFilter(tags), scaleFactor);
+
+        case DETECT_PERIODICALLY:
+            mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection - 1, 0);
+
+            //If detection period is not yet reaced, track only
+            if(mCallsBeforeNextDetection > 0)
+                return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
+
+            //If detection period is reached, track and do one detection on top, overwriting track results
+            else{
+                mCallsBeforeNextDetection = mCallsBeforeDetection;
+                tags = mTrack(mResizedGrayscaleInput);
+                mDetect(mResizedGrayscaleInput, tags);
+                mTrack.update(tags);
+                return scaleBy(mFilter(tags), scaleFactor);
+            }
+    }
+}
 
 cv::Matx<unsigned char, 6, 6> encode(int id) const {
     cv::Matx<unsigned char, 6, 6> encodedId;
