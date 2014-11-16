@@ -64,14 +64,24 @@ else()
     option(WITH_TOOLS                   "provides the marker generation tool" ON)
 endif()
 
+##########################################
+##           Chilitags lib             ###
+##########################################
+
 if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
     add_definitions(-DOPENCV3)
+endif()
+if(WITH_SAMPLES)
+    add_definitions(-DDEBUG_DETECT_TIMES)
 endif()
 
 include_directories(include)
 add_subdirectory(src)
 
-# documentation generation
+##########################################
+##           Modules                   ###
+##########################################
+
 include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
 
 if (WITH_TOOLS)
@@ -83,10 +93,6 @@ if (WITH_TOOLS)
 endif()
 
 if (WITH_SAMPLES)
-    if(NOT OPENCV_HIGHGUI_FOUND)
-        message(FATAL_ERROR "OpenCV compiled without support for highgui! Can not compile creator.")
-    endif()
-
     add_subdirectory(samples)
 endif()
 
@@ -103,3 +109,4 @@ if(ANDROID_INSTALL_LIBRARIES)
         message(FATAL_ERROR "ANDROID_PROJECT_ROOT undefined, can't install libraries inside Android project.")
     endif()
 endif()
+

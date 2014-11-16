@@ -27,6 +27,12 @@
 
 #include <opencv2/core/core.hpp>
 
+#ifdef DEBUG_DETECT_TIMES
+#ifdef OPENCV3
+#include <opencv2/core/utility.hpp>
+#endif
+#endif
+
 #include "FindQuads.hpp"
 #include "Decode.hpp"
 #include "Refine.hpp"

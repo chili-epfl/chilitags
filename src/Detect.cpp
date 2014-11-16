@@ -100,12 +100,32 @@ void Detect::run()
     while(mBackgroundShouldRun){
         pthread_mutex_lock(&mInputLock);
 
+#ifdef DEBUG_DETECT_TIMES
+        int64 startTime = cv::getTickCount();
+#endif
+
         //Wait for the input frame to arrive
         pthread_cond_wait(&mInputCond, &mInputLock);
 
+#ifdef DEBUG_DETECT_TIMES
+        printf("[Detection thread] Waiting took %4.2f ms\n",
+                1000.0*((double)cv::getTickCount() - (double)startTime)/cv::getTickFrequency());
+#endif
+
         mNeedFrame = false;
+
+#ifdef DEBUG_DETECT_TIMES
+        startTime = cv::getTickCount();
+#endif
+
         doDetection();
         mTrack->update(mTags);
+
+#ifdef DEBUG_DETECT_TIMES
+        printf("[Detection thread] Detection took %4.2f ms \n",
+                1000.0*((double)cv::getTickCount() - (double)startTime)/cv::getTickFrequency());
+#endif
+
         mNeedFrame = true;
 
         pthread_mutex_unlock(&mInputLock);

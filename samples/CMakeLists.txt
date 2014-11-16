@@ -18,6 +18,10 @@
 #   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         #
 ################################################################################
 
+if(NOT OPENCV_HIGHGUI_FOUND)
+    message(FATAL_ERROR "OpenCV compiled without support for highgui, cannot compile samples!")
+endif()
+
 add_executable( estimate3d 3destimation/estimate3d.cpp)
 target_link_libraries( estimate3d chilitags_static )
 target_link_libraries( estimate3d ${OpenCV_LIBS} )
@@ -42,3 +46,9 @@ add_executable( tracking tracking/tracking.cpp)
 target_link_libraries( tracking chilitags )
 target_link_libraries( tracking ${OpenCV_LIBS} )
 install (TARGETS tracking RUNTIME DESTINATION bin)
+
+add_executable( background-detection multithreaded/background-detection.cpp)
+target_link_libraries( background-detection chilitags )
+target_link_libraries( background-detection ${OpenCV_LIBS} )
+install (TARGETS background-detection RUNTIME DESTINATION bin)
+
