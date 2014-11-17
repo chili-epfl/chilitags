@@ -21,7 +21,7 @@ before_script:
 script:
     - cmake -DWITH_TESTS=ON -DWITH_TOOLS=ON -DWITH_SAMPLES=ON -DWITH_JNI_BINDINGS=ON ..
     - make
-    - cd test && ctest
+    - cd test && ctest -V
 
 branches:
     only:
