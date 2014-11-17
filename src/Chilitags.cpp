@@ -158,7 +158,7 @@ TagCornerMap find(
                 return scaleBy(mFilter(tags), scaleFactor);
             }
 
-        case BACKGROUND_DETECT_PERIODICALLY:
+        case ASYNC_DETECT_PERIODICALLY:
             mDetect.launchBackgroundThread(mTrack);
             mCallsBeforeNextDetection--;
 
@@ -169,7 +169,7 @@ TagCornerMap find(
             }
             return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
 
-        case BACKGROUND_DETECT_ALWAYS:
+        case ASYNC_DETECT_ALWAYS:
             mDetect.launchBackgroundThread(mTrack);
             mDetect(mResizedGrayscaleInput, tags); //This does not update tags, nor does it block for computation
             return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);

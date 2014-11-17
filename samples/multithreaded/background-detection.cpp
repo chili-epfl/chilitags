@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
         cv::Mat outputImage = inputImage.clone();
 
         int64 startTime = cv::getTickCount();
-        auto tags = chilitags.find(inputImage, showPeriodic ? chilitags::Chilitags::BACKGROUND_DETECT_PERIODICALLY : chilitags::Chilitags::BACKGROUND_DETECT_ALWAYS);
+        auto tags = chilitags.find(inputImage, showPeriodic ? chilitags::Chilitags::ASYNC_DETECT_PERIODICALLY : chilitags::Chilitags::ASYNC_DETECT_ALWAYS);
         int64 endTime = cv::getTickCount();
         drawTags(outputImage, tags);
 
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 
         //Print detection trigger
         cv::putText(outputImage,
-                cv::format("Detection trigger: %s (press 't' to toggle)", showPeriodic ? "BACKGROUND_DETECT_PERIODICALLY" : "BACKGROUND_DETECT_ALWAYS"),
+                cv::format("Detection trigger: %s (press 't' to toggle)", showPeriodic ? "ASYNC_DETECT_PERIODICALLY" : "ASYNC_DETECT_ALWAYS"),
                 cv::Point(8,yRes - 8),
                 cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
 

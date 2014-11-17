@@ -163,7 +163,7 @@ enum DetectionTrigger {
      * time than 15 calls to `find()`, it will be running as frequently as
      * possible, i.e the same as `BACKGROUND_DETECT_ALWAYS`.
      */
-    BACKGROUND_DETECT_PERIODICALLY,
+    ASYNC_DETECT_PERIODICALLY,
 
     /**
      * @brief Runs the detection in the background, as frequently as possible
@@ -173,7 +173,7 @@ enum DetectionTrigger {
      * detection is started as soon as the new image frame is presented in the
      * call to `find()` after the previous detection is finished.
      */
-    BACKGROUND_DETECT_ALWAYS
+    ASYNC_DETECT_ALWAYS
 };
 
 /**
