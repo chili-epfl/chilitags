@@ -27,10 +27,6 @@
 
 #include <opencv2/core/core.hpp>
 
-#ifdef OPENCV3
-#include <opencv2/core/utility.hpp>
-#endif
-
 #include "FindQuads.hpp"
 #include "Decode.hpp"
 #include "Refine.hpp"

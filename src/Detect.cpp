@@ -22,6 +22,10 @@
 
 namespace chilitags{
 
+#ifdef OPENCV3
+#include <opencv2/core/utility.hpp>
+#endif
+
 Detect::Detect() :
     mRefineCorners(true),
     mFindQuads(),
