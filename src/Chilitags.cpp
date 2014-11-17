@@ -115,9 +115,9 @@ TagCornerMap find(
     float scaleFactor = 1.0f;
     if (mMaxInputWidth > 0 && inputImage.cols > mMaxInputWidth) {
         scaleFactor =(float) inputImage.cols/(float)mMaxInputWidth;
-        static cv::Mat mResizedInput;
-        cv::resize(inputImage, mResizedInput, cv::Size(), 1.0f/scaleFactor , 1.0f/scaleFactor , cv::INTER_NEAREST);
-        mResizedGrayscaleInput = mEnsureGreyscale(mResizedInput);
+        static cv::Mat resizedInput;
+        cv::resize(inputImage, resizedInput, cv::Size(), 1.0f/scaleFactor , 1.0f/scaleFactor , cv::INTER_NEAREST);
+        mResizedGrayscaleInput = mEnsureGreyscale(resizedInput);
     }
     else {
         mResizedGrayscaleInput = mEnsureGreyscale(inputImage);
@@ -143,9 +143,9 @@ TagCornerMap find(
             return scaleBy(mFilter(tags), scaleFactor);
 
         case DETECT_PERIODICALLY:
-            mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection - 1, 0);
+            mCallsBeforeNextDetection--;
 
-            //If detection period is not yet reaced, track only
+            //If detection period is not yet reached, track only
             if(mCallsBeforeNextDetection > 0)
                 return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
 
@@ -160,10 +160,10 @@ TagCornerMap find(
 
         case BACKGROUND_DETECT_PERIODICALLY:
             mDetect.launchBackgroundThread(mTrack);
-            mCallsBeforeNextDetection = std::max(mCallsBeforeNextDetection - 1, 0);
+            mCallsBeforeNextDetection--;
 
             //If the detection period is reached, deliver new frame to background detection thread
-            if(mCallsBeforeNextDetection == 0){
+            if(mCallsBeforeNextDetection <= 0){
                 mCallsBeforeNextDetection = mCallsBeforeDetection;
                 mDetect(mResizedGrayscaleInput, tags); //This does not update tags, nor does it block for computation
             }

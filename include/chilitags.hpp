@@ -157,10 +157,11 @@ enum DetectionTrigger {
      *
      * `setDetectionPeriod()` allows to specify the number of calls between two
      * detections. It defaults to 15, i.e. out of 15 consecutive calls to
-     * `find()`, the background thread will be informed to run detection. If
-     * the background thread takes more time than 15 calls to `find()`, it will
-     * be running as frequently as possible, i.e the same as
-     * `BACKGROUND_DETECT_ALWAYS`.
+     * `find()`, the background thread will be informed to run detection. After
+     * this, a new detection will be done as soon as a new image frame is
+     * presented in the call to `find()`. If the background thread takes more
+     * time than 15 calls to `find()`, it will be running as frequently as
+     * possible, i.e the same as `BACKGROUND_DETECT_ALWAYS`.
      */
     BACKGROUND_DETECT_PERIODICALLY,
 
@@ -169,7 +170,8 @@ enum DetectionTrigger {
      *
      * Runs the detection in a background thread, only tracking in the call to
      * `find()`. The detection is run as frequently as possible, i.e a new
-     * detection is started as soon as the previous one is finished.
+     * detection is started as soon as the new image frame is presented in the
+     * call to `find()` after the previous detection is finished.
      */
     BACKGROUND_DETECT_ALWAYS
 };

@@ -176,7 +176,7 @@ for a research project. Let us make that easy for you:
 ```
 	@misc{chilitags,
 		title = {Chilitags 2: Robust Fiducial Markers for Augmented Reality and Robotics.},
-		author={Bonnard, Quentin and Lemaignan, S\'{e}verin and Zufferey, Guillaume and Mazzei, Andrea and Cuendet, S\'{e}bastien and Li, Nan and Dillenbourg, Pierre},
+		author={Bonnard, Quentin and Lemaignan, S\'{e}verin and Zufferey, Guillaume and Mazzei, Andrea and Cuendet, S\'{e}bastien and Li, Nan and \"{O}zg\"{u}r, Ayberk and Dillenbourg, Pierre},
 		publisher={CHILI, EPFL, Switzerland},
 		url={http://chili.epfl.ch/software},
 		year={2013}
