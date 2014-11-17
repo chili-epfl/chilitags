@@ -37,10 +37,16 @@ void Track::update(TagCornerMap const& tags)
 {
     pthread_mutex_lock(&mInputLock);
 
-    //TODO: Hopefully there is a faster way to do this but might not worth the performance improvement; also `std::map::insert()` will not overwrite already existing key value pairs
+    auto targetIt = mFromTags.begin();
+    for(const auto& tag : tags){
+        while(targetIt != mFromTags.end() && targetIt->first < tag.first)
+            targetIt++;
 
-    for(const auto& tag : tags)
-        mFromTags[tag.first] = tag.second;
+        if(targetIt != mFromTags.end() && targetIt->first == tag.first)
+            targetIt->second = tag.second;
+        else
+            targetIt = mFromTags.insert(targetIt, tag);
+    }
 
     pthread_mutex_unlock(&mInputLock);
 }
