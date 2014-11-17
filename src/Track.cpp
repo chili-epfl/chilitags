@@ -28,7 +28,6 @@ namespace chilitags{
 Track::Track():
 mRefine(),
 mPrevFrame(),
-mCurrentFrame(),
 mFromTags(),
 mInputLock(PTHREAD_MUTEX_INITIALIZER)
 {
@@ -49,11 +48,6 @@ void Track::update(TagCornerMap const& tags)
 TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
 {
 
-    //Swap current and previous frames and get new frame
-    mCurrentFrame.copyTo(mPrevFrame);
-    grayscaleInputImage.copyTo(mCurrentFrame);
-    //TODO: We can get by with only one copy here since track is always in the same thread as the one that delivers the input images
-
     std::vector<uchar> status;
     std::vector<float> errors;
 
@@ -64,7 +58,7 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
         Quad result;
 
         static const float GROWTH_RATIO = 20.0f/10.0f;
-        cv::Rect roi = growRoi(mCurrentFrame, cv::Mat_<cv::Point2f>(tag.second), GROWTH_RATIO);
+        cv::Rect roi = growRoi(grayscaleInputImage, cv::Mat_<cv::Point2f>(tag.second), GROWTH_RATIO);
         cv::Point2f roiOffset = roi.tl();
         for (int i : {0,1,2,3}) {
             tag.second(i,0) -= roiOffset.x;
@@ -72,7 +66,7 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
         }
 
         cv::calcOpticalFlowPyrLK(
-            mPrevFrame(roi), mCurrentFrame(roi),
+            mPrevFrame(roi), grayscaleInputImage(roi),
             tag.second, result,
             status, errors,
             //TODO play with parameters (with tests)
@@ -86,13 +80,16 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
         }
 
         if (cv::sum(cv::Mat(status))[0] == status.size()) {
-            trackedTags[tag.first] = mRefine(mCurrentFrame, result, 0.5f/10.0f);
+            trackedTags[tag.first] = mRefine(grayscaleInputImage, result, 0.5f/10.0f);
         }
     }
 
     mFromTags = std::move(trackedTags);
     std::map<int, Quad> tagsCopy = mFromTags; //TODO: Try to get around this copy
     pthread_mutex_unlock(&mInputLock);
+
+    //Swap current and previous frames
+    grayscaleInputImage.copyTo(mPrevFrame);
 
     return tagsCopy;
 }

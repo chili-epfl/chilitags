@@ -46,7 +46,6 @@ protected:
 Refine mRefine;
 
 cv::Mat mPrevFrame;
-cv::Mat mCurrentFrame;
 TagCornerMap mFromTags;
 
 pthread_mutex_t mInputLock;
