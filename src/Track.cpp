@@ -85,7 +85,7 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
     }
 
     mFromTags = std::move(trackedTags);
-    std::map<int, Quad> tagsCopy = mFromTags; //TODO: Try to get around this copy
+    TagCornerMap tagsCopy = mFromTags; //TODO: Try to get around this copy
     pthread_mutex_unlock(&mInputLock);
 
     //Swap current and previous frames

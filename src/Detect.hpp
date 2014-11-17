@@ -67,7 +67,7 @@ protected:
     Decode mDecode;
 
     cv::Mat mFrame;
-    std::map<int, Quad> mTags;
+    TagCornerMap mTags;
 
     Track* mTrack;
 
@@ -83,7 +83,7 @@ protected:
     float mLatestAsyncIdleMillis;
     float mLatestAsyncWorkMillis;
 
-    void doDetection();
+    void doDetection(TagCornerMap& tags);
 
     static void* dispatchRun(void* args);
     void run();

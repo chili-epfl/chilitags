@@ -71,9 +71,7 @@ void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags)
     //Run single threaded
     if(!mBackgroundRunning){
         mFrame = greyscaleImage;
-        mTags = tags;
-        doDetection();
-        tags = mTags; //TODO: We can do better than copy back here
+        doDetection(tags);
     }
 
     //Detection thread running in the background, just deliver the frame and tags
@@ -110,7 +108,7 @@ void Detect::run()
         mNeedFrame = false;
 
         startTime = cv::getTickCount();
-        doDetection();
+        doDetection(mTags);
         mTrack->update(mTags);
         mLatestAsyncWorkMillis = 1000.0f*(((float)cv::getTickCount() - (float)startTime)/cv::getTickFrequency());
 
@@ -121,18 +119,18 @@ void Detect::run()
     mBackgroundRunning = false;
 }
 
-void Detect::doDetection()
+void Detect::doDetection(TagCornerMap& tags)
 {
     if(mRefineCorners){
         for(const auto& quad : mFindQuads(mFrame)){
-            auto refinedQuad = mRefine(mFrame, quad, 1.5/10.);
+            auto refinedQuad = mRefine(mFrame, quad, 1.5f/10.0f);
             auto tag = mDecode(mReadBits(mFrame, refinedQuad), refinedQuad);
             if(tag.first != Decode::INVALID_TAG)
-                mTags[tag.first] = tag.second;
+                tags[tag.first] = tag.second;
             else{
                 tag = mDecode(mReadBits(mFrame, quad), quad);
                 if(tag.first != Decode::INVALID_TAG)
-                    mTags[tag.first] = tag.second;
+                    tags[tag.first] = tag.second;
             }
         }
     }
@@ -140,7 +138,7 @@ void Detect::doDetection()
         for(const auto& quad : mFindQuads(mFrame)){
             auto tag = mDecode(mReadBits(mFrame, quad), quad);
             if(tag.first != Decode::INVALID_TAG)
-                mTags[tag.first] = tag.second;
+                tags[tag.first] = tag.second;
         }
     }
 }
