@@ -26,10 +26,11 @@
 namespace chilitags{
 
 Track::Track():
-mRefine(),
-mPrevFrame(),
-mFromTags(),
-mInputLock(PTHREAD_MUTEX_INITIALIZER)
+    mRefine(),
+    mScreenOut(),
+    mPrevFrame(),
+    mFromTags(),
+    mInputLock(PTHREAD_MUTEX_INITIALIZER)
 {
 }
 
@@ -60,6 +61,7 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
     //Do the tracking
     pthread_mutex_lock(&mInputLock);
     TagCornerMap trackedTags;
+    Quad quad;
     for (auto tag : mFromTags) {
         Quad result;
 
@@ -86,7 +88,9 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
         }
 
         if (cv::sum(cv::Mat(status))[0] == status.size()) {
-            trackedTags[tag.first] = mRefine(grayscaleInputImage, result, 0.5f/10.0f);
+            quad = mRefine(grayscaleInputImage, result, 0.5f/10.0f);
+            if(mScreenOut.isConvex(quad))
+                trackedTags[tag.first] = quad;
         }
     }
 
