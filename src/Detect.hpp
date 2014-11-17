@@ -21,6 +21,7 @@
 #ifndef DETECT_HPP
 #define DETECT_HPP
 
+#include <iostream>
 #include <map>
 #include <pthread.h>
 

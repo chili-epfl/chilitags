@@ -57,7 +57,8 @@ void Detect::launchBackgroundThread(Track& track)
         if(pthread_create(&mBackgroundThread, NULL, dispatchRun, (void*)this)){
             mBackgroundShouldRun = false;
             mBackgroundRunning = false;
-            //TODO: Alarm that background thread could not be created
+            std::cerr << "Error: Thread could not be launched in " << __PRETTY_FUNCTION__
+                << ", not enough resources or PTHREAD_THREADS_MAX was hit!" << std::endl;
         }
     }
 }
