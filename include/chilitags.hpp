@@ -203,6 +203,30 @@ TagCornerMap find(
 void setDetectionPeriod(int period);
 
 /**
+ * @brief Gets the latest idle time in case of asynchronous detection
+ *
+ * In `ASYNC_DETECT_PERIODICALLY` and `ASYNC_DETECT_ALWAYS` triggers, returns
+ * the latest idle time of the asynchronous detection thread. Together with
+ * `getLatestAsyncDetectionWorkMillis()`, they make 100% of the detection
+ * thread's time.
+ *
+ * @return Detection thread's latest idle time in ms
+ */
+float getLatestAsyncDetectionIdleMillis();
+
+/**
+ * @brief Gets the latest work time in case of asynchronous detection
+ *
+ * In `ASYNC_DETECT_PERIODICALLY` and `ASYNC_DETECT_ALWAYS` triggers, returns
+ * the latest work time of the asynchronous detection thread.Together with
+ * `getLatestAsyncDetectionIdleMillis()`, they make 100% of the detection
+ * thread's time.
+ *
+ * @return Detection thread's latest work time in ms
+ */
+float getLatestAsyncDetectionWorkMillis();
+
+/**
     Preset groups of parameters (for setPerformance()) to adjust  the
     compromise between processing time and accuracy of detection.
  */

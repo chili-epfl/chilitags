@@ -107,6 +107,14 @@ void setDetectionPeriod(int period) {
     mCallsBeforeDetection = period;
 }
 
+float getLatestAsyncDetectionIdleMillis(){
+    return mDetect.getLatestAsyncIdleMillis();
+}
+
+float getLatestAsyncDetectionWorkMillis(){
+    return mDetect.getLatestAsyncWorkMillis();
+}
+
 TagCornerMap find(
     const cv::Mat &inputImage,
     DetectionTrigger detectionTrigger){
@@ -264,6 +272,14 @@ void Chilitags::setMaxInputWidth(int maxWidth) {
 
 void Chilitags::setMinInputWidth(int minWidth) {
     mImpl->setMinInputWidth(minWidth);
+}
+
+float Chilitags::getLatestAsyncDetectionIdleMillis(){
+    return mImpl->getLatestAsyncDetectionIdleMillis();
+}
+
+float Chilitags::getLatestAsyncDetectionWorkMillis(){
+    return mImpl->getLatestAsyncDetectionWorkMillis();
 }
 
 TagCornerMap Chilitags::find(

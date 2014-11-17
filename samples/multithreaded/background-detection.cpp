@@ -73,6 +73,7 @@ int main(int argc, char* argv[])
     bool showPeriodic = true;
 
     char keyPressed;
+    float trackTime = 0, idleTime = 0, detectTime = 0;
     while ('q' != (keyPressed = (char) cv::waitKey(1))) {
 
         // toggle the processing mode, according to user input
@@ -88,10 +89,24 @@ int main(int argc, char* argv[])
         drawTags(outputImage, tags);
 
         //Print tracking time
-        double trackTime = 1000.0*((double) endTime - startTime)/cv::getTickFrequency();
+        trackTime = 0.98f*trackTime + 0.02f*1000.0f*(((float)endTime - (float)startTime)/cv::getTickFrequency());
         cv::putText(outputImage,
-                cv::format("[Main thread] Tracking took %4.2f ms", trackTime),
+                cv::format("[Main thread] Tracking time %4.2f ms", trackTime),
                 cv::Point(8,20),
+                cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
+
+        //Print detection idle time
+        idleTime = 0.98f*idleTime + 0.02f*chilitags.getLatestAsyncDetectionIdleMillis();
+        cv::putText(outputImage,
+                cv::format("[Detection thread] Idle time %4.2f ms", idleTime),
+                cv::Point(8,36),
+                cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
+
+        //Print detection work time
+        detectTime = 0.98f*detectTime + 0.02f*chilitags.getLatestAsyncDetectionWorkMillis();
+        cv::putText(outputImage,
+                cv::format("[Detection thread] Work time %4.2f ms", detectTime),
+                cv::Point(8,52),
                 cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
 
         //Print detection trigger

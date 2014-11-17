@@ -27,10 +27,8 @@
 
 #include <opencv2/core/core.hpp>
 
-#ifdef DEBUG_DETECT_TIMES
 #ifdef OPENCV3
 #include <opencv2/core/utility.hpp>
-#endif
 #endif
 
 #include "FindQuads.hpp"
@@ -50,6 +48,10 @@ public:
     void setMinInputWidth(int minWidth);
 
     void setCornerRefinement(bool refineCorners);
+
+    float getLatestAsyncIdleMillis();
+
+    float getLatestAsyncWorkMillis();
 
     void launchBackgroundThread(Track& track);
 
@@ -77,6 +79,9 @@ protected:
 
     pthread_cond_t mInputCond;
     pthread_mutex_t mInputLock;
+
+    float mLatestAsyncIdleMillis;
+    float mLatestAsyncWorkMillis;
 
     void doDetection();
 

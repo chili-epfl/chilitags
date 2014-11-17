@@ -34,7 +34,9 @@ Detect::Detect() :
     mBackgroundRunning(false),
     mNeedFrame(true),
     mInputCond(PTHREAD_COND_INITIALIZER),
-    mInputLock(PTHREAD_MUTEX_INITIALIZER)
+    mInputLock(PTHREAD_MUTEX_INITIALIZER),
+    mLatestAsyncIdleMillis(0),
+    mLatestAsyncWorkMillis(0)
 {
 }
 
@@ -100,31 +102,17 @@ void Detect::run()
     while(mBackgroundShouldRun){
         pthread_mutex_lock(&mInputLock);
 
-#ifdef DEBUG_DETECT_TIMES
-        int64 startTime = cv::getTickCount();
-#endif
-
         //Wait for the input frame to arrive
-        pthread_cond_wait(&mInputCond, &mInputLock);
-
-#ifdef DEBUG_DETECT_TIMES
-        printf("[Detection thread] Waiting took %4.2f ms\n",
-                1000.0*((double)cv::getTickCount() - (double)startTime)/cv::getTickFrequency());
-#endif
+        int64 startTime = cv::getTickCount();
+        pthread_cond_wait(&mInputCond, &mInputLock); //This releases the lock while waiting
+        mLatestAsyncIdleMillis = 1000.0f*(((float)cv::getTickCount() - (float)startTime)/cv::getTickFrequency());
 
         mNeedFrame = false;
 
-#ifdef DEBUG_DETECT_TIMES
         startTime = cv::getTickCount();
-#endif
-
         doDetection();
         mTrack->update(mTags);
-
-#ifdef DEBUG_DETECT_TIMES
-        printf("[Detection thread] Detection took %4.2f ms \n",
-                1000.0*((double)cv::getTickCount() - (double)startTime)/cv::getTickFrequency());
-#endif
+        mLatestAsyncWorkMillis = 1000.0f*(((float)cv::getTickCount() - (float)startTime)/cv::getTickFrequency());
 
         mNeedFrame = true;
 
@@ -155,6 +143,16 @@ void Detect::doDetection()
                 mTags[tag.first] = tag.second;
         }
     }
+}
+
+float Detect::getLatestAsyncIdleMillis()
+{
+    return mLatestAsyncIdleMillis;
+}
+
+float Detect::getLatestAsyncWorkMillis()
+{
+    return mLatestAsyncWorkMillis;
 }
 
 } /* namespace chilitags */
