@@ -80,7 +80,7 @@ void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags)
             pthread_mutex_lock(&mInputLock);
 
             greyscaleImage.copyTo(mFrame);
-            mTags = tags; //TODO: Do we really need to deliver tags here?
+            mTags.clear();
 
             //Wake up detection thread if it's waiting for the input frame
             pthread_cond_signal(&mInputCond);
