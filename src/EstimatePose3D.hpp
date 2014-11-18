@@ -89,7 +89,7 @@ public:
 
 protected:
 
-    Filter3D mFilter3D;         ///< Kalman filter to increase stability of the tag
+    Filter3D<RealT> mFilter3D;  ///< Kalman filter to increase stability of the tag
 
     cv::Mat mCameraMatrix;      ///< 3x3 camera matrix
     cv::Mat mDistCoeffs;        ///< Empty or 4x1 or 5x1 or 8x1 Distortion coefficients of the camera
