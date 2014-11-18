@@ -62,14 +62,12 @@ void CalcTf3D<RealT>::operator()(std::string const& name,
         cv::Mat_<cv::Point2f> const& imagePoints,
         typename Chilitags3D_<RealT>::TagPoseMap& objects)
 {
-    // Rotation & translation vectors, computed by cv::solvePnP
-    cv::Mat rotation, translation;
 
     // Find the 3D pose of our tag
     cv::solvePnP(objectPoints,
             imagePoints,
             mCameraMatrix, mDistCoeffs,
-            rotation, translation, false,
+            mTempRotation, mTempTranslation, false,
 #ifdef OPENCV3
             cv::SOLVEPNP_ITERATIVE);
 #else
@@ -77,15 +75,13 @@ void CalcTf3D<RealT>::operator()(std::string const& name,
 #endif
     //TODO: Rotation and translation vectors come out of solvePnP as double
 
-    //TODO: This is double because of rodrigues, it doesn't accept float at the time of writing
-    cv::Matx33d rotMat;
-    cv::Rodrigues(rotation, rotMat);
+    cv::Rodrigues(mTempRotation, mTempRotMat);
 
     objects[name] = {
-        (RealT)rotMat(0,0), (RealT)rotMat(0,1), (RealT)rotMat(0,2), (RealT)translation.at<double>(0),
-        (RealT)rotMat(1,0), (RealT)rotMat(1,1), (RealT)rotMat(1,2), (RealT)translation.at<double>(1),
-        (RealT)rotMat(2,0), (RealT)rotMat(2,1), (RealT)rotMat(2,2), (RealT)translation.at<double>(2),
-        0,                  0,                  0,                  1,
+        (RealT)mTempRotMat(0,0),    (RealT)mTempRotMat(0,1),    (RealT)mTempRotMat(0,2),    (RealT)mTempTranslation.at<double>(0),
+        (RealT)mTempRotMat(1,0),    (RealT)mTempRotMat(1,1),    (RealT)mTempRotMat(1,2),    (RealT)mTempTranslation.at<double>(1),
+        (RealT)mTempRotMat(2,0),    (RealT)mTempRotMat(2,1),    (RealT)mTempRotMat(2,2),    (RealT)mTempTranslation.at<double>(2),
+        0,                          0,                          0,                          1
     };
 }
 

@@ -21,12 +21,11 @@
 #ifndef CALCTF3D_HPP
 #define CALCTF3D_HPP
 
+#include <vector>
 #include <map>
 #include <opencv2/core/core.hpp>
 
 #include <chilitags.hpp>
-#include "Refine.hpp"
-#include "EnsureGreyscale.hpp"
 
 namespace chilitags {
 
@@ -52,6 +51,14 @@ protected:
 
     cv::Mat mCameraMatrix;
     cv::Mat mDistCoeffs;
+
+    // Rotation & translation vectors, computed by cv::solvePnP
+    cv::Mat mTempRotation;
+    cv::Mat mTempTranslation;
+
+    //TODO: This is double because of rodrigues, it doesn't accept float at the time of writing
+    cv::Matx33d mTempRotMat;
+
 };
 
 } /* namespace chilitags */
