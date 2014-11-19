@@ -18,6 +18,13 @@
  *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
  *******************************************************************************/
 
+/**
+ * @file CalcTf3D.cpp
+ * @brief 6D pose calculator from image coordinates and camera parameters
+ * @author Quentin Bonnard
+ * @author Ayberk Özgür
+ */
+
 #include "CalcTf3D.hpp"
 
 #include <opencv2/calib3d/calib3d.hpp>
@@ -64,8 +71,7 @@ void CalcTf3D<RealT>::operator()(std::string const& name,
 {
 
     // Find the 3D pose of our tag
-    cv::solvePnP(objectPoints,
-            imagePoints,
+    cv::solvePnP(objectPoints, imagePoints,
             mCameraMatrix, mDistCoeffs,
             mTempRotation, mTempTranslation, false,
 #ifdef OPENCV3

@@ -18,6 +18,13 @@
  *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
  *******************************************************************************/
 
+/**
+ * @file CalcTf3D.cpp
+ * @brief 6D pose calculator from image coordinates and camera parameters
+ * @author Quentin Bonnard
+ * @author Ayberk Özgür
+ */
+
 #ifndef CALCTF3D_HPP
 #define CALCTF3D_HPP
 
@@ -34,14 +41,45 @@ class CalcTf3D
 {
 public:
 
-    CalcTf3D(cv::Size cameraResolution);
+    /**
+     * @brief Creates a new 6D pose calculator that uses camera image coordinates and camera parameters
+     *
+     * @param cameraResolution Height and width of the camera image
+     */
+    CalcTf3D(cv::Size cameraResolution = cv::Size(640,480));
 
+    /**
+     * @brief Updates the camera calibration parameters
+     *
+     * See http://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html for parameter details
+     *
+     * @param newCameraMatrix 3x3 camera matrix
+     * @param newDistCoeffs 4x1 or 5x1 or 8x1 distortion coefficients, pass empty matrix if unused
+     */
     void setCameraCalibration(cv::Mat newCameraMatrix, cv::Mat newDistCoeffs);
 
+    /**
+     * @brief Returns the camera matrix
+     *
+     * @return The 3x3 camera matrix
+     */
     cv::Mat const& getCameraMatrix() const;
 
+    /**
+     * @brief Returns the distortion coefficients
+     *
+     * @return The 4x1 or 5x1 or 8x1 or empty distortion coefficients
+     */
     cv::Mat const& getDistortionCoeffs() const;
 
+    /**
+     * @brief Updates/inserts the pose of the given object in the given map
+     *
+     * @param name Unique ID of the object
+     * @param objectPoints Reference points on the object
+     * @param imagePoints Where reference points are found in the image
+     * @param objects Map to update in which ID maps to the transform
+     */
     void operator()(std::string const& name,
             std::vector<cv::Point3_<RealT>> const& objectPoints,
             cv::Mat_<cv::Point2f> const& imagePoints,
@@ -49,15 +87,14 @@ public:
 
 protected:
 
-    cv::Mat mCameraMatrix;
-    cv::Mat mDistCoeffs;
+    cv::Mat mCameraMatrix;      ///< 3x3 camera matrix
+    cv::Mat mDistCoeffs;        ///< Empty or 4x1 or 5x1 or 8x1 Distortion coefficients of the camera
 
-    // Rotation & translation vectors, computed by cv::solvePnP
-    cv::Mat mTempRotation;
-    cv::Mat mTempTranslation;
+    cv::Mat mTempRotation;      ///< 3x1 axis-angle: (rx,ry,rz)
+    cv::Mat mTempTranslation;   ///< 3x1 translation: (x,y,z)
 
     //TODO: This is double because of rodrigues, it doesn't accept float at the time of writing
-    cv::Matx33d mTempRotMat;
+    cv::Matx33d mTempRotMat;    ///< 3x3 rotation matrix representation of mTempRotation
 
 };
 
