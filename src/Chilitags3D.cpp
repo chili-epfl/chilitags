@@ -138,6 +138,10 @@ void setDefaultTagSize(RealT defaultSize){
     };
 }
 
+void enableFilter3D(bool enabled){
+    mEstimatePose3D.enableFilter(enabled);
+}
+
 bool read3DConfiguration(const std::string &filenameOrString, bool omitOtherTags, bool readFromString) {
     mOmitOtherTags = omitOtherTags;
 
@@ -325,6 +329,11 @@ typename Chilitags3D_<RealT>::TagPoseMap Chilitags3D_<RealT>::estimate(
 template<typename RealT>
 void Chilitags3D_<RealT>::setDefaultTagSize(RealT defaultSize){
     mImpl->setDefaultTagSize(defaultSize);
+}
+
+template<typename RealT>
+void Chilitags3D_<RealT>::enableFilter3D(bool enabled){
+    mImpl->enableFilter3D(enabled);
 }
 
 template<typename RealT>

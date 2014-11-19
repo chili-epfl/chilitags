@@ -34,6 +34,7 @@ namespace chilitags{
 template<typename RealT>
 EstimatePose3D<RealT>::EstimatePose3D(cv::Size cameraResolution) :
     mFilter3D(),
+    mFilter3DEnabled(true),
     mCameraMatrix(),
     mDistCoeffs()
 {
@@ -65,6 +66,12 @@ cv::Mat const& EstimatePose3D<RealT>::getDistortionCoeffs() const
 }
 
 template<typename RealT>
+void EstimatePose3D<RealT>::enableFilter(bool enabled)
+{
+    mFilter3DEnabled = enabled;
+}
+
+template<typename RealT>
 void EstimatePose3D<RealT>::operator()(std::string const& name,
         std::vector<cv::Point3_<RealT>> const& objectPoints,
         cv::Mat_<cv::Point2f> const& imagePoints,
@@ -82,7 +89,8 @@ void EstimatePose3D<RealT>::operator()(std::string const& name,
 #endif
     //TODO: Rotation and translation vectors come out of solvePnP as double
 
-    mFilter3D(name, mTempTranslation, mTempRotation);
+    if(mFilter3DEnabled)
+        mFilter3D(name, mTempTranslation, mTempRotation);
 
     cv::Rodrigues(mTempRotation, mTempRotMat);
 

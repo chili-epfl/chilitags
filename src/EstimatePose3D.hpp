@@ -75,6 +75,13 @@ public:
     cv::Mat const& getDistortionCoeffs() const;
 
     /**
+     * @brief Enabled/disables Kalman filtering on tag pose
+     *
+     * @param enabled Whether tag pose filtering is enabled/disabled
+     */
+    void enableFilter(bool enabled);
+
+    /**
      * @brief Updates/inserts the pose of the given object in the given map
      *
      * @param name Unique ID of the object
@@ -90,6 +97,7 @@ public:
 protected:
 
     Filter3D<RealT> mFilter3D;  ///< Kalman filter to increase stability of the tag
+    bool mFilter3DEnabled;      ///< Whether to enable pose filtering
 
     cv::Mat mCameraMatrix;      ///< 3x3 camera matrix
     cv::Mat mDistCoeffs;        ///< Empty or 4x1 or 5x1 or 8x1 Distortion coefficients of the camera

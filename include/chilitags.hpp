@@ -495,6 +495,13 @@ bool readTagConfiguration(
 void setDefaultTagSize(RealT defaultSize);
 
 /**
+ * @brief Enables/disables Kalman filtering on tag pose (enabled by default)
+ *
+ * @param enabled Whether to enable Kalman filtering
+ */
+void enableFilter3D(bool enabled);
+
+/**
     For accurate results, Chilitags3D can be provided the calibration data of
     the camera detecting the chilitags.  See
     https://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
