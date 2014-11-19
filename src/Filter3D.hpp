@@ -51,25 +51,55 @@ public:
      *
      * @param id Unique identifier of the object
      * @param measuredTrans Translation measurement to be filtered, 3x1 vector: (x,y,z)
-     * @param measuredRot Rotation measurement to be filtered, 3x1 vector: (rx,ry,rz)
+     * @param measuredRot Rotation measurement to be filtered, 3x1 axis-angle representation: (rx,ry,rz)
      */
     void operator()(std::string const& id, cv::Mat& measuredTrans, cv::Mat& measuredRot);
 
 private:
 
-    std::map<std::string, cv::KalmanFilter> mFilters;   ///< We keep one filter per object and do not discard them
+    const int CV_TYPE;      ///< One of CV_32F, CV_64F depending on the template type
+    const RealT EPSILON;    ///< One of FLT_EPSILON, DBL_EPSILON depending on the template type
+
+    /**
+     * @brief Describes a Kalman filter and an associated previous quaternion rotation state
+     */
+    struct KFQ{
+        cv::KalmanFilter filter;
+        cv::Vec<RealT,4> prevQuat;
+
+        KFQ(int dynamParams, int measureParams, int controlParams, int type) :
+            filter(dynamParams, measureParams, controlParams, type),
+            prevQuat()
+        {}
+    };
+
+    std::map<std::string, KFQ> mFilters;                ///< We keep one filter per object and do not discard them
 
     cv::Mat mQ;                                         ///< Process noise covariance matrix, to be tuned
     cv::Mat mR;                                         ///< Measurement noise covariance matrix, to be tuned
 
-    cv::Mat mTempState;                                 ///< Temporary matrix to hold the state (x,y,z,rx,ry,rz)
+    cv::Mat mTempState;                                 ///< Temporary matrix to hold the state (x,y,z,qr,qi,qj,qk)
 
     /**
-     * @brief Gets one of CV_32F, CV_64F depending on the template type
-     *
-     * @return CV_32F or CV_64F
+     * @brief Normalizes the quaternion part of the internal state vector
      */
-    int getCVType();
+    void normalizeQuat();
+
+    /**
+     * @brief Ensures the sign of the internal state vector's quaternion is right so that we prevent quaternion unwinding
+     */
+    void shortestPathQuat(cv::Vec<RealT,4>& prevQuat);
+
+    /**
+     * @brief Calculates the norm of the given 3-vector
+     *
+     * TODO: vec3d must be double for now
+     *
+     * @param vec3d 3-vector of doubles
+     *
+     * @return The calculated norm in single-precision
+     */
+    RealT norm(cv::Mat& vec3d);
 
 };
 
