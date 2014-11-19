@@ -30,6 +30,8 @@
 #include<cmath>
 #include<cfloat>
 
+//TODO: Replace all assignment sequences with memcpys (if possible) when double/float is unified
+
 namespace chilitags{
 
 template<typename RealT>
@@ -92,7 +94,6 @@ void Filter3D<RealT>::operator()(std::string const& id, cv::Mat& measuredTrans, 
         cv::setIdentity(filter.measurementMatrix);
 
         //Set initial state
-        //TODO: Replace these with memcpys when double/float is unified
         filter.statePost.at<RealT>(0) = (RealT)measuredTrans.at<double>(0); //x
         filter.statePost.at<RealT>(1) = (RealT)measuredTrans.at<double>(1); //y
         filter.statePost.at<RealT>(2) = (RealT)measuredTrans.at<double>(2); //z
@@ -117,8 +118,6 @@ void Filter3D<RealT>::operator()(std::string const& id, cv::Mat& measuredTrans, 
 
     //Already existing filter
     else{
-
-        //TODO: Replace these with memcpys when double/float is unified
         mTempState.at<RealT>(0) = (RealT)measuredTrans.at<double>(0); //x
         mTempState.at<RealT>(1) = (RealT)measuredTrans.at<double>(1); //y
         mTempState.at<RealT>(2) = (RealT)measuredTrans.at<double>(2); //z
@@ -140,7 +139,6 @@ void Filter3D<RealT>::operator()(std::string const& id, cv::Mat& measuredTrans, 
         filter.correct(mTempState).copyTo(mTempState);
         normalizeQuat();
 
-        //TODO: Replace these with memcpys when double/float is unified
         measuredTrans.at<double>(0) = mTempState.at<RealT>(0); //x
         measuredTrans.at<double>(1) = mTempState.at<RealT>(1); //y
         measuredTrans.at<double>(2) = mTempState.at<RealT>(2); //z
