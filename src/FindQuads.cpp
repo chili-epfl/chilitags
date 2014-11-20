@@ -45,7 +45,9 @@ void drawContour(cv::Mat &image, cv::Mat &contour, cv::Scalar color, cv::Point o
 
 }
 
-chilitags::FindQuads::FindQuads() :
+namespace chilitags{
+
+FindQuads::FindQuads() :
     mGrayPyramid(1),
     mBinaryPyramid(1),
     mMinInputWidth(160)
@@ -55,7 +57,7 @@ chilitags::FindQuads::FindQuads() :
 #endif
 }
 
-std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &greyscaleImage)
+std::vector<Quad> FindQuads::operator()(const cv::Mat &greyscaleImage)
 {
     //TODO function too long, split it
 
@@ -144,3 +146,5 @@ std::vector<chilitags::Quad> chilitags::FindQuads::operator()(const cv::Mat &gre
 
     return quads;
 }
+
+} /* namespace chilitags */

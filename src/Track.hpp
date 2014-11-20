@@ -42,8 +42,8 @@ std::map<int, Quad> operator()(const cv::Mat &inputImage);
 
 protected:
 
-chilitags::Refine mRefine;
-chilitags::EnsureGreyscale mEnsureGreyscale;
+Refine mRefine;
+EnsureGreyscale mEnsureGreyscale;
 
 cv::Mat mFromImage;
 cv::Mat mToImage;

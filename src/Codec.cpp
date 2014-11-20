@@ -30,7 +30,9 @@
 #include <stdio.h>
 #include <string.h>
 
-chilitags::Codec::Codec(int bitsId, int bitsCrc, int bitsFec, const char *xorMask, const char *crcPoly) :
+namespace chilitags{
+
+Codec::Codec(int bitsId, int bitsCrc, int bitsFec, const char *xorMask, const char *crcPoly) :
     m_bitsId(bitsId),
     m_bitsCrc(bitsCrc),
     m_bitsFec(bitsFec),
@@ -78,7 +80,7 @@ chilitags::Codec::Codec(int bitsId, int bitsCrc, int bitsFec, const char *xorMas
     }
 }
 
-chilitags::Codec::~Codec() {
+Codec::~Codec() {
     delete[] m_trackedTagsTable;
     delete[] m_puncturing;
     delete[] m_dec_fec_id;
@@ -88,7 +90,7 @@ chilitags::Codec::~Codec() {
     delete[] m_fec_decoded_id;
 }
 
-bool chilitags::Codec::getTagEncodedId(int tagId, unsigned char* data) const {
+bool Codec::getTagEncodedId(int tagId, unsigned char* data) const {
     if (tagId < 0 || tagId >= m_maxTagsNumber)
         return false;
 
@@ -99,7 +101,7 @@ bool chilitags::Codec::getTagEncodedId(int tagId, unsigned char* data) const {
 /**
  * Add a tag to the tracking list: first encodes the tag to make decoding much faster.
  */
-void chilitags::Codec::addTagToTrackingList(int id) {
+void Codec::addTagToTrackingList(int id) {
     // allocate memory to store tag structure and initializes it
     m_trackedTagsTable[id].id = id;
 
@@ -107,7 +109,7 @@ void chilitags::Codec::addTagToTrackingList(int id) {
     encode(&m_trackedTagsTable[id]);
 }
 
-void chilitags::Codec::encode(tag_info_t *tag) {
+void Codec::encode(tag_info_t *tag) {
     // XOR
     tag->xor_id = tag->id ^ m_xorMask; // BITS_ID
     // CRC
@@ -118,7 +120,7 @@ void chilitags::Codec::encode(tag_info_t *tag) {
 
 /************ ENCODING *******************/
 
-int chilitags::Codec::computeCRC(tag_info_t *tag) {
+int Codec::computeCRC(tag_info_t *tag) {
     long id = tag->xor_id << m_bitsCrc; // multiply input by x16 to get a degree of 26
     tag->crc = id;
     long poly = m_crcPoly;
@@ -136,7 +138,7 @@ int chilitags::Codec::computeCRC(tag_info_t *tag) {
     return 0;
 }
 
-int chilitags::Codec::computeFEC(tag_info_t *tag) {
+int Codec::computeFEC(tag_info_t *tag) {
     int state = 0;
     int size = m_bitsCrc + m_bitsId + 2 - 1;
     int bit_pointer = 1 << size;
@@ -175,7 +177,7 @@ int chilitags::Codec::computeFEC(tag_info_t *tag) {
  * Decode only those 10 bits and then check validity of potential ids by checking the actual
  * encoded values. Greatly reduces the search space by using both backward search and forward testing.
  */
-bool chilitags::Codec::decode(const unsigned char *data, int & id) const {
+bool Codec::decode(const unsigned char *data, int & id) const {
     // depuncture: expand data by adding 0 at places where bits were removed because of puncturing
     // only 20 bits as discussed above
     int data_index = 0;
@@ -196,7 +198,7 @@ bool chilitags::Codec::decode(const unsigned char *data, int & id) const {
 
 // param encoded_id: first 20 bits of the tag to decode
 
-bool chilitags::Codec::viterbi(const unsigned char *encoded_id,
+bool Codec::viterbi(const unsigned char *encoded_id,
                                const unsigned char *tag_data, tag_info_t **tag) const {
     *tag = NULL;
     m_hamming_dist[0] = 0;
@@ -253,7 +255,7 @@ bool chilitags::Codec::viterbi(const unsigned char *encoded_id,
     return false;
 }
 
-void chilitags::Codec::bin2int(const unsigned char *bin, int *out, int size) {
+void Codec::bin2int(const unsigned char *bin, int *out, int size) {
     *out = 0;
     for (int i = size - 1; i >= 0; i--) {
         *out <<= 1;
@@ -261,7 +263,7 @@ void chilitags::Codec::bin2int(const unsigned char *bin, int *out, int size) {
     }
 }
 
-unsigned long chilitags::Codec::binstr2int(const char *bin) {
+unsigned long Codec::binstr2int(const char *bin) {
     if (!bin) return 0;
     unsigned long result = (bin[0]!='0');
     for (int i = 1; bin[i] && i < 64; ++i) {
@@ -270,3 +272,5 @@ unsigned long chilitags::Codec::binstr2int(const char *bin) {
     }
     return result;
 }
+
+} /* namespace chilitags */
