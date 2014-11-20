@@ -20,13 +20,12 @@
 
 #include "Decode.hpp"
 
-namespace {
+namespace chilitags{
+
+const int Decode::INVALID_TAG = -1;
 const int DATA_SIZE = 6;
-}
 
-const int chilitags::Decode::INVALID_TAG = -1;
-
-chilitags::Decode::Decode() :
+Decode::Decode() :
     mMatrix   (new unsigned char[DATA_SIZE*DATA_SIZE]),
     mMatrix90 (new unsigned char[DATA_SIZE*DATA_SIZE]),
     mMatrix180(new unsigned char[DATA_SIZE*DATA_SIZE]),
@@ -35,7 +34,7 @@ chilitags::Decode::Decode() :
 {
 }
 
-chilitags::Decode::~Decode()
+Decode::~Decode()
 {
     delete[] mMatrix;
     delete[] mMatrix270;
@@ -43,8 +42,7 @@ chilitags::Decode::~Decode()
     delete[] mMatrix90;
 }
 
-
-std::pair<int, chilitags::Quad> chilitags::Decode::operator()(const std::vector<unsigned char> &bits, const Quad &corners)
+std::pair<int, Quad> Decode::operator()(const std::vector<unsigned char> &bits, const Quad &corners)
 {
     for (int i = 0; i < DATA_SIZE; ++i)
     {
@@ -80,3 +78,5 @@ std::pair<int, chilitags::Quad> chilitags::Decode::operator()(const std::vector<
 
     return std::make_pair(id, orderedQuad);
 }
+
+} /* namespace chilitags */

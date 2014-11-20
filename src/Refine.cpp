@@ -30,14 +30,16 @@
 #include <opencv2/highgui/highgui.hpp>
 #endif
 
-chilitags::Refine::Refine()
+namespace chilitags{
+
+Refine::Refine()
 {
 #ifdef DEBUG_Refine
     cv::namedWindow("Refine");
 #endif
 }
 
-chilitags::Quad chilitags::Refine::operator()(
+Quad Refine::operator()(
     const cv::Mat &inputImage,
     const Quad &quad,
     const float proximityRatio)
@@ -90,3 +92,5 @@ chilitags::Quad chilitags::Refine::operator()(
 
     return refinedQuad.reshape(1);
 }
+
+} /* namespace chilitags */

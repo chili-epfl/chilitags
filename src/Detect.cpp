@@ -21,7 +21,9 @@
 
 #include "Detect.hpp"
 
-chilitags::Detect::Detect() :
+namespace chilitags{
+
+Detect::Detect() :
     mRefineCorners(true),
     mFindQuads(),
     mRefine(),
@@ -30,18 +32,18 @@ chilitags::Detect::Detect() :
 {
 }
 
-void chilitags::Detect::setMinInputWidth(int minWidth) {
+void Detect::setMinInputWidth(int minWidth) {
     mFindQuads.setMinInputWidth(minWidth);
 }
 
-void chilitags::Detect::setCornerRefinement(bool refineCorners) {
+void Detect::setCornerRefinement(bool refineCorners) {
     mRefineCorners = refineCorners;
 }
 
-void chilitags::Detect::operator()(cv::Mat const& greyscaleImage, std::map<int, Quad>& tags) {
+void Detect::operator()(cv::Mat const& greyscaleImage, std::map<int, Quad>& tags) {
     if(mRefineCorners){
         for(const auto& quad : mFindQuads(greyscaleImage)){
-            auto refinedQuad = mRefine(greyscaleImage, quad, 1.5/10.);
+            auto refinedQuad = mRefine(greyscaleImage, quad, 1.5f/10.0f);
             auto tag = mDecode(mReadBits(greyscaleImage, refinedQuad), refinedQuad);
             if(tag.first != Decode::INVALID_TAG)
                 tags[tag.first] = tag.second;
@@ -60,3 +62,5 @@ void chilitags::Detect::operator()(cv::Mat const& greyscaleImage, std::map<int, 
         }
     }
 }
+
+} /* namespace chilitags */

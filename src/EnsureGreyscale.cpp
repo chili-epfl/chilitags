@@ -21,10 +21,12 @@
 #include "EnsureGreyscale.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
 
-chilitags::EnsureGreyscale::EnsureGreyscale() : mOutputImage(){
+namespace chilitags{
+
+EnsureGreyscale::EnsureGreyscale() : mOutputImage(){
 }
 
-const cv::Mat &chilitags::EnsureGreyscale::operator()(const cv::Mat &inputImage)
+const cv::Mat &EnsureGreyscale::operator()(const cv::Mat &inputImage)
 {
     if (inputImage.channels() != 1) {
         // assuming BGR
@@ -35,3 +37,5 @@ const cv::Mat &chilitags::EnsureGreyscale::operator()(const cv::Mat &inputImage)
     }
     return mOutputImage;
 }
+
+} /* namespace chilitags */

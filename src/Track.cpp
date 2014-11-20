@@ -23,7 +23,9 @@
 
 #include "opencv2/video/tracking.hpp"
 
-chilitags::Track::Track():
+namespace chilitags{
+
+Track::Track():
 mRefine(),
 mEnsureGreyscale(),
 mFromImage(),
@@ -32,19 +34,19 @@ mFromTags()
 {
 }
 
-void chilitags::Track::update(
+void Track::update(
     const std::map<int, Quad> &tags) {
     mFromTags = tags;
 }
 
-void chilitags::Track::update(
+void Track::update(
     const cv::Mat &inputImage,
     const std::map<int, Quad> &tags) {
     mToImage = inputImage;
     mFromTags = tags;
 }
 
-std::map<int, chilitags::Quad> chilitags::Track::operator()(
+std::map<int, Quad> Track::operator()(
     const cv::Mat &inputImage) {
 
     mEnsureGreyscale(mToImage).copyTo(mFromImage);
@@ -53,7 +55,7 @@ std::map<int, chilitags::Quad> chilitags::Track::operator()(
     std::vector<uchar> status;
     std::vector<float> errors;
 
-    std::map<int, chilitags::Quad> trackedTags;
+    std::map<int, Quad> trackedTags;
     for (auto tag : mFromTags) {
         chilitags::Quad result;
 
@@ -88,3 +90,5 @@ std::map<int, chilitags::Quad> chilitags::Track::operator()(
     mFromTags = std::move(trackedTags);
     return mFromTags;
 }
+
+} /* namespace chilitags */

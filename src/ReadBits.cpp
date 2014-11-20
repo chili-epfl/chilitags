@@ -37,21 +37,12 @@ inline T round(const T &x){
 }
 #endif
 
-namespace {
+namespace chilitags{
 
 static const int DATA_SIZE = 6;
 static const int TAG_MARGIN = 2;
-static const float TAG_SIZE = 2*TAG_MARGIN+DATA_SIZE;
-static const chilitags::Quad NORMALIZED_CORNERS = {
-         0.f,      0.f,
-    TAG_SIZE,      0.f,
-    TAG_SIZE, TAG_SIZE,
-         0.f, TAG_SIZE
-};
 
-}
-
-chilitags::ReadBits::ReadBits() :
+ReadBits::ReadBits() :
     mSamplePoints(),
     mTransformedSamplePoints(DATA_SIZE*DATA_SIZE),
     mSamples(1, DATA_SIZE*DATA_SIZE, CV_8U),
@@ -73,9 +64,16 @@ chilitags::ReadBits::ReadBits() :
 #endif
 }
 
-
-const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat &inputImage, const Quad &corners)
+const std::vector<unsigned char>& ReadBits::operator()(const cv::Mat &inputImage, const Quad &corners)
 {
+    static const float TAG_SIZE = 2*TAG_MARGIN+DATA_SIZE;
+    static const Quad NORMALIZED_CORNERS = {
+         0.f,      0.f,
+    TAG_SIZE,      0.f,
+    TAG_SIZE, TAG_SIZE,
+         0.f, TAG_SIZE
+    };
+
     cv::Mat_<cv::Point2f> cornersCopy(corners);
 
     // Sometimes, the corners are refined into a concave quadrilateral
@@ -168,3 +166,5 @@ const std::vector<unsigned char> &chilitags::ReadBits::operator()(const cv::Mat 
 
     return mBits;
 }
+
+} /* namespace chilitags */
