@@ -43,6 +43,8 @@ namespace chilitags {
  */
 typedef cv::Matx<float, 4, 2> Quad;
 
+typedef std::map<int, Quad> TagID2QuadMap;
+
 /**
     This class is the core of detection of chilitags.
 
@@ -161,7 +163,7 @@ enum DetectionTrigger {
     previously found; it won't find new ones, but can lose some. See
     Chilitags::DetectionTrigger for a description of the possible values.
  */
-std::map<int, Quad> find(
+TagID2QuadMap find(
     const cv::Mat &inputImage,
     DetectionTrigger detectionTrigger = DETECT_ONLY);
 
@@ -296,16 +298,21 @@ std::unique_ptr<Impl> mImpl;
 
 };
 
-
 /**
     Chilitags3D aims at recovering the 3D pose (i.e. the 3D position and the 3D
     rotation) of chilitags. It embeds a Chilitags instance to take care of the
     (2D) detection.
  */
+template<typename RealT>
 class Chilitags3D
 {
 
 public:
+
+typedef cv::Matx<RealT, 4, 4> TfMat;
+
+typedef std::map<std::string, TfMat> Str2TfMap;
+
 /**
     Creates an object ready to find the 3D pose of chilitags.
 
@@ -386,7 +393,7 @@ Chilitags &getChilitags();
     \endverbatim
     \param tags a list of tags, as returned by Chilitags::find().
  */
-std::map<std::string, cv::Matx44f> estimate(const std::map<int, Quad> & tags);
+Str2TfMap estimate(const std::map<int, Quad> & tags);
 
 /**
     This is a convenience variant of estimate() which also takes care of the
@@ -411,7 +418,7 @@ std::map<std::string, cv::Matx44f> estimate(const std::map<int, Quad> & tags);
     can lose some. See Chilitags::DetectionTrigger for a description of the
     possible values.
  */
-std::map<std::string, cv::Matx44f> estimate(
+Str2TfMap estimate(
     const cv::Mat &inputImage,
     Chilitags::DetectionTrigger detectionTrigger = Chilitags::DETECT_ONLY);
 
@@ -453,7 +460,7 @@ bool readTagConfiguration(
 
     The default value of the default tag size is 20 millimetres.
  */
-void setDefaultTagSize(float defaultSize);
+void setDefaultTagSize(RealT defaultSize);
 
 /**
     For accurate results, Chilitags3D can be provided the calibration data of

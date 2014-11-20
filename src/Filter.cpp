@@ -127,5 +127,6 @@ template class Filter<int, Quad>;
 
 template class FindOutdated<std::string>;
 template class Filter<std::string, cv::Matx44f>;
+template class Filter<std::string, cv::Matx44d>;
 
 }
