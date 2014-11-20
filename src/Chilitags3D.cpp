@@ -29,76 +29,10 @@
 #include <opencv2/core/utility.hpp>
 #endif
 
-namespace {
+namespace chilitags{
 
-struct TagConfig {
-    TagConfig() :
-        mId(-1),
-        mSize(-1.f),
-        mKeep(false),
-        mCorners(4),
-        mLocalcorners(4)
-    {
-    }
-
-    TagConfig(int id, float size, bool keep,
-              cv::Vec3f translation, cv::Vec3f rotation
-              ) :
-        mId(id),
-        mSize(size),
-        mKeep(keep),
-        mCorners(4),
-        mLocalcorners(4)
-    {
-        mLocalcorners[0] = cv::Point3f(0.f, 0.f, 0.f);
-        mLocalcorners[1] = cv::Point3f(size, 0.f, 0.f);
-        mLocalcorners[2] = cv::Point3f(size, size, 0.f);
-        mLocalcorners[3] = cv::Point3f(0.f, size, 0.f);
-
-
-        // Rotation matrix computation: cf The Matrix and Quaternions FAQ
-        // http://www.cs.princeton.edu/~gewang/projects/darth/stuff/quat_faq.html#Q36
-
-        static const float DEG2RAD = 3.141593f / 180.f;
-        auto A = cosf(rotation[0] * DEG2RAD);
-        auto B = sinf(rotation[0] * DEG2RAD);
-        auto C = cosf(rotation[1] * DEG2RAD);
-        auto D = sinf(rotation[1] * DEG2RAD);
-        auto E = cosf(rotation[2] * DEG2RAD);
-        auto F = sinf(rotation[2] * DEG2RAD);
-
-        cv::Matx44f transformation(
-                   C*E ,        -C*F ,    D , translation[0] ,
-             B*D*E+A*F ,  -B*D*F+A*E , -B*C , translation[1] ,
-            -A*D*E+B*F ,   A*D*F+B*E ,  A*C , translation[2] ,
-                    0.f,          0.f,   0.f, 1.f             );
-
-        for (auto i : {0, 1, 2, 3}) {
-            auto corner = transformation *
-                           cv::Matx41f(mLocalcorners[i].x, mLocalcorners[i].y, 0.f, 1.f);
-            mCorners[i] = cv::Point3f(corner(0), corner(1), corner(2));
-        }
-    }
-
-    int mId;
-    float mSize;
-    bool mKeep;
-
-    // this array stores the 3D location of the
-    // 4 corners of the tag *in the parent
-    // object frame*. It is automatically computed.
-    std::vector<cv::Point3f> mCorners;
-
-    // this array stores the 3D location of the
-    // 4 corners of the tag *in the tag
-    // own frame*. It is automatically computed.
-    std::vector<cv::Point3f> mLocalcorners;
-};
-
-}
-
-
-class chilitags::Chilitags3D::Impl {
+template<typename RealT>
+class Chilitags3D<RealT>::Impl {
 
 public:
 Impl(cv::Size cameraResolution) :
@@ -111,14 +45,14 @@ Impl(cv::Size cameraResolution) :
 
     mFilter(5, 0.5f)
 {
-    float focalLength = 700.0f;
-    mCameraMatrix = (cv::Mat_<float>(3,3) <<
+    RealT focalLength = 700.0f;
+    mCameraMatrix = (cv::Mat_<RealT>(3,3) <<
         focalLength ,            0 , cameraResolution.width /2,
                    0 , focalLength , cameraResolution.height/2,
                    0,             0 , 1
     );
-    setDefaultTagSize(20.f);
-    mChilitags.setFilter(0, 0.f);
+    setDefaultTagSize(20.0f);
+    mChilitags.setFilter(0, 0.0f);
 }
 
 void setFilter(int persistence, float gain) {
@@ -133,15 +67,15 @@ const Chilitags &getChilitags() const {
     return mChilitags;
 }
 
-std::map<std::string, cv::Matx44f> estimate(const std::map<int, Quad> &tags) {
+std::map<std::string, TfMat> estimate(const std::map<int, Quad> &tags) {
 
-    std::map<std::string, cv::Matx44f> objects;
+    std::map<std::string, TfMat> objects;
 
     std::map<
         const std::string,     //name of the object
         std::pair<
-            std::vector<cv::Point3f>,      //points in object
-            std::vector<cv::Point2f> > >   //points in frame
+            std::vector<cv::Point3_<RealT>>,      //points in object
+            std::vector<cv::Point2f>>>   //points in frame
     objectToPointMapping;
 
 
@@ -198,18 +132,18 @@ std::map<std::string, cv::Matx44f> estimate(const std::map<int, Quad> &tags) {
     return mFilter(objects);
 }
 
-std::map<std::string, cv::Matx44f> estimate(
+std::map<std::string, TfMat> estimate(
     const cv::Mat &inputImage,
     Chilitags::DetectionTrigger detectionTrigger) {
     return estimate(mChilitags.find(inputImage, detectionTrigger));
 }
 
-void setDefaultTagSize(float defaultSize){
+void setDefaultTagSize(RealT defaultSize){
     mDefaultTagCorners = {
-        cv::Point3f(0.f, 0.f, 0.f),
-        cv::Point3f(defaultSize, 0.f, 0.f),
-        cv::Point3f(defaultSize, defaultSize, 0.f),
-        cv::Point3f(0.f, defaultSize, 0.f),
+        cv::Point3_<RealT>(0.f, 0.f, 0.f),
+        cv::Point3_<RealT>(defaultSize, 0.f, 0.f),
+        cv::Point3_<RealT>(defaultSize, defaultSize, 0.f),
+        cv::Point3_<RealT>(0.f, defaultSize, 0.f),
     };
 }
 
@@ -287,10 +221,72 @@ const cv::Mat &getCameraMatrix()     const {return mCameraMatrix;}
 const cv::Mat &getDistortionCoeffs() const{return mDistCoeffs;}
 
 private:
+
+struct TagConfig {
+    TagConfig() :
+        mId(-1),
+        mSize(-1.f),
+        mKeep(false),
+        mCorners(4),
+        mLocalcorners(4)
+    {
+    }
+
+    TagConfig(int id, RealT size, bool keep, cv::Vec<RealT,3> translation, cv::Vec<RealT,3> rotation) :
+        mId(id),
+        mSize(size),
+        mKeep(keep),
+        mCorners(4),
+        mLocalcorners(4)
+    {
+        mLocalcorners[0] = cv::Point3_<RealT>(0.f, 0.f, 0.f);
+        mLocalcorners[1] = cv::Point3_<RealT>(size, 0.f, 0.f);
+        mLocalcorners[2] = cv::Point3_<RealT>(size, size, 0.f);
+        mLocalcorners[3] = cv::Point3_<RealT>(0.f, size, 0.f);
+
+
+        // Rotation matrix computation: cf The Matrix and Quaternions FAQ
+        // http://www.cs.princeton.edu/~gewang/projects/darth/stuff/quat_faq.html#Q36
+
+        static const RealT DEG2RAD = 3.141593f / 180.f;
+        auto A = cos(rotation[0] * DEG2RAD);
+        auto B = sin(rotation[0] * DEG2RAD);
+        auto C = cos(rotation[1] * DEG2RAD);
+        auto D = sin(rotation[1] * DEG2RAD);
+        auto E = cos(rotation[2] * DEG2RAD);
+        auto F = sin(rotation[2] * DEG2RAD);
+
+        TfMat transformation(
+                   C*E ,        -C*F ,    D , translation[0] ,
+             B*D*E+A*F ,  -B*D*F+A*E , -B*C , translation[1] ,
+            -A*D*E+B*F ,   A*D*F+B*E ,  A*C , translation[2] ,
+                    0.f,          0.f,   0.f, 1.f             );
+
+        for (auto i : {0, 1, 2, 3}) {
+            auto corner = transformation*cv::Matx<RealT, 4, 1>(mLocalcorners[i].x, mLocalcorners[i].y, 0.f, 1.f);
+            mCorners[i] = cv::Point3_<RealT>(corner(0), corner(1), corner(2));
+        }
+    }
+
+    int mId;
+    float mSize;
+    bool mKeep;
+
+    // this array stores the 3D location of the
+    // 4 corners of the tag *in the parent
+    // object frame*. It is automatically computed.
+    std::vector<cv::Point3_<RealT>> mCorners;
+
+    // this array stores the 3D location of the
+    // 4 corners of the tag *in the tag
+    // own frame*. It is automatically computed.
+    std::vector<cv::Point3_<RealT>> mLocalcorners;
+};
+
 void computeTransformation(const std::string& name,
-                           const std::vector<cv::Point3f>& objectPoints,
-                           const cv::Mat_<cv::Point2f>& imagePoints,
-                           std::map<std::string, cv::Matx44f>& objects) const
+                           const std::vector<cv::Point3_<RealT>>& objectPoints,
+                           const cv::Mat_<cv::Point_<RealT>>& imagePoints,
+                           std::map<std::string, TfMat>& objects) const
 {
     // Rotation & translation vectors, computed by cv::solvePnP
     cv::Mat rotation, translation;
@@ -312,9 +308,9 @@ void computeTransformation(const std::string& name,
     cv::Rodrigues(rotation, rotMat);
 
     objects[name] = {
-        (float)rotMat(0,0) , (float)rotMat(0,1) , (float)rotMat(0,2) , (float)translation.at<double>(0) ,
-        (float)rotMat(1,0) , (float)rotMat(1,1) , (float)rotMat(1,2) , (float)translation.at<double>(1) ,
-        (float)rotMat(2,0) , (float)rotMat(2,1) , (float)rotMat(2,2) , (float)translation.at<double>(2) ,
+        (RealT)rotMat(0,0) , (RealT)rotMat(0,1) , (RealT)rotMat(0,2) , (RealT)translation.at<double>(0) ,
+        (RealT)rotMat(1,0) , (RealT)rotMat(1,1) , (RealT)rotMat(1,2) , (RealT)translation.at<double>(1) ,
+        (RealT)rotMat(2,0) , (RealT)rotMat(2,1) , (RealT)rotMat(2,2) , (RealT)translation.at<double>(2) ,
                   0 ,           0 ,           0 ,                         1 ,
     };
 }
@@ -325,61 +321,84 @@ bool mOmitOtherTags;
 
 cv::Mat mCameraMatrix;
 cv::Mat mDistCoeffs;
-std::vector<cv::Point3f> mDefaultTagCorners;
+std::vector<cv::Point3_<RealT>> mDefaultTagCorners;
 
 // associates a tag id with an object name and the configuration of the tag
 // in this object
 std::map<int, std::pair<std::string, TagConfig> > mId2Configuration;
 
-Filter<std::string, cv::Matx44f> mFilter;
+Filter<std::string, TfMat> mFilter;
 };
 
-void chilitags::Chilitags3D::setFilter(int persistence, float gain) {
+template<typename RealT>
+void Chilitags3D<RealT>::setFilter(int persistence, float gain) {
     mImpl->setFilter(persistence, gain);
 }
 
-chilitags::Chilitags3D::Chilitags3D(cv::Size cameraResolution) :
-    mImpl(new chilitags::Chilitags3D::Impl(cameraResolution)){
+template<typename RealT>
+Chilitags3D<RealT>::Chilitags3D(cv::Size cameraResolution) :
+    mImpl(new Chilitags3D<RealT>::Impl(cameraResolution)){
 }
 
-const chilitags::Chilitags &chilitags::Chilitags3D::getChilitags() const {
-    return mImpl->getChilitags();
-}
-chilitags::Chilitags &chilitags::Chilitags3D::getChilitags(){
+template<typename RealT>
+const Chilitags &Chilitags3D<RealT>::getChilitags() const {
     return mImpl->getChilitags();
 }
 
-std::map<std::string, cv::Matx44f> chilitags::Chilitags3D::estimate(
+template<typename RealT>
+Chilitags &Chilitags3D<RealT>::getChilitags(){
+    return mImpl->getChilitags();
+}
+
+template<typename RealT>
+std::map<std::string, typename Chilitags3D<RealT>::TfMat> Chilitags3D<RealT>::estimate(
     const std::map<int, Quad> &tags) {
     return mImpl->estimate(tags);
 }
 
-std::map<std::string, cv::Matx44f> chilitags::Chilitags3D::estimate(
+template<typename RealT>
+std::map<std::string, typename Chilitags3D<RealT>::TfMat> Chilitags3D<RealT>::estimate(
     const cv::Mat &inputImage,
     Chilitags::DetectionTrigger detectionTrigger) {
     return mImpl->estimate(inputImage, detectionTrigger);
 }
 
-void chilitags::Chilitags3D::setDefaultTagSize(float defaultSize){
+template<typename RealT>
+void Chilitags3D<RealT>::setDefaultTagSize(RealT defaultSize){
     mImpl->setDefaultTagSize(defaultSize);
 }
 
-bool chilitags::Chilitags3D::readTagConfiguration(const std::string &filenameOrString, bool omitOtherTags, bool readFromString){
+template<typename RealT>
+bool Chilitags3D<RealT>::readTagConfiguration(const std::string &filenameOrString, bool omitOtherTags, bool readFromString){
     return mImpl->read3DConfiguration(filenameOrString, omitOtherTags, readFromString);
 }
 
-void chilitags::Chilitags3D::setCalibration(
+template<typename RealT>
+void Chilitags3D<RealT>::setCalibration(
     cv::InputArray newCameraMatrix,
     cv::InputArray newDistCoeffs) {
     mImpl->setCalibration(newCameraMatrix, newDistCoeffs);
 }
-cv::Size chilitags::Chilitags3D::readCalibration(const std::string &filename){
+
+template<typename RealT>
+cv::Size Chilitags3D<RealT>::readCalibration(const std::string &filename){
     return mImpl->readCalibration(filename);
 }
 
-chilitags::Chilitags3D::~Chilitags3D() = default;
+template<typename RealT>
+Chilitags3D<RealT>::~Chilitags3D() = default;
 
-const cv::Mat &chilitags::Chilitags3D::getCameraMatrix()     const {
+template<typename RealT>
+const cv::Mat &Chilitags3D<RealT>::getCameraMatrix()     const {
     return mImpl->getCameraMatrix();}
-const cv::Mat &chilitags::Chilitags3D::getDistortionCoeffs() const {
+
+template<typename RealT>
+const cv::Mat &Chilitags3D<RealT>::getDistortionCoeffs() const {
     return mImpl->getDistortionCoeffs();}
+
+//All possible instantiations of Chilitags3D
+template class Chilitags3D<float>;
+template class Chilitags3D<double>;
+
+} /* namespace chilitags */
+

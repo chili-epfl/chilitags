@@ -25,7 +25,7 @@
 #include "chilitags.hpp"
 
 #define JNI(RETURN_TYPE,NAME) extern "C" JNIEXPORT RETURN_TYPE JNICALL Java_ch_epfl_chili_chilitags_Chilitags3D_##NAME
-#define GET_OBJ(X) reinterpret_cast<chilitags::Chilitags3D*>(X)
+#define GET_OBJ(X) reinterpret_cast<chilitags::Chilitags3D<float>*>(X)
 #define GET_PTR(X) reinterpret_cast<jlong>(X)
 
 static int Chilitags3D_height = -1;
@@ -54,7 +54,7 @@ JNI(jlong,alloc)(JNIEnv* env, jclass* class_, jint width, jint height, jint proc
 		env->ThrowNew(env->FindClass("java/lang/Exception"), "Chilitags3D: inputType not supported.");
 		return 0;
 	}
-	return GET_PTR(new chilitags::Chilitags3D(cv::Size(processingWidth,processingHeight)));
+	return GET_PTR(new chilitags::Chilitags3D<float>(cv::Size(processingWidth,processingHeight)));
 }
 
 JNI(void,free)(JNIEnv* env, jclass* class_, jlong ptr){
