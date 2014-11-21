@@ -26,7 +26,8 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
-#include "test-metadata.hpp"
+#include "DetectionTestCase.hpp"
+#include "TestUtils.hpp"
 
 #include <chilitags.hpp>
 
@@ -50,27 +51,6 @@ using namespace std;
 
 namespace {
 
-float mean(const vector<float>& vals)
-{
-    float sum = 0.0f;
-    for(auto v : vals) sum += v;
-    return sum/vals.size();
-}
-
-float variance(const vector<float>& vals)
-{
-    float current_mean = mean(vals);
-    float temp = 0;
-    for(auto v : vals)
-        temp += (current_mean-v)*(current_mean-v);
-    return temp/vals.size();
-}
-
-float sigma(const vector<float>& vals)
-{
-    return sqrt(variance(vals));
-}
-
 std::vector<int> my_set_difference(
     const std::vector<int> & v1,
     const std::vector<int> & v2) {
@@ -83,6 +63,7 @@ std::vector<int> my_set_difference(
     difference.resize(differenceEnd - difference.begin());
     return difference;
 }
+
 }
 
 TEST(Integration, Snapshots) {
@@ -107,7 +88,7 @@ TEST(Integration, Snapshots) {
     map<int, vector<float> > referenceDuration;
     map<int, int> referenceFalseNegatives;
 
-    for (auto testCase : TestMetadata::all) {
+    for (auto testCase : chilitags::DetectionTestCase::all) {
         std::string path = std::string(cvtest::TS::ptr()->get_data_path())+testCase.filename;
         cv::Mat image = cv::imread(path);
 
@@ -183,8 +164,8 @@ TEST(Integration, Snapshots) {
         cout
         << std::setw(3) << durations.second.size()/ITERATIONS
         << std::setw(10) << resolution[durations.first]
-        << std::setw(10) << std::fixed << std::setprecision(1) << mean(durations.second)
-        << std::setw(10) << std::fixed << std::setprecision(1) << sigma(durations.second)
+        << std::setw(10) << std::fixed << std::setprecision(1) << TestUtils::mean(durations.second)
+        << std::setw(10) << std::fixed << std::setprecision(1) << TestUtils::sigma(durations.second)
         << "\n";
     }
 
@@ -210,7 +191,7 @@ TEST(Integration, Snapshots) {
     map<int, vector<float> > perfDurations;
     map<int, int > perfFalseNegatives;
     int perfTotalFalseNegatives = 0;
-    for (auto testCase : TestMetadata::all) {
+    for (auto testCase : chilitags::DetectionTestCase::all) {
         std::string path = std::string(cvtest::TS::ptr()->get_data_path())+testCase.filename;
         cv::Mat image = cv::imread(path);
 
@@ -255,7 +236,7 @@ TEST(Integration, Snapshots) {
             << std::setw(3) << durations.second.size()/ITERATIONS
             << std::setw(10) << resolution[durations.first]
             << std::setw(17) << std::fixed << std::setprecision(0) <<
-                mean(perfDurationsIt->second) << "%"
+                TestUtils::mean(perfDurationsIt->second) << "%"
             << std::setw(11) << perfFalseNegativesIt->second
             << " vs "
             << std::setw(3) << referenceFalseNegativesIt->second

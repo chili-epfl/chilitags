@@ -26,7 +26,7 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
-#include "test-metadata.hpp"
+#include "DetectionTestCase.hpp"
 
 #include <chilitags.hpp>
 
@@ -50,7 +50,7 @@ TEST(FloatPrecision, Snapshots) {
     chilitagsd.getChilitags().setPerformance(chilitags::Chilitags::ROBUST);
     chilitagsd.setFilter(0, 0.0f);
 
-    for (auto testCase : TestMetadata::all) {
+    for (auto testCase : chilitags::DetectionTestCase::all) {
         std::string path = std::string(cvtest::TS::ptr()->get_data_path())+testCase.filename;
         cv::Mat image = cv::imread(path);
 
