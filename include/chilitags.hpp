@@ -43,7 +43,7 @@ namespace chilitags {
  */
 typedef cv::Matx<float, 4, 2> Quad;
 
-typedef std::map<int, Quad> TagID2QuadMap;
+typedef std::map<int, Quad> TagCornerMap;
 
 /**
     This class is the core of detection of chilitags.
@@ -163,7 +163,7 @@ enum DetectionTrigger {
     previously found; it won't find new ones, but can lose some. See
     Chilitags::DetectionTrigger for a description of the possible values.
  */
-TagID2QuadMap find(
+TagCornerMap find(
     const cv::Mat &inputImage,
     DetectionTrigger detectionTrigger = DETECT_ONLY);
 
@@ -311,7 +311,7 @@ public:
 
 typedef cv::Matx<RealT, 4, 4> TfMat;
 
-typedef std::map<std::string, TfMat> Str2TfMap;
+typedef std::map<std::string, TfMat> TagPoseMap;
 
 /**
     Creates an object ready to find the 3D pose of chilitags.
@@ -393,7 +393,7 @@ Chilitags &getChilitags();
     \endverbatim
     \param tags a list of tags, as returned by Chilitags::find().
  */
-Str2TfMap estimate(const std::map<int, Quad> & tags);
+TagPoseMap estimate(const std::map<int, Quad> & tags);
 
 /**
     This is a convenience variant of estimate() which also takes care of the
@@ -418,7 +418,7 @@ Str2TfMap estimate(const std::map<int, Quad> & tags);
     can lose some. See Chilitags::DetectionTrigger for a description of the
     possible values.
  */
-Str2TfMap estimate(
+TagPoseMap estimate(
     const cv::Mat &inputImage,
     Chilitags::DetectionTrigger detectionTrigger = Chilitags::DETECT_ONLY);
 
