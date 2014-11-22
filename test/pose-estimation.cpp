@@ -91,7 +91,7 @@ chilitags::Quad makeTransformedCorners(cv::Matx44f transformation, float size) {
 }
 
 TEST(Estimate3dPose, 2D) {
-    chilitags::Chilitags3D<float> chilitags3D(CAMERA_SIZE);
+    chilitags::Chilitags3D<> chilitags3D(CAMERA_SIZE);
     auto tagImage = chilitags3D.getChilitags().draw(42, 5, true);
     auto tags = chilitags3D.getChilitags().find(tagImage);
     EXPECT_EQ(1, tags.size());
@@ -105,7 +105,7 @@ TEST(Estimate3dPose, FreeTags) {
     float size = 37;
     chilitags::Quad corners = makeTransformedCorners(expectedTransformation, size);
 
-    chilitags::Chilitags3D<float> chilitags3D(CAMERA_SIZE);
+    chilitags::Chilitags3D<> chilitags3D(CAMERA_SIZE);
     chilitags3D.setDefaultTagSize(size);
 
     int tagId = 0;
@@ -142,7 +142,7 @@ TEST(Estimate3dPose, Configurations) {
 
     //Test config from file
     {
-        chilitags::Chilitags3D<float> chilitags3D(CAMERA_SIZE);
+        chilitags::Chilitags3D<> chilitags3D(CAMERA_SIZE);
         chilitags3D.setDefaultTagSize(20.f);
         if(chilitags3D.readTagConfiguration(cvtest::TS::ptr()->get_data_path() + "misc/tag_configuration_sample.yml",true)){
             auto result = chilitags3D.estimate(tags);
@@ -175,7 +175,7 @@ TEST(Estimate3dPose, Configurations) {
 
     //Test config from string
     {
-        chilitags::Chilitags3D<float> chilitags3D(CAMERA_SIZE);
+        chilitags::Chilitags3D<> chilitags3D(CAMERA_SIZE);
         chilitags3D.setDefaultTagSize(20.f);
         std::ifstream configfile(cvtest::TS::ptr()->get_data_path() + "misc/tag_configuration_sample.yml");
         std::string str((std::istreambuf_iterator<char>(configfile)), //DO NOT REMOVE EXTRA PARENTHESIS!
