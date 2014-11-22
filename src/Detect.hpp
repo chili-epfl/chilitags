@@ -41,7 +41,7 @@ public:
 
     void setCornerRefinement(bool refineCorners);
 
-    void operator()(cv::Mat const& inputImage, std::map<int, Quad>& tags);
+    void operator()(cv::Mat const& inputImage, TagCornerMap& tags);
 
 protected:
 

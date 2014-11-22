@@ -67,7 +67,7 @@ const Chilitags &getChilitags() const {
     return mChilitags;
 }
 
-TagPoseMap estimate(const std::map<int, Quad> &tags) {
+TagPoseMap estimate(const TagCornerMap &tags) {
 
     TagPoseMap objects;
 
@@ -352,7 +352,7 @@ Chilitags &Chilitags3D<RealT>::getChilitags(){
 
 template<typename RealT>
 typename Chilitags3D<RealT>::TagPoseMap Chilitags3D<RealT>::estimate(
-    const std::map<int, Quad> &tags) {
+    const TagCornerMap &tags) {
     return mImpl->estimate(tags);
 }
 

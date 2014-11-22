@@ -33,9 +33,7 @@
 namespace chilitags {
 
 namespace {
-    typedef std::map<int, Quad> TagList;
-
-    TagList scaleBy(TagList tags, float factor) {
+    chilitags::TagCornerMap scaleBy(chilitags::TagCornerMap tags, float factor) {
         if (factor == 1.0f) return tags;
         for(auto &tag: tags) {
             //Maybe this translation should be moved to Refine ?
@@ -109,7 +107,7 @@ void setDetectionPeriod(int period) {
     mCallsBeforeDetection = period;
 }
 
-std::map<int, Quad> find(
+TagCornerMap find(
     const cv::Mat &inputImage,
     DetectionTrigger detectionTrigger){
 
@@ -135,7 +133,7 @@ std::map<int, Quad> find(
     mCallsBeforeNextDetection = mCallsBeforeDetection;
 
     cv::Mat greyscaleImage = mEnsureGreyscale(mResizedInput);
-    std::map<int, Quad> tags;
+    TagCornerMap tags;
 
     if (detectionTrigger == TRACK_AND_DETECT) {
         // track first to override tracked tags with actually detected tags
@@ -245,7 +243,7 @@ void Chilitags::setMinInputWidth(int minWidth) {
     mImpl->setMinInputWidth(minWidth);
 }
 
-std::map<int, Quad> Chilitags::find(
+TagCornerMap Chilitags::find(
     const cv::Mat &inputImage,
     DetectionTrigger trigger
     ) {

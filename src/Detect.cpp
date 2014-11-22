@@ -40,7 +40,7 @@ void Detect::setCornerRefinement(bool refineCorners) {
     mRefineCorners = refineCorners;
 }
 
-void Detect::operator()(cv::Mat const& greyscaleImage, std::map<int, Quad>& tags) {
+void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags) {
     if(mRefineCorners){
         for(const auto& quad : mFindQuads(greyscaleImage)){
             auto refinedQuad = mRefine(greyscaleImage, quad, 1.5f/10.0f);

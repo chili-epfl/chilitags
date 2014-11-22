@@ -34,19 +34,18 @@ mFromTags()
 {
 }
 
-void Track::update(
-    const std::map<int, Quad> &tags) {
+void Track::update(const TagCornerMap &tags) {
     mFromTags = tags;
 }
 
 void Track::update(
     const cv::Mat &inputImage,
-    const std::map<int, Quad> &tags) {
+    const TagCornerMap &tags) {
     mToImage = inputImage;
     mFromTags = tags;
 }
 
-std::map<int, Quad> Track::operator()(
+TagCornerMap Track::operator()(
     const cv::Mat &inputImage) {
 
     mEnsureGreyscale(mToImage).copyTo(mFromImage);
@@ -55,9 +54,9 @@ std::map<int, Quad> Track::operator()(
     std::vector<uchar> status;
     std::vector<float> errors;
 
-    std::map<int, Quad> trackedTags;
+    TagCornerMap trackedTags;
     for (auto tag : mFromTags) {
-        chilitags::Quad result;
+        Quad result;
 
         static const float GROWTH_RATIO = 20.0f/10.0f;
         cv::Rect roi = growRoi(mToImage, cv::Mat_<cv::Point2f>(tag.second), GROWTH_RATIO);
