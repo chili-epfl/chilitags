@@ -21,7 +21,7 @@
 #include <chilitags.hpp>
 
 #include "Filter.hpp"
-#include "CalcTf3D.hpp"
+#include "EstimatePose3D.hpp"
 
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp> //for FileStorage
@@ -40,7 +40,7 @@ Impl(cv::Size cameraResolution) :
     mOmitOtherTags(false),
     mDefaultTagCorners(),
     mId2Configuration(),
-    mCalcTf3D(cameraResolution),
+    mEstimatePose3D(cameraResolution),
     mFilter(5, 0.5f)
 {
     setDefaultTagSize(20.f);
@@ -84,7 +84,7 @@ TagPoseMap estimate(const TagCornerMap &tags) {
             if (configurationIt->first == tagId) {
                 const auto &configuration = configurationIt->second;
                 if (configuration.second.mKeep) {
-                    mCalcTf3D(cv::format("tag_%d", tagId),
+                    mEstimatePose3D(cv::format("tag_%d", tagId),
                                           configuration.second.mLocalcorners,
                                           corners,
                                           objects);
@@ -99,14 +99,14 @@ TagPoseMap estimate(const TagCornerMap &tags) {
                     corners.begin(),
                     corners.end());
             } else if (!mOmitOtherTags) {
-                mCalcTf3D(cv::format("tag_%d", tagId),
+                mEstimatePose3D(cv::format("tag_%d", tagId),
                                       mDefaultTagCorners,
                                       corners,
                                       objects);
             }
 
         } else if (!mOmitOtherTags) {
-            mCalcTf3D(cv::format("tag_%d", tagId),
+            mEstimatePose3D(cv::format("tag_%d", tagId),
                                   mDefaultTagCorners,
                                   corners,
                                   objects);
@@ -114,7 +114,7 @@ TagPoseMap estimate(const TagCornerMap &tags) {
     }
 
     for (auto& objectToPoints : objectToPointMapping) {
-        mCalcTf3D(objectToPoints.first,
+        mEstimatePose3D(objectToPoints.first,
                               objectToPoints.second.first,
                               cv::Mat_<cv::Point2f>(objectToPoints.second.second),
                               objects);
@@ -187,7 +187,7 @@ bool read3DConfiguration(const std::string &filenameOrString, bool omitOtherTags
  */
 void setCalibration(cv::InputArray newCameraMatrix,
                     cv::InputArray newDistCoeffs){
-    mCalcTf3D.setCameraCalibration(newCameraMatrix.getMat(), newDistCoeffs.getMat());
+    mEstimatePose3D.setCameraCalibration(newCameraMatrix.getMat(), newDistCoeffs.getMat());
 }
 
 cv::Size readCalibration(const std::string &filename) {
@@ -203,13 +203,13 @@ cv::Size readCalibration(const std::string &filename) {
         distCoeffs = cv::Mat_<float>(distCoeffs);
     if( cameraMatrix.type() != CV_32F )
         cameraMatrix = cv::Mat_<float>(cameraMatrix);
-    mCalcTf3D.setCameraCalibration(cameraMatrix, distCoeffs);
+    mEstimatePose3D.setCameraCalibration(cameraMatrix, distCoeffs);
 
     return size;
 }
 
-const cv::Mat &getCameraMatrix()     const {return mCalcTf3D.getCameraMatrix();}
-const cv::Mat &getDistortionCoeffs() const{return mCalcTf3D.getDistortionCoeffs();}
+const cv::Mat &getCameraMatrix()     const {return mEstimatePose3D.getCameraMatrix();}
+const cv::Mat &getDistortionCoeffs() const{return mEstimatePose3D.getDistortionCoeffs();}
 
 private:
 
@@ -276,7 +276,7 @@ struct TagConfig {
 
 Chilitags mChilitags;
 
-CalcTf3D<RealT> mCalcTf3D;
+EstimatePose3D<RealT> mEstimatePose3D;
 
 bool mOmitOtherTags;
 

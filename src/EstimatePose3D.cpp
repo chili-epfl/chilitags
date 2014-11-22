@@ -19,20 +19,20 @@
  *******************************************************************************/
 
 /**
- * @file CalcTf3D.cpp
+ * @file EstimatePose3D.cpp
  * @brief 6D pose calculator from image coordinates and camera parameters
  * @author Quentin Bonnard
  * @author Ayberk Özgür
  */
 
-#include "CalcTf3D.hpp"
+#include "EstimatePose3D.hpp"
 
 #include <opencv2/calib3d/calib3d.hpp>
 
 namespace chilitags{
 
 template<typename RealT>
-CalcTf3D<RealT>::CalcTf3D(cv::Size cameraResolution) :
+EstimatePose3D<RealT>::EstimatePose3D(cv::Size cameraResolution) :
     mCameraMatrix(),
     mDistCoeffs()
 {
@@ -45,26 +45,26 @@ CalcTf3D<RealT>::CalcTf3D(cv::Size cameraResolution) :
 }
 
 template<typename RealT>
-void CalcTf3D<RealT>::setCameraCalibration(cv::Mat newCameraMatrix, cv::Mat newDistCoeffs)
+void EstimatePose3D<RealT>::setCameraCalibration(cv::Mat newCameraMatrix, cv::Mat newDistCoeffs)
 {
     mCameraMatrix = newCameraMatrix;
     mDistCoeffs = newDistCoeffs;
 }
 
 template<typename RealT>
-cv::Mat const& CalcTf3D<RealT>::getCameraMatrix() const
+cv::Mat const& EstimatePose3D<RealT>::getCameraMatrix() const
 {
     return mCameraMatrix;
 }
 
 template<typename RealT>
-cv::Mat const& CalcTf3D<RealT>::getDistortionCoeffs() const
+cv::Mat const& EstimatePose3D<RealT>::getDistortionCoeffs() const
 {
     return mDistCoeffs;
 }
 
 template<typename RealT>
-void CalcTf3D<RealT>::operator()(std::string const& name,
+void EstimatePose3D<RealT>::operator()(std::string const& name,
         std::vector<cv::Point3_<RealT>> const& objectPoints,
         cv::Mat_<cv::Point2f> const& imagePoints,
         typename Chilitags3D_<RealT>::TagPoseMap& objects)
@@ -91,8 +91,8 @@ void CalcTf3D<RealT>::operator()(std::string const& name,
     };
 }
 
-//All possible instantiations of CalcTf3D
-template class CalcTf3D<float>;
-template class CalcTf3D<double>;
+//All possible instantiations of EstimatePose3D
+template class EstimatePose3D<float>;
+template class EstimatePose3D<double>;
 
 } /* namespace chilitags */

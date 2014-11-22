@@ -19,14 +19,14 @@
  *******************************************************************************/
 
 /**
- * @file CalcTf3D.cpp
+ * @file EstimatePose3D.cpp
  * @brief 6D pose calculator from image coordinates and camera parameters
  * @author Quentin Bonnard
  * @author Ayberk Özgür
  */
 
-#ifndef CALCTF3D_HPP
-#define CALCTF3D_HPP
+#ifndef ESTIMATEPOSE3D_HPP
+#define ESTIMATEPOSE3D_HPP
 
 #include <vector>
 #include <map>
@@ -37,7 +37,7 @@
 namespace chilitags {
 
 template<typename RealT>
-class CalcTf3D
+class EstimatePose3D
 {
 public:
 
@@ -46,7 +46,7 @@ public:
      *
      * @param cameraResolution Height and width of the camera image
      */
-    CalcTf3D(cv::Size cameraResolution = cv::Size(640,480));
+    EstimatePose3D(cv::Size cameraResolution = cv::Size(640,480));
 
     /**
      * @brief Updates the camera calibration parameters
@@ -100,4 +100,4 @@ protected:
 
 } /* namespace chilitags */
 
-#endif /* CALCTF3D_HPP */
+#endif /* ESTIMATEPOSE3D_HPP */
