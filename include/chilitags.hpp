@@ -338,7 +338,7 @@ typedef std::map<std::string, TfMat> TagPoseMap;
 
     You can also create yourself a separate instance of Chilitagsfor the 2D
     detection of tags and use it by calling
-    Chilitags3D::estimate(const std::map<int, Quad> &tags)
+    Chilitags3D::estimate(const TagCornerMap &tags)
     with the output of
     Chilitags::find(const cv::Mat &inputImage)
     instead of calling directly
@@ -393,7 +393,7 @@ Chilitags &getChilitags();
     \endverbatim
     \param tags a list of tags, as returned by Chilitags::find().
  */
-TagPoseMap estimate(const std::map<int, Quad> & tags);
+TagPoseMap estimate(const TagCornerMap & tags);
 
 /**
     This is a convenience variant of estimate() which also takes care of the

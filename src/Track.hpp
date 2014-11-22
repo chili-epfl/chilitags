@@ -36,9 +36,9 @@ public:
 
 Track();
 
-void update(const std::map<int, Quad> &tags);
-void update(const cv::Mat &inputImage, const std::map<int, Quad> &tags);
-std::map<int, Quad> operator()(const cv::Mat &inputImage);
+void update(TagCornerMap const& tags);
+void update(const cv::Mat &inputImage, TagCornerMap const& tags);
+TagCornerMap operator()(const cv::Mat &inputImage);
 
 protected:
 
@@ -47,7 +47,7 @@ EnsureGreyscale mEnsureGreyscale;
 
 cv::Mat mFromImage;
 cv::Mat mToImage;
-std::map<int, Quad> mFromTags;
+TagCornerMap mFromTags;
 
 };
 
