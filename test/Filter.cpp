@@ -40,9 +40,9 @@ namespace {
     const std::map<int, chilitags::Quad> ONLY_TAG_42 = {{42, {}}};
     const std::map<int, chilitags::Quad> ONLY_TAG_43 = {{43, {}}};
 
-    const std::map<std::string, cv::Matx44f> EMPTY_OBJECT_LIST;
-    const std::map<std::string, cv::Matx44f> ONLY_OBJECT_42 = {{"42", {}}};
-    const std::map<std::string, cv::Matx44f> ONLY_OBJECT_43 = {{"43", {}}};
+    const chilitags::Chilitags3D<>::TagPoseMap EMPTY_OBJECT_LIST;
+    const chilitags::Chilitags3D<>::TagPoseMap ONLY_OBJECT_42 = {{"42", {}}};
+    const chilitags::Chilitags3D<>::TagPoseMap ONLY_OBJECT_43 = {{"43", {}}};
 }
 
 TEST(FindOutdated2D, ZeroPersistence) {
