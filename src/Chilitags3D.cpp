@@ -67,9 +67,9 @@ const Chilitags &getChilitags() const {
     return mChilitags;
 }
 
-std::map<std::string, TfMat> estimate(const std::map<int, Quad> &tags) {
+TagPoseMap estimate(const std::map<int, Quad> &tags) {
 
-    std::map<std::string, TfMat> objects;
+    TagPoseMap objects;
 
     std::map<
         const std::string,     //name of the object
@@ -132,7 +132,7 @@ std::map<std::string, TfMat> estimate(const std::map<int, Quad> &tags) {
     return mFilter(objects);
 }
 
-std::map<std::string, TfMat> estimate(
+TagPoseMap estimate(
     const cv::Mat &inputImage,
     Chilitags::DetectionTrigger detectionTrigger) {
     return estimate(mChilitags.find(inputImage, detectionTrigger));
@@ -286,7 +286,7 @@ struct TagConfig {
 void computeTransformation(const std::string& name,
                            const std::vector<cv::Point3_<RealT>>& objectPoints,
                            const cv::Mat_<cv::Point_<RealT>>& imagePoints,
-                           std::map<std::string, TfMat>& objects) const
+                           TagPoseMap& objects) const
 {
     // Rotation & translation vectors, computed by cv::solvePnP
     cv::Mat rotation, translation;
@@ -351,13 +351,13 @@ Chilitags &Chilitags3D<RealT>::getChilitags(){
 }
 
 template<typename RealT>
-std::map<std::string, typename Chilitags3D<RealT>::TfMat> Chilitags3D<RealT>::estimate(
+typename Chilitags3D<RealT>::TagPoseMap Chilitags3D<RealT>::estimate(
     const std::map<int, Quad> &tags) {
     return mImpl->estimate(tags);
 }
 
 template<typename RealT>
-std::map<std::string, typename Chilitags3D<RealT>::TfMat> Chilitags3D<RealT>::estimate(
+typename Chilitags3D<RealT>::TagPoseMap Chilitags3D<RealT>::estimate(
     const cv::Mat &inputImage,
     Chilitags::DetectionTrigger detectionTrigger) {
     return mImpl->estimate(inputImage, detectionTrigger);

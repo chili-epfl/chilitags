@@ -135,7 +135,7 @@ TEST(Estimate3dPose, Configurations) {
         tags[ids[i]] = makeTransformedCorners(tagTransformations[i], sizes[i]);
     }
 
-    std::map<std::string, cv::Matx44f> expected = {
+    chilitags::Chilitags3D<>::TagPoseMap expected = {
         {    "tag_2", tagTransformations[0]},
         {"myobject3", objectTransformation },
     };
