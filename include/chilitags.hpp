@@ -303,7 +303,7 @@ std::unique_ptr<Impl> mImpl;
     rotation) of chilitags. It embeds a Chilitags instance to take care of the
     (2D) detection.
  */
-template<typename RealT>
+template<typename RealT = float>
 class Chilitags3D
 {
 

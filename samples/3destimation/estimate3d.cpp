@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
     float inputHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
 #endif
 
-    chilitags::Chilitags3D<float> chilitags3D(Size(inputWidth, inputHeight));
+    chilitags::Chilitags3D<> chilitags3D(Size(inputWidth, inputHeight));
 
     if (configFilename) chilitags3D.readTagConfiguration(configFilename);
 
