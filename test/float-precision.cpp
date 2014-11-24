@@ -42,11 +42,11 @@ TEST(FloatPrecision, Snapshots) {
     // to get the data from the root of the test data path
     cvtest::TS::ptr()->init("");
 
-    chilitags::Chilitags3D<float> chilitagsf;
+    chilitags::Chilitags3Df chilitagsf;
     chilitagsf.getChilitags().setPerformance(chilitags::Chilitags::ROBUST);
     chilitagsf.setFilter(0, 0.0f);
 
-    chilitags::Chilitags3D<double> chilitagsd;
+    chilitags::Chilitags3Dd chilitagsd;
     chilitagsd.getChilitags().setPerformance(chilitags::Chilitags::ROBUST);
     chilitagsd.setFilter(0, 0.0f);
 

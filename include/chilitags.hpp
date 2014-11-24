@@ -304,7 +304,7 @@ std::unique_ptr<Impl> mImpl;
     (2D) detection.
  */
 template<typename RealT = float>
-class Chilitags3D
+class Chilitags3D_
 {
 
 public:
@@ -350,7 +350,7 @@ typedef std::map<std::string, TransformMatrix> TagPoseMap;
     detection anyway. This parameter is overridden by readCalibration() or
     setCalibration().
  */
-Chilitags3D(cv::Size cameraResolution = cv::Size(640, 480));
+Chilitags3D_(cv::Size cameraResolution = cv::Size(640, 480));
 
 /**
     Parameters to paliate with the imperfections of the detection.
@@ -506,7 +506,7 @@ const cv::Mat &getCameraMatrix()     const;
 */
 const cv::Mat &getDistortionCoeffs() const;
 
-~Chilitags3D();
+~Chilitags3D_();
 
 private:
 /** Internal implementation */
@@ -514,6 +514,10 @@ class Impl;
 std::unique_ptr<Impl> mImpl;
 
 };
+
+typedef Chilitags3D_<float> Chilitags3D;
+typedef Chilitags3D_<float> Chilitags3Df;
+typedef Chilitags3D_<double> Chilitags3Dd;
 
 }
 

@@ -32,7 +32,7 @@
 namespace chilitags{
 
 template<typename RealT>
-class Chilitags3D<RealT>::Impl {
+class Chilitags3D_<RealT>::Impl {
 
 public:
 Impl(cv::Size cameraResolution) :
@@ -331,74 +331,74 @@ Filter<std::string, TransformMatrix> mFilter;
 };
 
 template<typename RealT>
-void Chilitags3D<RealT>::setFilter(int persistence, float gain) {
+void Chilitags3D_<RealT>::setFilter(int persistence, float gain) {
     mImpl->setFilter(persistence, gain);
 }
 
 template<typename RealT>
-Chilitags3D<RealT>::Chilitags3D(cv::Size cameraResolution) :
-    mImpl(new Chilitags3D<RealT>::Impl(cameraResolution)){
+Chilitags3D_<RealT>::Chilitags3D_(cv::Size cameraResolution) :
+    mImpl(new Chilitags3D_<RealT>::Impl(cameraResolution)){
 }
 
 template<typename RealT>
-const Chilitags &Chilitags3D<RealT>::getChilitags() const {
+const Chilitags &Chilitags3D_<RealT>::getChilitags() const {
     return mImpl->getChilitags();
 }
 
 template<typename RealT>
-Chilitags &Chilitags3D<RealT>::getChilitags(){
+Chilitags &Chilitags3D_<RealT>::getChilitags(){
     return mImpl->getChilitags();
 }
 
 template<typename RealT>
-typename Chilitags3D<RealT>::TagPoseMap Chilitags3D<RealT>::estimate(
+typename Chilitags3D_<RealT>::TagPoseMap Chilitags3D_<RealT>::estimate(
     const TagCornerMap &tags) {
     return mImpl->estimate(tags);
 }
 
 template<typename RealT>
-typename Chilitags3D<RealT>::TagPoseMap Chilitags3D<RealT>::estimate(
+typename Chilitags3D_<RealT>::TagPoseMap Chilitags3D_<RealT>::estimate(
     const cv::Mat &inputImage,
     Chilitags::DetectionTrigger detectionTrigger) {
     return mImpl->estimate(inputImage, detectionTrigger);
 }
 
 template<typename RealT>
-void Chilitags3D<RealT>::setDefaultTagSize(RealT defaultSize){
+void Chilitags3D_<RealT>::setDefaultTagSize(RealT defaultSize){
     mImpl->setDefaultTagSize(defaultSize);
 }
 
 template<typename RealT>
-bool Chilitags3D<RealT>::readTagConfiguration(const std::string &filenameOrString, bool omitOtherTags, bool readFromString){
+bool Chilitags3D_<RealT>::readTagConfiguration(const std::string &filenameOrString, bool omitOtherTags, bool readFromString){
     return mImpl->read3DConfiguration(filenameOrString, omitOtherTags, readFromString);
 }
 
 template<typename RealT>
-void Chilitags3D<RealT>::setCalibration(
+void Chilitags3D_<RealT>::setCalibration(
     cv::InputArray newCameraMatrix,
     cv::InputArray newDistCoeffs) {
     mImpl->setCalibration(newCameraMatrix, newDistCoeffs);
 }
 
 template<typename RealT>
-cv::Size Chilitags3D<RealT>::readCalibration(const std::string &filename){
+cv::Size Chilitags3D_<RealT>::readCalibration(const std::string &filename){
     return mImpl->readCalibration(filename);
 }
 
 template<typename RealT>
-Chilitags3D<RealT>::~Chilitags3D() = default;
+Chilitags3D_<RealT>::~Chilitags3D_() = default;
 
 template<typename RealT>
-const cv::Mat &Chilitags3D<RealT>::getCameraMatrix()     const {
+const cv::Mat &Chilitags3D_<RealT>::getCameraMatrix()     const {
     return mImpl->getCameraMatrix();}
 
 template<typename RealT>
-const cv::Mat &Chilitags3D<RealT>::getDistortionCoeffs() const {
+const cv::Mat &Chilitags3D_<RealT>::getDistortionCoeffs() const {
     return mImpl->getDistortionCoeffs();}
 
 //All possible instantiations of Chilitags3D
-template class Chilitags3D<float>;
-template class Chilitags3D<double>;
+template class Chilitags3D_<float>;
+template class Chilitags3D_<double>;
 
 } /* namespace chilitags */
 
