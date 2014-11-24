@@ -519,6 +519,14 @@ typedef Chilitags3D_<float> Chilitags3D;
 typedef Chilitags3D_<float> Chilitags3Df;
 typedef Chilitags3D_<double> Chilitags3Dd;
 
+typedef Chilitags3D::TransformMatrix TransformMatrix;
+typedef Chilitags3Df::TransformMatrix TransformMatrixf;
+typedef Chilitags3Dd::TransformMatrix TransformMatrixd;
+
+typedef Chilitags3D::TagPoseMap TagPoseMap;
+typedef Chilitags3Df::TagPoseMap TagPoseMapf;
+typedef Chilitags3Dd::TagPoseMap TagPoseMapd;
+
 }
 
 #endif
