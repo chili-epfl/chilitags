@@ -74,7 +74,7 @@ TEST(Integration, MaxWidth) {
     auto startCount = cv::getTickCount();
     auto tagsWithout = chilitags.find(image);
     auto endCount = cv::getTickCount();
-    auto timeWithout = ((float) endCount - startCount)*1000/cv::getTickFrequency();
+    auto timeWithout = endCount - startCount;
 
     //with setMaxInputWidth
     int smallerImageSize = image.cols/10;
@@ -82,17 +82,9 @@ TEST(Integration, MaxWidth) {
     startCount = cv::getTickCount();
     auto tagsWith = chilitags.find(image);
     endCount = cv::getTickCount();
-    auto timeWith = ((float) endCount - startCount)*1000/cv::getTickFrequency();
+    auto timeWith = endCount - startCount;
 
-    // Check that the resize+processing is faster than 150% of the processing
-    // of an image of natively the same size.
-    cv::Mat smallImage = chilitags.draw(expectedId, smallerImageSize/tagSize, true);
-    startCount = cv::getTickCount();
-    chilitags.find(smallImage);
-    endCount = cv::getTickCount();
-    auto referenceTime = ((float) endCount - startCount)*1000/cv::getTickFrequency();
-
-    EXPECT_GT(150.0f, 100.0f*timeWith/referenceTime);
+    EXPECT_GT(timeWithout, timeWith);
 
     ASSERT_EQ(tagsWith.size(), tagsWithout.size());
 
