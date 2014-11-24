@@ -309,9 +309,9 @@ class Chilitags3D
 
 public:
 
-typedef cv::Matx<RealT, 4, 4> TfMat;
+typedef cv::Matx<RealT, 4, 4> TransformMatrix;
 
-typedef std::map<std::string, TfMat> TagPoseMap;
+typedef std::map<std::string, TransformMatrix> TagPoseMap;
 
 /**
     Creates an object ready to find the 3D pose of chilitags.

@@ -256,7 +256,7 @@ struct TagConfig {
         auto E = cos(rotation[2] * DEG2RAD);
         auto F = sin(rotation[2] * DEG2RAD);
 
-        TfMat transformation(
+        TransformMatrix transformation(
                    C*E ,        -C*F ,    D , translation[0] ,
              B*D*E+A*F ,  -B*D*F+A*E , -B*C , translation[1] ,
             -A*D*E+B*F ,   A*D*F+B*E ,  A*C , translation[2] ,
@@ -327,7 +327,7 @@ std::vector<cv::Point3_<RealT>> mDefaultTagCorners;
 // in this object
 std::map<int, std::pair<std::string, TagConfig> > mId2Configuration;
 
-Filter<std::string, TfMat> mFilter;
+Filter<std::string, TransformMatrix> mFilter;
 };
 
 template<typename RealT>
