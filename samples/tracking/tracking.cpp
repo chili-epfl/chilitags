@@ -34,7 +34,7 @@
 // Not much interesting here, move along
 void drawTags(
     cv::Mat outputImage,
-    const std::map<int, chilitags::Quad> &tags,
+    const chilitags::TagCornerMap &tags,
     int64 startTime,
     int64 endTime,
     bool detection
@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 
 void drawTags(
     cv::Mat outputImage,
-    const std::map<int, chilitags::Quad> &tags,
+    const chilitags::TagCornerMap &tags,
     int64 startTime,
     int64 endTime,
     bool detection

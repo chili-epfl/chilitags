@@ -112,7 +112,7 @@ TEST(Integration, Snapshots) {
         cv::Mat image = cv::imread(path);
 
         if(image.data) {
-            std::map<int, chilitags::Quad> tags;
+            chilitags::TagCornerMap tags;
             resolution[image.cols*image.rows] = cv::format("%dx%d", image.cols, image.rows);
             for (int i = 0; i < ITERATIONS; i++) {
                 int64 startCount = cv::getTickCount();
@@ -215,7 +215,7 @@ TEST(Integration, Snapshots) {
         cv::Mat image = cv::imread(path);
 
         if(image.data) {
-            std::map<int, chilitags::Quad> tags;
+            chilitags::TagCornerMap tags;
             for (int i = 0; i < ITERATIONS; i++) {
                 int64 startCount = cv::getTickCount();
                 tags = chilitags.find(image);

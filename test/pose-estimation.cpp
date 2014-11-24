@@ -130,7 +130,7 @@ TEST(Estimate3dPose, Configurations) {
         objectTransformation*makeTransformation(0, 0, 0, +50, -100, 0),
     };
 
-    std::map<int, chilitags::Quad> tags;
+    chilitags::TagCornerMap tags;
     for (std::size_t i = 0; i<ids.size(); ++i) {
         tags[ids[i]] = makeTransformedCorners(tagTransformations[i], sizes[i]);
     }

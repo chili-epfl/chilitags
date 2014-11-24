@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
         // The resulting map associates tag ids (between 0 and 1023)
         // to four 2D points corresponding to the corners positions
         // in the picture.
-        std::map<int, chilitags::Quad> tags = chilitags.find(inputImage);
+        chilitags::TagCornerMap tags = chilitags.find(inputImage);
 
         // Measure the processing time needed for the detection
         int64 endTime = cv::getTickCount();

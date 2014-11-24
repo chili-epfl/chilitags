@@ -36,9 +36,9 @@ namespace {
     typedef chilitags::FindOutdated<std::string>
             FindOutdated3D;
 
-    const std::map<int, chilitags::Quad> EMPTY_TAG_LIST;
-    const std::map<int, chilitags::Quad> ONLY_TAG_42 = {{42, {}}};
-    const std::map<int, chilitags::Quad> ONLY_TAG_43 = {{43, {}}};
+    const chilitags::TagCornerMap EMPTY_TAG_LIST;
+    const chilitags::TagCornerMap ONLY_TAG_42 = {{42, {}}};
+    const chilitags::TagCornerMap ONLY_TAG_43 = {{43, {}}};
 
     const chilitags::Chilitags3D::TagPoseMap EMPTY_OBJECT_LIST;
     const chilitags::Chilitags3D::TagPoseMap ONLY_OBJECT_42 = {{"42", {}}};
@@ -133,15 +133,15 @@ TEST(Filter, ZeroGain) {
         7.0f,8.0f,
     };
     chilitags::Quad expected;
-    std::map<int, chilitags::Quad> tags;
-    std::map<int, chilitags::Quad> results;
-    
+    chilitags::TagCornerMap tags;
+    chilitags::TagCornerMap results;
+
     tags = {{0, coordinates}};
     results = filter(tags);
     expected = coordinates;
     EXPECT_EQ(results.size(), tags.size());
     EXPECT_EQ(0.0f, cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
-    
+
     coordinates = cv::Mat(cv::Mat(coordinates) + 9.0f);
     tags = {{0, coordinates}};
     results = filter(tags);
@@ -159,15 +159,15 @@ TEST(Filter, NonZeroGain) {
         7.0f,8.0f,
     };
     chilitags::Quad expected;
-    std::map<int, chilitags::Quad> tags;
-    std::map<int, chilitags::Quad> results;
-    
+    chilitags::TagCornerMap tags;
+    chilitags::TagCornerMap results;
+
     tags = {{0, coordinates}};
     results = filter(tags);
     expected = coordinates;
     EXPECT_EQ(results.size(), tags.size());
     EXPECT_EQ(0.0f, cv::norm(cv::Mat(expected) - cv::Mat(results[0])));
-    
+
     chilitags::Quad coordinates2 = cv::Mat(cv::Mat(coordinates) + 9.0f);
     tags = {{0, coordinates2}};
     results = filter(tags);
