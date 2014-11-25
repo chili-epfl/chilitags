@@ -48,9 +48,9 @@ target_link_libraries( tracking ${OpenCV_LIBS} )
 install (TARGETS tracking RUNTIME DESTINATION bin)
 
 if(WITH_PTHREADS)
-    add_executable( background-detection multithreaded/background-detection.cpp)
-    target_link_libraries( background-detection chilitags )
-    target_link_libraries( background-detection ${OpenCV_LIBS} )
-    install (TARGETS background-detection RUNTIME DESTINATION bin)
+    add_executable( async-detection multithreaded/async-detection.cpp)
+    target_link_libraries( async-detection chilitags )
+    target_link_libraries( async-detection ${OpenCV_LIBS} )
+    install (TARGETS async-detection RUNTIME DESTINATION bin)
 endif()
 
