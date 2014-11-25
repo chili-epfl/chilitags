@@ -34,7 +34,7 @@ add_library(
 target_link_libraries(chilitags ${OpenCV_LIBS})
 target_link_libraries(chilitags_static ${OpenCV_LIBS})
 
-if(WITH_PTHREADS)
+if(WITH_PTHREADS AND NOT DEFINED ANDROID) #Android pthreads don't require -lpthread
     target_link_libraries(chilitags pthread)
     target_link_libraries(chilitags_static pthread)
 endif()

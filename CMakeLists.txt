@@ -36,13 +36,13 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 ##           Options                   ###
 ##########################################
 
-option(WITH_PTHREADS                    "Multithreading support with pthreads" ON)
 option(WITH_SAMPLES                     "Build demos" OFF)
 option(WITH_TESTS                       "Build tests" OFF)
 option(WITH_JNI_BINDINGS                "Build JNI bindings compatible with ordinary Java and Android" OFF)
 option(ANDROID_INSTALL_LIBRARIES        "Install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" OFF)
 
 if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider using it.
+    option(WITH_PTHREADS                "Multithreading support with pthreads" ON)
     option(WITH_TOOLS                   "provides the marker generation tool" OFF)
 
     #Set Android install path
@@ -61,7 +61,11 @@ if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider usin
     if(NOT DEFINED ENV{ANDROID_TOOLCHAIN_NAME})
         message(FATAL_ERROR "Please define the ANDROID_TOOLCHAIN_NAME environment variable first, e.g arm-linux-androideabi-4.8")
     endif()
+elseif(UNIX)
+    option(WITH_PTHREADS                "Multithreading support with pthreads" ON)
+    option(WITH_TOOLS                   "provides the marker generation tool" ON)
 else()
+    option(WITH_PTHREADS                "Multithreading support with pthreads" OFF)
     option(WITH_TOOLS                   "provides the marker generation tool" ON)
 endif()
 
