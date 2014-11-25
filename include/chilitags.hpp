@@ -149,7 +149,7 @@ enum DetectionTrigger {
 */
     DETECT_PERIODICALLY,
 
-#ifdef WITH_PTHREADS
+#ifdef HAS_MULTITHREADING
     /**
      * @brief Runs the detection in the background, with a period
      *
@@ -204,7 +204,7 @@ TagCornerMap find(
 */
 void setDetectionPeriod(int period);
 
-#ifdef WITH_PTHREADS
+#ifdef HAS_MULTITHREADING
 /**
  * @brief Gets the latest idle time in case of asynchronous detection
  *

@@ -23,7 +23,7 @@
 
 #include <map>
 
-#ifdef WITH_PTHREADS
+#ifdef HAS_MULTITHREADING
 #include <pthread.h>
 #endif
 
@@ -49,7 +49,7 @@ public:
 
     void operator()(cv::Mat const& inputImage, TagCornerMap& tags);
 
-#ifdef WITH_PTHREADS
+#ifdef HAS_MULTITHREADING
     float getLatestAsyncIdleMillis();
 
     float getLatestAsyncWorkMillis();
@@ -71,7 +71,7 @@ protected:
 
     void doDetection(TagCornerMap& tags);
 
-#ifdef WITH_PTHREADS
+#ifdef HAS_MULTITHREADING
     Track* mTrack;
 
     pthread_t mBackgroundThread;

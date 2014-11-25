@@ -105,7 +105,7 @@ void setDetectionPeriod(int period) {
     mCallsBeforeDetection = period;
 }
 
-#ifdef WITH_PTHREADS
+#ifdef HAS_MULTITHREADING
 float getLatestAsyncDetectionIdleMillis(){
     return mDetect.getLatestAsyncIdleMillis();
 }
@@ -165,7 +165,7 @@ TagCornerMap find(
                 return scaleBy(mFilter(tags), scaleFactor);
             }
 
-#ifdef WITH_PTHREADS
+#ifdef HAS_MULTITHREADING
         case ASYNC_DETECT_PERIODICALLY:
             mDetect.launchBackgroundThread(mTrack);
             mCallsBeforeNextDetection--;
@@ -277,7 +277,7 @@ void Chilitags::setMinInputWidth(int minWidth) {
     mImpl->setMinInputWidth(minWidth);
 }
 
-#ifdef WITH_PTHREADS
+#ifdef HAS_MULTITHREADING
 float Chilitags::getLatestAsyncDetectionIdleMillis(){
     return mImpl->getLatestAsyncDetectionIdleMillis();
 }

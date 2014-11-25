@@ -36,7 +36,7 @@ Detect::Detect() :
     mDecode(),
     mFrame(),
     mTags()
-#ifdef WITH_PTHREADS
+#ifdef HAS_MULTITHREADING
     ,mBackgroundThread(),
     mBackgroundRunning(false),
     mNeedFrame(true),
@@ -84,7 +84,7 @@ void Detect::doDetection(TagCornerMap& tags)
 
 void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags)
 {
-#ifdef WITH_PTHREADS
+#ifdef HAS_MULTITHREADING
     //Run single threaded
     if(!mBackgroundRunning){
         mFrame = greyscaleImage;
@@ -110,7 +110,7 @@ void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags)
 #endif
 }
 
-#ifdef WITH_PTHREADS
+#ifdef HAS_MULTITHREADING
 void Detect::launchBackgroundThread(Track& track)
 {
     if(!mBackgroundRunning){

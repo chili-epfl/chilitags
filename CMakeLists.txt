@@ -74,7 +74,7 @@ endif()
 ##########################################
 
 if(WITH_PTHREADS)
-    add_definitions(-DWITH_PTHREADS)
+    add_definitions(-DHAS_MULTITHREADING)
 endif()
 
 if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
