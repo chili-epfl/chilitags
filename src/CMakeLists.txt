@@ -31,15 +31,17 @@ add_library(
         ${chilitags_source}
 )
 
+target_link_libraries(chilitags ${OpenCV_LIBS})
+target_link_libraries(chilitags_static ${OpenCV_LIBS})
 
-target_link_libraries(chilitags ${OpenCV_LIBS} pthread)
-target_link_libraries(chilitags_static ${OpenCV_LIBS} pthread)
-
+if(WITH_PTHREADS)
+    target_link_libraries(chilitags pthread)
+    target_link_libraries(chilitags_static pthread)
+endif()
 
 install (TARGETS chilitags chilitags_static
-	LIBRARY DESTINATION lib
-	ARCHIVE DESTINATION lib
-#	PUBLIC_HEADER DESTINATION include/chilitags
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
 )
 
 if(ANDROID_INSTALL_LIBRARIES)
@@ -52,8 +54,8 @@ endif()
 file(GLOB_RECURSE chilitags_headers ../include/*)
 
 install(FILES
-	${chilitags_headers}
-	DESTINATION include/chilitags
+    ${chilitags_headers}
+    DESTINATION include/chilitags
 )
 
 ##########################################

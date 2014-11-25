@@ -27,8 +27,6 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <iostream>
-
 // The class that takes care of all the detection of Chilitags.
 namespace chilitags {
 
@@ -107,6 +105,7 @@ void setDetectionPeriod(int period) {
     mCallsBeforeDetection = period;
 }
 
+#ifdef WITH_PTHREADS
 float getLatestAsyncDetectionIdleMillis(){
     return mDetect.getLatestAsyncIdleMillis();
 }
@@ -114,6 +113,7 @@ float getLatestAsyncDetectionIdleMillis(){
 float getLatestAsyncDetectionWorkMillis(){
     return mDetect.getLatestAsyncWorkMillis();
 }
+#endif
 
 TagCornerMap find(
     const cv::Mat &inputImage,
@@ -166,6 +166,7 @@ TagCornerMap find(
                 return scaleBy(mFilter(tags), scaleFactor);
             }
 
+#ifdef WITH_PTHREADS
         case ASYNC_DETECT_PERIODICALLY:
             mDetect.launchBackgroundThread(mTrack);
             mCallsBeforeNextDetection--;
@@ -181,7 +182,9 @@ TagCornerMap find(
             mDetect.launchBackgroundThread(mTrack);
             mDetect(mResizedGrayscaleInput, tags); //This does not update tags, nor does it block for computation
             return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
-   }
+#endif
+
+    }
 }
 
 cv::Matx<unsigned char, 6, 6> encode(int id) const {
@@ -274,6 +277,7 @@ void Chilitags::setMinInputWidth(int minWidth) {
     mImpl->setMinInputWidth(minWidth);
 }
 
+#ifdef WITH_PTHREADS
 float Chilitags::getLatestAsyncDetectionIdleMillis(){
     return mImpl->getLatestAsyncDetectionIdleMillis();
 }
@@ -281,6 +285,7 @@ float Chilitags::getLatestAsyncDetectionIdleMillis(){
 float Chilitags::getLatestAsyncDetectionWorkMillis(){
     return mImpl->getLatestAsyncDetectionWorkMillis();
 }
+#endif
 
 TagCornerMap Chilitags::find(
     const cv::Mat &inputImage,

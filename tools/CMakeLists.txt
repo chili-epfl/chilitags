@@ -18,6 +18,10 @@
 #   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         #
 ################################################################################
 
+if(NOT OPENCV_HIGHGUI_FOUND)
+    message(FATAL_ERROR "OpenCV compiled without support for highgui! Can not compile detector.")
+endif()
+
 add_executable(chilitags-creator creator/creator.cpp)
 target_link_libraries( chilitags-creator ${OpenCV_LIBS} )
 target_link_libraries( chilitags-creator chilitags )

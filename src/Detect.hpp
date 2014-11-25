@@ -22,7 +22,10 @@
 #define DETECT_HPP
 
 #include <map>
+
+#ifdef WITH_PTHREADS
 #include <pthread.h>
+#endif
 
 #include <opencv2/core/core.hpp>
 
@@ -44,13 +47,15 @@ public:
 
     void setCornerRefinement(bool refineCorners);
 
+    void operator()(cv::Mat const& inputImage, TagCornerMap& tags);
+
+#ifdef WITH_PTHREADS
     float getLatestAsyncIdleMillis();
 
     float getLatestAsyncWorkMillis();
 
     void launchBackgroundThread(Track& track);
-
-    void operator()(cv::Mat const& inputImage, TagCornerMap& tags);
+#endif
 
 protected:
 
@@ -64,6 +69,9 @@ protected:
     cv::Mat mFrame;
     TagCornerMap mTags;
 
+    void doDetection(TagCornerMap& tags);
+
+#ifdef WITH_PTHREADS
     Track* mTrack;
 
     pthread_t mBackgroundThread;
@@ -78,10 +86,10 @@ protected:
     float mLatestAsyncIdleMillis;
     float mLatestAsyncWorkMillis;
 
-    void doDetection(TagCornerMap& tags);
-
     static void* dispatchRun(void* args);
     void run();
+#endif
+
 };
 
 } /* namespace chilitags */

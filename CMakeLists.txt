@@ -36,10 +36,11 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 ##           Options                   ###
 ##########################################
 
-option(WITH_SAMPLES                     "compile misc demos" OFF)
-option(WITH_TESTS                       "build tests" OFF)
-option(WITH_JNI_BINDINGS                "JNI bindings compatible with ordinary Java and Android" OFF)
-option(ANDROID_INSTALL_LIBRARIES        "Whether to install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" OFF)
+option(WITH_PTHREADS                    "Multithreading support with pthreads" ON)
+option(WITH_SAMPLES                     "Build demos" OFF)
+option(WITH_TESTS                       "Build tests" OFF)
+option(WITH_JNI_BINDINGS                "Build JNI bindings compatible with ordinary Java and Android" OFF)
+option(ANDROID_INSTALL_LIBRARIES        "Install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" OFF)
 
 if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider using it.
     option(WITH_TOOLS                   "provides the marker generation tool" OFF)
@@ -68,6 +69,10 @@ endif()
 ##           Chilitags lib             ###
 ##########################################
 
+if(WITH_PTHREADS)
+    add_definitions(-DWITH_PTHREADS)
+endif()
+
 if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
     add_definitions(-DOPENCV3)
 endif()
@@ -82,10 +87,6 @@ add_subdirectory(src)
 include("${CMAKE_SOURCE_DIR}/cmake/TargetDoc.cmake" OPTIONAL)
 
 if (WITH_TOOLS)
-    if(NOT OPENCV_HIGHGUI_FOUND)
-        message(FATAL_ERROR "OpenCV compiled without support for highgui! Can not compile detector.")
-    endif()
-
     add_subdirectory(tools)
 endif()
 

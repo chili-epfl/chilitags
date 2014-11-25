@@ -35,14 +35,16 @@ Detect::Detect() :
     mReadBits(),
     mDecode(),
     mFrame(),
-    mTags(),
-    mBackgroundThread(),
+    mTags()
+#ifdef WITH_PTHREADS
+    ,mBackgroundThread(),
     mBackgroundRunning(false),
     mNeedFrame(true),
     mInputCond(PTHREAD_COND_INITIALIZER),
     mInputLock(PTHREAD_MUTEX_INITIALIZER),
     mLatestAsyncIdleMillis(0),
     mLatestAsyncWorkMillis(0)
+#endif
 {
 }
 
@@ -56,24 +58,33 @@ void Detect::setCornerRefinement(bool refineCorners)
     mRefineCorners = refineCorners;
 }
 
-void Detect::launchBackgroundThread(Track& track)
+void Detect::doDetection(TagCornerMap& tags)
 {
-    if(!mBackgroundRunning){
-        mTrack = &track;
-        mBackgroundShouldRun = true;
-        mBackgroundRunning = true;
-        if(pthread_create(&mBackgroundThread, NULL, dispatchRun, (void*)this)){
-            mBackgroundShouldRun = false;
-            mBackgroundRunning = false;
-            std::cerr << "Error: Thread could not be launched in " << __PRETTY_FUNCTION__
-                << ", not enough resources or PTHREAD_THREADS_MAX was hit!" << std::endl;
+    if(mRefineCorners){
+        for(const auto& quad : mFindQuads(mFrame)){
+            auto refinedQuad = mRefine(mFrame, quad, 1.5f/10.0f);
+            auto tag = mDecode(mReadBits(mFrame, refinedQuad), refinedQuad);
+            if(tag.first != Decode::INVALID_TAG)
+                tags[tag.first] = tag.second;
+            else{
+                tag = mDecode(mReadBits(mFrame, quad), quad);
+                if(tag.first != Decode::INVALID_TAG)
+                    tags[tag.first] = tag.second;
+            }
+        }
+    }
+    else{
+        for(const auto& quad : mFindQuads(mFrame)){
+            auto tag = mDecode(mReadBits(mFrame, quad), quad);
+            if(tag.first != Decode::INVALID_TAG)
+                tags[tag.first] = tag.second;
         }
     }
 }
 
 void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags)
 {
-
+#ifdef WITH_PTHREADS
     //Run single threaded
     if(!mBackgroundRunning){
         mFrame = greyscaleImage;
@@ -91,6 +102,26 @@ void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags)
             //Wake up detection thread if it's waiting for the input frame
             pthread_cond_signal(&mInputCond);
             pthread_mutex_unlock(&mInputLock);
+        }
+    }
+#else
+    mFrame = greyscaleImage;
+    doDetection(tags);
+#endif
+}
+
+#ifdef WITH_PTHREADS
+void Detect::launchBackgroundThread(Track& track)
+{
+    if(!mBackgroundRunning){
+        mTrack = &track;
+        mBackgroundShouldRun = true;
+        mBackgroundRunning = true;
+        if(pthread_create(&mBackgroundThread, NULL, dispatchRun, (void*)this)){
+            mBackgroundShouldRun = false;
+            mBackgroundRunning = false;
+            std::cerr << "Error: Thread could not be launched in " << __PRETTY_FUNCTION__
+                << ", not enough resources or PTHREAD_THREADS_MAX was hit!" << std::endl;
         }
     }
 }
@@ -125,30 +156,6 @@ void Detect::run()
     mBackgroundRunning = false;
 }
 
-void Detect::doDetection(TagCornerMap& tags)
-{
-    if(mRefineCorners){
-        for(const auto& quad : mFindQuads(mFrame)){
-            auto refinedQuad = mRefine(mFrame, quad, 1.5f/10.0f);
-            auto tag = mDecode(mReadBits(mFrame, refinedQuad), refinedQuad);
-            if(tag.first != Decode::INVALID_TAG)
-                tags[tag.first] = tag.second;
-            else{
-                tag = mDecode(mReadBits(mFrame, quad), quad);
-                if(tag.first != Decode::INVALID_TAG)
-                    tags[tag.first] = tag.second;
-            }
-        }
-    }
-    else{
-        for(const auto& quad : mFindQuads(mFrame)){
-            auto tag = mDecode(mReadBits(mFrame, quad), quad);
-            if(tag.first != Decode::INVALID_TAG)
-                tags[tag.first] = tag.second;
-        }
-    }
-}
-
 float Detect::getLatestAsyncIdleMillis()
 {
     return mLatestAsyncIdleMillis;
@@ -158,6 +165,7 @@ float Detect::getLatestAsyncWorkMillis()
 {
     return mLatestAsyncWorkMillis;
 }
+#endif
 
 } /* namespace chilitags */
 

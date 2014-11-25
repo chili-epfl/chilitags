@@ -149,6 +149,7 @@ enum DetectionTrigger {
 */
     DETECT_PERIODICALLY,
 
+#ifdef WITH_PTHREADS
     /**
      * @brief Runs the detection in the background, with a period
      *
@@ -174,6 +175,7 @@ enum DetectionTrigger {
      * call to `find()` after the previous detection is finished.
      */
     ASYNC_DETECT_ALWAYS
+#endif
 };
 
 /**
@@ -202,6 +204,7 @@ TagCornerMap find(
 */
 void setDetectionPeriod(int period);
 
+#ifdef WITH_PTHREADS
 /**
  * @brief Gets the latest idle time in case of asynchronous detection
  *
@@ -225,6 +228,7 @@ float getLatestAsyncDetectionIdleMillis();
  * @return Detection thread's latest work time in ms
  */
 float getLatestAsyncDetectionWorkMillis();
+#endif
 
 /**
     Preset groups of parameters (for setPerformance()) to adjust  the
