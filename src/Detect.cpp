@@ -20,6 +20,8 @@
 
 #include "Detect.hpp"
 
+#include<iostream>
+
 namespace chilitags{
 
 #ifdef OPENCV3
