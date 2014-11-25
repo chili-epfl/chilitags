@@ -122,10 +122,9 @@ TagCornerMap find(
     // Resize the input image to make it at most mMaxInputWidth wide
     float scaleFactor = 1.0f;
     if (mMaxInputWidth > 0 && inputImage.cols > mMaxInputWidth) {
-        scaleFactor =(float) inputImage.cols/(float)mMaxInputWidth;
-        static cv::Mat resizedInput;
-        cv::resize(inputImage, resizedInput, cv::Size(), 1.0f/scaleFactor , 1.0f/scaleFactor , cv::INTER_NEAREST);
-        mResizedGrayscaleInput = mEnsureGreyscale(resizedInput);
+        scaleFactor = (float)inputImage.cols/(float)mMaxInputWidth;
+        cv::resize(inputImage, mResizedInput, cv::Size(), 1.0f/scaleFactor , 1.0f/scaleFactor , cv::INTER_NEAREST);
+        mResizedGrayscaleInput = mEnsureGreyscale(mResizedInput);
     }
     else {
         mResizedGrayscaleInput = mEnsureGreyscale(inputImage);
@@ -235,6 +234,7 @@ cv::Mat draw(int id, int cellSize, bool withMargin, cv::Scalar color) const {
 protected:
 
 int mMaxInputWidth;
+cv::Mat mResizedInput;
 cv::Mat mResizedGrayscaleInput;
 
 EnsureGreyscale mEnsureGreyscale;
