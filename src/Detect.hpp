@@ -50,11 +50,9 @@ public:
     void operator()(cv::Mat const& inputImage, TagCornerMap& tags);
 
 #ifdef HAS_MULTITHREADING
-    float getLatestAsyncIdleMillis();
-
-    float getLatestAsyncWorkMillis();
-
     void launchBackgroundThread(Track& track);
+
+    void shutdownBackgroundThread();
 #endif
 
 protected:
@@ -82,9 +80,6 @@ protected:
 
     pthread_cond_t mInputCond;
     pthread_mutex_t mInputLock;
-
-    float mLatestAsyncIdleMillis;
-    float mLatestAsyncWorkMillis;
 
     static void* dispatchRun(void* args);
     void run();

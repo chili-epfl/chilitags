@@ -105,16 +105,6 @@ void setDetectionPeriod(int period) {
     mCallsBeforeDetection = period;
 }
 
-#ifdef HAS_MULTITHREADING
-float getLatestAsyncDetectionIdleMillis(){
-    return mDetect.getLatestAsyncIdleMillis();
-}
-
-float getLatestAsyncDetectionWorkMillis(){
-    return mDetect.getLatestAsyncWorkMillis();
-}
-#endif
-
 TagCornerMap find(
     const cv::Mat &inputImage,
     DetectionTrigger detectionTrigger){
@@ -129,6 +119,22 @@ TagCornerMap find(
     else {
         mResizedGrayscaleInput = mEnsureGreyscale(inputImage);
     }
+
+    //Take care of the background thread (if exists)
+#ifdef HAS_MULTITHREADING
+    switch(detectionTrigger){
+        case DETECT_ONLY:
+        case TRACK_ONLY:
+        case TRACK_AND_DETECT:
+        case DETECT_PERIODICALLY:
+            mDetect.shutdownBackgroundThread();
+            break;
+        case ASYNC_DETECT_PERIODICALLY:
+        case ASYNC_DETECT_ALWAYS:
+            mDetect.launchBackgroundThread(mTrack);
+            break;
+    }
+#endif
 
     // Do detection/tracking/both depending on detection trigger
     TagCornerMap tags;
@@ -167,7 +173,6 @@ TagCornerMap find(
 
 #ifdef HAS_MULTITHREADING
         case ASYNC_DETECT_PERIODICALLY:
-            mDetect.launchBackgroundThread(mTrack);
             mCallsBeforeNextDetection--;
 
             //If the detection period is reached, deliver new frame to background detection thread
@@ -178,7 +183,6 @@ TagCornerMap find(
             return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
 
         case ASYNC_DETECT_ALWAYS:
-            mDetect.launchBackgroundThread(mTrack);
             mDetect(mResizedGrayscaleInput, tags); //This does not update tags, nor does it block for computation
             return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
 #endif
@@ -276,16 +280,6 @@ void Chilitags::setMaxInputWidth(int maxWidth) {
 void Chilitags::setMinInputWidth(int minWidth) {
     mImpl->setMinInputWidth(minWidth);
 }
-
-#ifdef HAS_MULTITHREADING
-float Chilitags::getLatestAsyncDetectionIdleMillis(){
-    return mImpl->getLatestAsyncDetectionIdleMillis();
-}
-
-float Chilitags::getLatestAsyncDetectionWorkMillis(){
-    return mImpl->getLatestAsyncDetectionWorkMillis();
-}
-#endif
 
 TagCornerMap Chilitags::find(
     const cv::Mat &inputImage,

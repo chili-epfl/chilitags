@@ -41,9 +41,7 @@ Detect::Detect() :
     mBackgroundRunning(false),
     mNeedFrame(true),
     mInputCond(PTHREAD_COND_INITIALIZER),
-    mInputLock(PTHREAD_MUTEX_INITIALIZER),
-    mLatestAsyncIdleMillis(0),
-    mLatestAsyncWorkMillis(0)
+    mInputLock(PTHREAD_MUTEX_INITIALIZER)
 #endif
 {
 }
@@ -126,6 +124,16 @@ void Detect::launchBackgroundThread(Track& track)
     }
 }
 
+void Detect::shutdownBackgroundThread()
+{
+    if(mBackgroundRunning){
+        pthread_mutex_lock(&mInputLock);
+        mBackgroundShouldRun = false;
+        pthread_cond_signal(&mInputCond);
+        pthread_mutex_unlock(&mInputLock);
+    }
+}
+
 void* Detect::dispatchRun(void* args)
 {
     static_cast<Detect*>(args)->run();
@@ -138,32 +146,18 @@ void Detect::run()
         pthread_mutex_lock(&mInputLock);
 
         //Wait for the input frame to arrive
-        int64 startTime = cv::getTickCount();
         pthread_cond_wait(&mInputCond, &mInputLock); //This releases the lock while waiting
-        mLatestAsyncIdleMillis = 1000.0f*(((float)cv::getTickCount() - (float)startTime)/cv::getTickFrequency());
 
         mNeedFrame = false;
 
-        startTime = cv::getTickCount();
         doDetection(mTags);
         mTrack->update(mTags);
-        mLatestAsyncWorkMillis = 1000.0f*(((float)cv::getTickCount() - (float)startTime)/cv::getTickFrequency());
 
         mNeedFrame = true;
 
         pthread_mutex_unlock(&mInputLock);
     }
     mBackgroundRunning = false;
-}
-
-float Detect::getLatestAsyncIdleMillis()
-{
-    return mLatestAsyncIdleMillis;
-}
-
-float Detect::getLatestAsyncWorkMillis()
-{
-    return mLatestAsyncWorkMillis;
 }
 #endif
 

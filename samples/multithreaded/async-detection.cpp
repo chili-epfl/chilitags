@@ -70,48 +70,42 @@ int main(int argc, char* argv[])
 
     cv::namedWindow("DisplayChilitags");
 
-    bool showPeriodic = true;
-
     char keyPressed;
-    float trackTime = 0, idleTime = 0, detectTime = 0;
+    const char* trigName = "DETECT_PERIODICALLY";
+    chilitags::Chilitags::DetectionTrigger trig = chilitags::Chilitags::DETECT_PERIODICALLY;
     while ('q' != (keyPressed = (char) cv::waitKey(1))) {
 
         // toggle the processing mode, according to user input
-        if (keyPressed == 't') showPeriodic = !showPeriodic;
+        if(keyPressed == 't'){
+            if(trig == chilitags::Chilitags::DETECT_PERIODICALLY){
+                trig = chilitags::Chilitags::ASYNC_DETECT_PERIODICALLY;
+                trigName = "ASYNC_DETECT_PERIODICALLY";
+            }
+            else if(trig == chilitags::Chilitags::ASYNC_DETECT_PERIODICALLY){
+                trig = chilitags::Chilitags::ASYNC_DETECT_ALWAYS;
+                trigName = "ASYNC_DETECT_ALWAYS";
+            }
+            else{
+                trig = chilitags::Chilitags::DETECT_PERIODICALLY;
+                trigName = "DETECT_PERIODICALLY";
+            }
+        }
 
         capture.read(inputImage);
 
         cv::Mat outputImage = inputImage.clone();
 
-        int64 startTime = cv::getTickCount();
-        auto tags = chilitags.find(inputImage, showPeriodic ? chilitags::Chilitags::ASYNC_DETECT_PERIODICALLY : chilitags::Chilitags::ASYNC_DETECT_ALWAYS);
-        int64 endTime = cv::getTickCount();
+        auto tags = chilitags.find(inputImage, trig);
         drawTags(outputImage, tags);
-
-        //Print tracking time
-        trackTime = 0.98f*trackTime + 0.02f*1000.0f*(((float)endTime - (float)startTime)/cv::getTickFrequency());
-        cv::putText(outputImage,
-                cv::format("[Main thread] Tracking time %4.2f ms", trackTime),
-                cv::Point(8,20),
-                cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
-
-        //Print detection idle time
-        idleTime = 0.98f*idleTime + 0.02f*chilitags.getLatestAsyncDetectionIdleMillis();
-        cv::putText(outputImage,
-                cv::format("[Detection thread] Idle time %4.2f ms", idleTime),
-                cv::Point(8,36),
-                cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
-
-        //Print detection work time
-        detectTime = 0.98f*detectTime + 0.02f*chilitags.getLatestAsyncDetectionWorkMillis();
-        cv::putText(outputImage,
-                cv::format("[Detection thread] Work time %4.2f ms", detectTime),
-                cv::Point(8,52),
-                cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
 
         //Print detection trigger
         cv::putText(outputImage,
-                cv::format("Detection trigger: %s (press 't' to toggle)", showPeriodic ? "ASYNC_DETECT_PERIODICALLY" : "ASYNC_DETECT_ALWAYS"),
+                cv::format("Detection trigger: %s (press 't' to toggle)", trigName),
+                cv::Point(8,yRes - 24),
+                cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
+
+        cv::putText(outputImage,
+                cv::format("Run 'top -H -p `pgrep async-detection`' to see running threads", trigName),
                 cv::Point(8,yRes - 8),
                 cv::FONT_HERSHEY_SIMPLEX, 0.5, COLOR);
 
