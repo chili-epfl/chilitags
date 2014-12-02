@@ -39,10 +39,7 @@ class ScreenOut
 {
 public:
 
-    ScreenOut();
-
-    bool isConvex(Quad const& quad);
-
+    static bool isConvex(Quad const& quad);
 };
 
 } /* namespace chilitags */

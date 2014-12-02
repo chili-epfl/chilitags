@@ -20,6 +20,7 @@
 
 #include "Track.hpp"
 #include "GrowRoi.hpp"
+#include "ScreenOut.hpp"
 
 #include "opencv2/video/tracking.hpp"
 
@@ -27,7 +28,6 @@ namespace chilitags{
 
 Track::Track():
     mRefine(),
-    mScreenOut(),
     mPrevFrame(),
     mFromTags(),
     mInputLock(PTHREAD_MUTEX_INITIALIZER)
@@ -89,7 +89,7 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
 
         if (cv::sum(cv::Mat(status))[0] == status.size()) {
             quad = mRefine(grayscaleInputImage, result, 0.5f/10.0f);
-            if(mScreenOut.isConvex(quad))
+            if(ScreenOut::isConvex(quad))
                 trackedTags[tag.first] = quad;
         }
     }

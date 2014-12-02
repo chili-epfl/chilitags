@@ -26,11 +26,9 @@
 
 #include "ScreenOut.hpp"
 
-chilitags::ScreenOut::ScreenOut()
-{
-}
+namespace chilitags{
 
-bool chilitags::ScreenOut::isConvex(Quad const& quad)
+bool ScreenOut::isConvex(Quad const& quad)
 {
     int vPrevX, vPrevY, vNextX, vNextY;
 
@@ -43,3 +41,5 @@ bool chilitags::ScreenOut::isConvex(Quad const& quad)
 
     return true;
 }
+
+} /* namespace chilitags */
