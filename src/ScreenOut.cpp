@@ -18,6 +18,12 @@
  *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
  *******************************************************************************/
 
+/**
+ * @file ScreenOut.cpp
+ * @brief Contains fast and simple methods to screen out things that are obviously not tags
+ * @author Ayberk Özgür
+ */
+
 #include "ScreenOut.hpp"
 
 chilitags::ScreenOut::ScreenOut()

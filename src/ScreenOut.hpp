@@ -21,6 +21,12 @@
 #ifndef SCREENOUT_HPP
 #define SCREENOUT_HPP
 
+/**
+ * @file ScreenOut.hpp
+ * @brief Contains fast and simple methods to screen out things that are obviously not tags
+ * @author Ayberk Özgür
+ */
+
 #include <map>
 
 #include <opencv2/core/core.hpp>
