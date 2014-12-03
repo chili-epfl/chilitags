@@ -27,10 +27,6 @@
  * @author Ayberk Özgür
  */
 
-#include <map>
-
-#include <opencv2/core/core.hpp>
-
 #include <chilitags.hpp>
 
 namespace chilitags {
