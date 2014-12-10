@@ -72,6 +72,12 @@ void EstimatePose3D<RealT>::enableFilter(bool enabled)
 }
 
 template<typename RealT>
+void EstimatePose3D<RealT>::setCamDelta(cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX)
+{
+    mFilter3D.setCamDelta(camDeltaR, camDeltaX);
+}
+
+template<typename RealT>
 void EstimatePose3D<RealT>::operator()(std::string const& name,
         std::vector<cv::Point3_<RealT>> const& objectPoints,
         cv::Mat_<cv::Point2f> const& imagePoints,

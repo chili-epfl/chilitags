@@ -82,6 +82,14 @@ public:
     void enableFilter(bool enabled);
 
     /**
+     * @brief Informs the rotation and translation of the current camera frame in the previous camera frame
+     *
+     * @param camDeltaR Rotation of current camera frame in previous camera frame in unit quaternion format (w,vx,vy,vz)
+     * @param camDeltaX Translation of current camera frame in previous camera frame
+     */
+    void setCamDelta(cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX);
+
+    /**
      * @brief Updates/inserts the pose of the given object in the given map
      *
      * @param name Unique ID of the object

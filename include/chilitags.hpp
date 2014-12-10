@@ -424,8 +424,18 @@ Chilitags &getChilitags();
         0 ,   0 ,   0 ,  1 }
     \endverbatim
     \param tags a list of tags, as returned by Chilitags::find().
+
+    \param camDeltaR Rotation from the previous camera frame to
+    the current camera frame, i.e rotation of the current camera frame in the
+    last camera frame. Quaternion format (scalar, vx, vy, vz).
+
+    \param camDeltaX Translation from the previous camera frame
+    to the current camera frame, i.e position of the current camera frame in
+    the last camera frame.
  */
-TagPoseMap estimate(const TagCornerMap & tags);
+TagPoseMap estimate(const TagCornerMap & tags,
+    cv::Vec<RealT, 4> const& camDeltaR = cv::Vec<RealT, 4>(1,0,0,0),
+    cv::Vec<RealT, 3> const& camDeltaX = cv::Vec<RealT, 3>(0,0,0));
 
 /**
     This is a convenience variant of estimate() which also takes care of the
@@ -449,10 +459,20 @@ TagPoseMap estimate(const TagCornerMap & tags);
     best return tags previously found; it won't find new ones, but
     can lose some. See Chilitags::DetectionTrigger for a description of the
     possible values.
+
+    \param camDeltaR Rotation from the previous camera frame to
+    the current camera frame, i.e rotation of the current camera frame in the
+    last camera frame. Quaternion format (scalar, vx, vy, vz).
+
+    \param camDeltaX Translation from the previous camera frame
+    to the current camera frame, i.e position of the current camera frame in
+    the last camera frame.
  */
 TagPoseMap estimate(
     const cv::Mat &inputImage,
-    Chilitags::DetectionTrigger detectionTrigger = Chilitags::DETECT_ONLY);
+    Chilitags::DetectionTrigger detectionTrigger = Chilitags::DETECT_ONLY,
+    cv::Vec<RealT, 4> const& camDeltaR = cv::Vec<RealT, 4>(1,0,0,0),
+    cv::Vec<RealT, 3> const& camDeltaX = cv::Vec<RealT, 3>(0,0,0));
 
 /**
     Chilitags3D can also detect rigid assemblies of tags. This allows for a

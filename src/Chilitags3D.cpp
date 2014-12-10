@@ -37,10 +37,10 @@ class Chilitags3D_<RealT>::Impl {
 public:
 Impl(cv::Size cameraResolution) :
     mChilitags(),
+    mEstimatePose3D(cameraResolution),
     mOmitOtherTags(false),
     mDefaultTagCorners(),
     mId2Configuration(),
-    mEstimatePose3D(cameraResolution),
     mFilter(5, 0.5f)
 {
     setDefaultTagSize(20.f);
@@ -59,7 +59,7 @@ const Chilitags &getChilitags() const {
     return mChilitags;
 }
 
-TagPoseMap estimate(const TagCornerMap &tags) {
+TagPoseMap estimate(TagCornerMap const& tags, cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX) {
 
     TagPoseMap objects;
 
@@ -125,8 +125,10 @@ TagPoseMap estimate(const TagCornerMap &tags) {
 
 TagPoseMap estimate(
     const cv::Mat &inputImage,
-    Chilitags::DetectionTrigger detectionTrigger) {
-    return estimate(mChilitags.find(inputImage, detectionTrigger));
+    Chilitags::DetectionTrigger detectionTrigger,
+    cv::Vec<RealT, 4> const& camDeltaR,
+    cv::Vec<RealT, 3> const& camDeltaX) {
+    return estimate(mChilitags.find(inputImage, detectionTrigger), camDeltaR, camDeltaX);
 }
 
 void setDefaultTagSize(RealT defaultSize){
@@ -315,15 +317,19 @@ Chilitags &Chilitags3D_<RealT>::getChilitags(){
 
 template<typename RealT>
 typename Chilitags3D_<RealT>::TagPoseMap Chilitags3D_<RealT>::estimate(
-    const TagCornerMap &tags) {
-    return mImpl->estimate(tags);
+    const TagCornerMap &tags,
+    cv::Vec<RealT, 4> const& camDeltaR,
+    cv::Vec<RealT, 3> const& camDeltaX) {
+    return mImpl->estimate(tags, camDeltaR, camDeltaX);
 }
 
 template<typename RealT>
 typename Chilitags3D_<RealT>::TagPoseMap Chilitags3D_<RealT>::estimate(
     const cv::Mat &inputImage,
-    Chilitags::DetectionTrigger detectionTrigger) {
-    return mImpl->estimate(inputImage, detectionTrigger);
+    Chilitags::DetectionTrigger detectionTrigger,
+    cv::Vec<RealT, 4> const& camDeltaR,
+    cv::Vec<RealT, 3> const& camDeltaX) {
+    return mImpl->estimate(inputImage, detectionTrigger, camDeltaR, camDeltaX);
 }
 
 template<typename RealT>

@@ -65,6 +65,15 @@ Filter3D<RealT>::Filter3D() :
 }
 
 template<typename RealT>
+void Filter3D<RealT>::setCamDelta(cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX)
+{
+
+
+
+
+}
+
+template<typename RealT>
 void Filter3D<RealT>::operator()(std::string const& id, cv::Mat& measuredTrans, cv::Mat& measuredRot)
 {
     //Create&insert or return the related filter
