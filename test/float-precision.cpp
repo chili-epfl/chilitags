@@ -35,9 +35,6 @@
 
 TEST(FloatPrecision, Snapshots) {
 
-    //Percent difference between single and double precision greater than this value will not be tolerated
-    const double DIFF_FAIL_TRHESH = 1e-5;
-
     // Initialise the data path with en empty modulename,
     // to get the data from the root of the test data path
     cvtest::TS::ptr()->init("");
@@ -67,15 +64,33 @@ TEST(FloatPrecision, Snapshots) {
             for(const auto& tag : tagsf){
                 const auto& matf = tag.second;
                 const auto& matd = tagsd[tag.first];
-                for(int i=0;i<4;i++)
-                    for(int j=0;j<4;j++){
-                        diff = ((double)matf(i,j) - matd(i,j))/matd(i,j);
+
+                //Test rotation component
+                double failThreshold = 1e-5; //TODO: What does this threshold actually mean?
+                for(int i=0;i<3;i++)
+                    for(int j=0;j<3;j++){
+                        diff = (double)matf(i,j) - matd(i,j);
                         if(!std::isnan(diff))
-                            ASSERT_LT(diff, DIFF_FAIL_TRHESH) <<
-                                tag.first << "'s single and double precision transforms differ more than " << DIFF_FAIL_TRHESH*100 << "%% in ("
+                            ASSERT_LT(diff, failThreshold) <<
+                                tag.first << "'s single and double precision transforms differ more than " << failThreshold << "%% in ("
                                 << i << "," << j << ");" << std::endl << " Single precision transform: " << matf << std::endl
                                 << "Double precision transform:" << matd;
                     }
+
+                //Test translation component
+                failThreshold = 1e-1; //Tenth of a millimeter
+                for(int i=0;i<3;i++){
+                    diff = (double)matf(i,3) - matd(i,3);
+                    if(!std::isnan(diff))
+                        ASSERT_LT(diff, failThreshold) <<
+                            tag.first << "'s single and double precision transforms differ more than " << failThreshold << "%% in ("
+                            << i << "," << "3);" << std::endl << " Single precision transform: " << matf << std::endl
+                            << "Double precision transform:" << matd;
+                }
+
+                //Test last row
+                ASSERT_EQ(matf(3,0), 0.0f); ASSERT_EQ(matf(3,1), 0.0f); ASSERT_EQ(matf(3,2), 0.0f); ASSERT_EQ(matf(3,3), 1.0f);
+                ASSERT_EQ(matd(3,0), 0.0);  ASSERT_EQ(matd(3,1), 0.0);  ASSERT_EQ(matd(3,2), 0.0);  ASSERT_EQ(matd(3,3), 1.0);
             }
         }
         else {
