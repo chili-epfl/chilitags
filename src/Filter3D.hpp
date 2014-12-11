@@ -114,17 +114,18 @@ private:
     /**
      * @brief Converts the quaternion rotation in the state to angle-axis representation
      *
-     * @param output Double precision 3x1 matrix
+     * @param input 4x1 quaternion
+     * @param output Double precision 3x1 angle-axis
      */
-    void getAngleAxis(cv::Mat& output);
+    void getAngleAxis(RealT* input, double* output);
 
     /**
-     * @brief Converts the angle-axis to quaternion and writes it to indices (3,4,5,6)
+     * @brief Converts the angle-axis to quaternion
      *
-     * @param input Angle-axis
-     * @param output State to receive quaternion
+     * @param input Double precision 3x1 angle-axis
+     * @param output 4x1 quaternion
      */
-    void getQuaternion(cv::Mat& input, cv::Mat& output);
+    void getQuaternion(double* input, RealT* output);
 
     /**
      * @brief Normalizes the quaternion part of the internal state vector
@@ -135,17 +136,6 @@ private:
      * @brief Ensures the sign of the internal state vector's quaternion is right so that we prevent quaternion unwinding
      */
     void shortestPathQuat(cv::Vec<RealT,4>& prevQuat);
-
-    /**
-     * @brief Calculates the norm of the given 3-vector
-     *
-     * TODO: vec3d must be double for now
-     *
-     * @param vec3d 3-vector of doubles
-     *
-     * @return The calculated norm in single-precision
-     */
-    RealT norm(cv::Mat& vec3d);
 
 };
 

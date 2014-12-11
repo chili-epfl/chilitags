@@ -32,8 +32,6 @@
 
 #include <opencv2/calib3d/calib3d.hpp>
 
-//TODO: Replace all assignment sequences with memcpys (if possible) when double/float is unified
-
 namespace chilitags{
 
 template<typename RealT>
@@ -105,10 +103,9 @@ void Filter3D<RealT>::setCamDelta(cv::Vec<RealT, 4> const& q, cv::Vec<RealT, 3> 
     F6[3] = -q(3);  F6[4] = q(2);   F6[5] = -q(1);  F6[6] = q(0);
 
     //Set the control matrix (other entries are zero)
-    //TODO: memcpy
-    B0[0] = F0[0];  B0[1] = F0[1]; B0[2] = F0[2];
-    B1[0] = F1[0];  B1[1] = F1[1]; B1[2] = F1[2];
-    B2[0] = F2[0];  B2[1] = F2[1]; B2[2] = F2[2];
+    memcpy(B0, F0, 3*sizeof(RealT));
+    memcpy(B1, F1, 3*sizeof(RealT));
+    memcpy(B2, F2, 3*sizeof(RealT));
 
     //Set the control input
     u[0] = -camDeltaX(0);
@@ -132,7 +129,7 @@ void Filter3D<RealT>::operator()(typename Chilitags3D_<RealT>::TagPoseMap& tags)
         filter.predict(mControl).copyTo(mTempState);
 
         //Convert quaternion rotation to angle-axis rotation
-        getAngleAxis(predictedRot);
+        getAngleAxis((RealT*)mTempState.ptr() + 3, (double*)predictedRot.ptr());
 
         //Convert angle-axis to 3x3 rotation matrix
         cv::Rodrigues(predictedRot, tempRotMat);
@@ -165,12 +162,14 @@ void Filter3D<RealT>::operator()(std::string const& id, cv::Mat& measuredTrans, 
 
     //Already existing filter
     else{
+        RealT* state = (RealT*)mTempState.ptr();
+        double* trans = (double*)measuredTrans.ptr();
 
         //Fill state
-        mTempState.at<RealT>(0) = (RealT)measuredTrans.at<double>(0); //x
-        mTempState.at<RealT>(1) = (RealT)measuredTrans.at<double>(1); //y
-        mTempState.at<RealT>(2) = (RealT)measuredTrans.at<double>(2); //z
-        getQuaternion(measuredRot, mTempState);
+        state[0] = (RealT)trans[0]; //x
+        state[1] = (RealT)trans[1]; //y
+        state[2] = (RealT)trans[2]; //z
+        getQuaternion((double*)measuredRot.ptr(), state + 3);
 
         //Do the correction step
         shortestPathQuat(prevQuat);
@@ -178,10 +177,10 @@ void Filter3D<RealT>::operator()(std::string const& id, cv::Mat& measuredTrans, 
         normalizeQuat();
 
         //Write state back
-        measuredTrans.at<double>(0) = mTempState.at<RealT>(0); //x
-        measuredTrans.at<double>(1) = mTempState.at<RealT>(1); //y
-        measuredTrans.at<double>(2) = mTempState.at<RealT>(2); //z
-        getAngleAxis(measuredRot);
+        trans[0] = state[0]; //x
+        trans[1] = state[1]; //y
+        trans[2] = state[2]; //z
+        getAngleAxis(state + 3, (double*)measuredRot.ptr());
     }
 }
 
@@ -198,107 +197,96 @@ void Filter3D<RealT>::initFilter(cv::KalmanFilter& filter, cv::Vec<RealT,4>& pre
     cv::setIdentity(filter.measurementMatrix);
 
     //Set initial state
-    filter.statePost.at<RealT>(0) = (RealT)measuredTrans.at<double>(0); //x
-    filter.statePost.at<RealT>(1) = (RealT)measuredTrans.at<double>(1); //y
-    filter.statePost.at<RealT>(2) = (RealT)measuredTrans.at<double>(2); //z
-    getQuaternion(measuredRot, filter.statePost);
+    RealT* statePost = (RealT*)filter.statePost.ptr();
+    double* trans = (double*)measuredTrans.ptr();
 
-    prevQuat(0) = filter.statePost.at<RealT>(3);
-    prevQuat(1) = filter.statePost.at<RealT>(4);
-    prevQuat(2) = filter.statePost.at<RealT>(5);
-    prevQuat(3) = filter.statePost.at<RealT>(6);
+    statePost[0] = (RealT)trans[0]; //x
+    statePost[1] = (RealT)trans[1]; //y
+    statePost[2] = (RealT)trans[2]; //z
+    getQuaternion((double*)measuredRot.ptr(), statePost + 3);
+
+    prevQuat(0) = statePost[3];
+    prevQuat(1) = statePost[4];
+    prevQuat(2) = statePost[5];
+    prevQuat(3) = statePost[6];
 }
 
 template<typename RealT>
-void Filter3D<RealT>::getAngleAxis(cv::Mat& output)
+void Filter3D<RealT>::getAngleAxis(RealT* input, double* output)
 {
-    RealT theta = sqrt(
-            mTempState.at<RealT>(4)*mTempState.at<RealT>(4) +
-            mTempState.at<RealT>(5)*mTempState.at<RealT>(5) +
-            mTempState.at<RealT>(6)*mTempState.at<RealT>(6));
-    theta = 2*atan2(theta, mTempState.at<RealT>(3));
+    RealT theta = sqrt(input[1]*input[1] + input[2]*input[2] + input[3]*input[3]);
+    theta = 2*atan2(theta, input[0]);
     RealT sTheta2 = sin(theta/2);
     if(theta < EPSILON){ //Use lim( theta -> 0 ){ theta/sin(theta) }
-        output.at<double>(0) = mTempState.at<RealT>(4); //rx
-        output.at<double>(1) = mTempState.at<RealT>(5); //ry
-        output.at<double>(2) = mTempState.at<RealT>(6); //rz
+        output[0] = input[1]; //rx
+        output[1] = input[2]; //ry
+        output[2] = input[3]; //rz
     }
     else{
-        output.at<double>(0) = mTempState.at<RealT>(4)*theta/sTheta2; //rx
-        output.at<double>(1) = mTempState.at<RealT>(5)*theta/sTheta2; //ry
-        output.at<double>(2) = mTempState.at<RealT>(6)*theta/sTheta2; //rz
+        output[0] = input[1]*theta/sTheta2; //rx
+        output[1] = input[2]*theta/sTheta2; //ry
+        output[2] = input[3]*theta/sTheta2; //rz
     }
 }
 
 template<typename RealT>
-void Filter3D<RealT>::getQuaternion(cv::Mat& input, cv::Mat& output)
+void Filter3D<RealT>::getQuaternion(double* input, RealT* output)
 {
-    RealT theta = norm(input);
-    output.at<RealT>(3) = cos(theta/2); //qr
+    RealT theta = (RealT)sqrt(input[0]*input[0] + input[1]*input[1] + input[2]*input[2]);
+    output[0] = cos(theta/2); //qr
     if(theta < EPSILON){ //Use lim( theta -> 0 ){ sin(theta)/theta }
-        output.at<RealT>(4) = ((RealT)input.at<double>(0)); //qi
-        output.at<RealT>(5) = ((RealT)input.at<double>(1)); //qj
-        output.at<RealT>(6) = ((RealT)input.at<double>(2)); //qk
+        output[1] = (RealT)input[0]; //qi
+        output[2] = (RealT)input[1]; //qj
+        output[3] = (RealT)input[2]; //qk
     }
     else{
         RealT sTheta2 = sin(theta/2);
-        output.at<RealT>(4) = ((RealT)input.at<double>(0))/theta*sTheta2; //qi
-        output.at<RealT>(5) = ((RealT)input.at<double>(1))/theta*sTheta2; //qj
-        output.at<RealT>(6) = ((RealT)input.at<double>(2))/theta*sTheta2; //qk
+        output[1] = (RealT)input[0]/theta*sTheta2; //qi
+        output[2] = (RealT)input[1]/theta*sTheta2; //qj
+        output[3] = (RealT)input[2]/theta*sTheta2; //qk
     }
-}
-
-template<typename RealT>
-inline RealT Filter3D<RealT>::norm(cv::Mat& vec3d)
-{
-    return sqrt((RealT)(
-                vec3d.at<double>(0)*vec3d.at<double>(0) +
-                vec3d.at<double>(1)*vec3d.at<double>(1) +
-                vec3d.at<double>(2)*vec3d.at<double>(2)));
 }
 
 template<typename RealT>
 inline void Filter3D<RealT>::normalizeQuat()
 {
-    RealT norm = sqrt(
-            mTempState.at<RealT>(3)*mTempState.at<RealT>(3) +
-            mTempState.at<RealT>(4)*mTempState.at<RealT>(4) +
-            mTempState.at<RealT>(5)*mTempState.at<RealT>(5) +
-            mTempState.at<RealT>(6)*mTempState.at<RealT>(6));
-
+    RealT* quat = (RealT*)mTempState.ptr() + 3;
+    RealT norm = sqrt(quat[0]*quat[0] + quat[1]*quat[1] + quat[2]*quat[2] + quat[3]*quat[3]);
     if(norm > EPSILON){
-        mTempState.at<RealT>(3) /= norm;
-        mTempState.at<RealT>(4) /= norm;
-        mTempState.at<RealT>(5) /= norm;
-        mTempState.at<RealT>(6) /= norm;
+        quat[0] /= norm;
+        quat[1] /= norm;
+        quat[2] /= norm;
+        quat[3] /= norm;
     }
     else{
-        mTempState.at<RealT>(3) = 1.0f;
-        mTempState.at<RealT>(4) = 0.0f;
-        mTempState.at<RealT>(5) = 0.0f;
-        mTempState.at<RealT>(6) = 0.0f;
+        quat[0] = 1.0f;
+        quat[1] = 0.0f;
+        quat[2] = 0.0f;
+        quat[3] = 0.0f;
     }
 }
 
 template<typename RealT>
 inline void Filter3D<RealT>::shortestPathQuat(cv::Vec<RealT,4>& prevQuat)
 {
+    RealT* quat = (RealT*)mTempState.ptr() + 3;
+
     //If -q would be closer to q_prev than +q, replace new q with -q
     //The following comes from the derivation of |q - q_prev|^2 - |-q - q_prev|^2
     if(
-            mTempState.at<RealT>(3)*prevQuat(0) +
-            mTempState.at<RealT>(4)*prevQuat(1) +
-            mTempState.at<RealT>(5)*prevQuat(2) +
-            mTempState.at<RealT>(6)*prevQuat(3) < 0){
-        mTempState.at<RealT>(3) = -mTempState.at<RealT>(3);
-        mTempState.at<RealT>(4) = -mTempState.at<RealT>(4);
-        mTempState.at<RealT>(5) = -mTempState.at<RealT>(5);
-        mTempState.at<RealT>(6) = -mTempState.at<RealT>(6);
+            quat[0]*prevQuat(0) +
+            quat[1]*prevQuat(1) +
+            quat[2]*prevQuat(2) +
+            quat[3]*prevQuat(3) < 0){
+        quat[0] = -quat[0];
+        quat[1] = -quat[1];
+        quat[2] = -quat[2];
+        quat[3] = -quat[3];
     }
-    prevQuat(0) = mTempState.at<RealT>(3);
-    prevQuat(1) = mTempState.at<RealT>(4);
-    prevQuat(2) = mTempState.at<RealT>(5);
-    prevQuat(3) = mTempState.at<RealT>(6);
+    prevQuat(0) = quat[0];
+    prevQuat(1) = quat[1];
+    prevQuat(2) = quat[2];
+    prevQuat(3) = quat[3];
 }
 
 //All possible instantiations of Filter3D
