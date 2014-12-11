@@ -66,7 +66,6 @@ int main(int argc, char* argv[])
     cv::Mat inputImage;
 
     chilitags::Chilitags chilitags;
-    chilitags.setFilter(0, 0.);
 
     cv::namedWindow("DisplayChilitags");
 

@@ -75,12 +75,10 @@ int main(int argc, char* argv[])
 
     // This one is the reference Chilitags
     chilitags::Chilitags detectedChilitags;
-    detectedChilitags.setFilter(0, 0.0f);
 
     // This one will be called with JUST_TRACK when it has previously detected
     // something
     chilitags::Chilitags trackedChilitags;
-    trackedChilitags.setFilter(0, 0.0f);
 
     cv::namedWindow("DisplayChilitags");
 

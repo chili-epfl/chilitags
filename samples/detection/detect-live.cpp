@@ -71,14 +71,6 @@ int main(int argc, char* argv[])
     // The tag detection happens in the Chilitags class.
     chilitags::Chilitags chilitags;
 
-    // The detection is not perfect, so if a tag is not detected during one frame,
-    // the tag will shortly disappears, which results in flickering.
-    // To address this, Chilitags "cheats" by keeping tags for n frames
-    // at the same position. When tags disappear for more than 5 frames,
-    // Chilitags actually removes it.
-    // Here, we cancel this to show the raw detection results.
-    chilitags.setFilter(0, 0.0f);
-
     cv::namedWindow("DisplayChilitags");
     // Main loop, exiting when 'q is pressed'
     for (; 'q' != (char) cv::waitKey(1); ) {

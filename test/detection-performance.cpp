@@ -93,8 +93,6 @@ TEST(Integration, Snapshots) {
     chilitags::Chilitags chilitags;
     // We measure chilitags at its best, and compare optimisations later
     chilitags.setPerformance(chilitags::Chilitags::ROBUST);
-    // We do not want any filtering, to measure the raw performances
-    chilitags.setFilter(0, 0.0f);
 
     map<int, std::string> resolution;
 

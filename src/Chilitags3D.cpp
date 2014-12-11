@@ -20,7 +20,6 @@
 
 #include <chilitags.hpp>
 
-#include "Filter.hpp"
 #include "EstimatePose3D.hpp"
 
 #include <iostream>
@@ -40,16 +39,9 @@ Impl(cv::Size cameraResolution) :
     mEstimatePose3D(cameraResolution),
     mOmitOtherTags(false),
     mDefaultTagCorners(),
-    mId2Configuration(),
-    mFilter(5, 0.5f)
+    mId2Configuration()
 {
     setDefaultTagSize(20.f);
-    mChilitags.setFilter(0, 0.0f);
-}
-
-void setFilter(int persistence, float gain) {
-    mFilter.setPersistence(persistence);
-    mFilter.setGain(gain);
 }
 
 const Chilitags &getChilitags() const {
@@ -298,14 +290,7 @@ std::vector<cv::Point3_<RealT>> mDefaultTagCorners;
 // associates a tag id with an object name and the configuration of the tag
 // in this object
 std::map<int, std::pair<std::string, TagConfig> > mId2Configuration;
-
-Filter<std::string, TransformMatrix> mFilter;
 };
-
-template<typename RealT>
-void Chilitags3D_<RealT>::setFilter(int persistence, float gain) {
-    mImpl->setFilter(persistence, gain);
-}
 
 template<typename RealT>
 Chilitags3D_<RealT>::Chilitags3D_(cv::Size cameraResolution) :

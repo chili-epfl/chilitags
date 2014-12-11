@@ -61,26 +61,11 @@ public:
 
 /**
     Constructs a object ready to detect tags.
-    It sets a default persistence of 5 frames for the tags, and a gain of 0.
-    Please refer to the documentation of setFilter() for more detail.
     The default detection performance is balanced between accuracy and
     processing time (see Chilitags::FAST); it can be changed with
     setPerformance().
  */
 Chilitags();
-
-/**
-    Parameters to paliate with the imperfections of the detection.
-
-    \param persistence the number of frames in which a tag should be absent
-    before being removed from the output of find(). 0 means that tags disappear
-    directly if they are not detected.
-
-    \param gain a value between 0 and 1 corresponding to the weight of the
-    previous (filtered) position in the new filtered position. 0 means that the
-    latest position of the tag is returned.
- */
-void setFilter(int persistence, float gain);
 
 /**
     Values of the parameter to tell find() how to combine tracking and full
@@ -362,11 +347,7 @@ typedef std::map<std::string, TransformMatrix> TagPoseMap;
     object, and how big they are.
 
     To first detect th tags in the image, Chilitags3D creates a Chilitags
-    instance, which can be accessed through the getChilitags() accessors. This
-    Chilitags instance is set to have a persistence of 0, but Chilitags3D sets
-    a default persistence of 5 frames for poses it estimates. It also sets a
-    gain of .5 to avoid the detected objects to "shake". Please refer to the
-    documentation of Chilitags3D::setFilter() for more detail.
+    instance, which can be accessed through the getChilitags() accessors.
 
     You can also create yourself a separate instance of Chilitagsfor the 2D
     detection of tags and use it by calling
@@ -383,28 +364,6 @@ typedef std::map<std::string, TransformMatrix> TagPoseMap;
     setCalibration().
  */
 Chilitags3D_(cv::Size cameraResolution = cv::Size(640, 480));
-
-/**
-    Parameters to paliate with the imperfections of the detection.
-
-    \param persistence the number of frames in which a 3d object, i.e. a tag or
-    a rigid object containing several tags, should be absent before being
-    removed from the output of estimate().
-
-    \param gain a value between 0 and 1 corresponding to the weight of the
-    previous (filtered) position in the new filtered position. 0 means that the
-    latest position of the object is returned.
-
-    Chilitags3D manages persistence separately from the 2D detection of
-    Chilitags, because an object can be composed of several tags. If one or
-    more of these tags are not detected, the pose of the object is estimated
-    with the remaining, detected tags. In this case, it would hurt the pose
-    estimation to make the individual tags persistent. Chilitags3D thus sets
-    the 2D detection to have no persistence, and applies its persistence
-    mechanism only after the estimation of the pose. The same goes for the
-    position filtering. Note that for independent tags, it should not matter.
- */
-void setFilter(int persistence, float gain);
 
 /** Accessor to the underlying (2D) Chilitags detection. */
 const Chilitags &getChilitags() const;
