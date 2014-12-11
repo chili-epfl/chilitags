@@ -149,7 +149,6 @@ enum DetectionTrigger {
 */
     DETECT_PERIODICALLY,
 
-#ifdef HAS_MULTITHREADING
     /**
      * @brief Runs the detection in the background, with a period
      *
@@ -163,6 +162,9 @@ enum DetectionTrigger {
      * presented in the call to `find()`. If the background thread takes more
      * time than 15 calls to `find()`, it will be running as frequently as
      * possible, i.e the same as `BACKGROUND_DETECT_ALWAYS`.
+     *
+     * This cannot be used without enabling multithreading support during
+     * build.
      */
     ASYNC_DETECT_PERIODICALLY,
 
@@ -173,9 +175,11 @@ enum DetectionTrigger {
      * `find()`. The detection is run as frequently as possible, i.e a new
      * detection is started as soon as the new image frame is presented in the
      * call to `find()` after the previous detection is finished.
+     *
+     * This cannot be used without enabling multithreading support during
+     * build.
      */
     ASYNC_DETECT_ALWAYS
-#endif
 };
 
 /**

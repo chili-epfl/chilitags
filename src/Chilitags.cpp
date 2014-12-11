@@ -186,8 +186,10 @@ TagCornerMap find(
             mDetect(mResizedGrayscaleInput, tags); //This does not update tags, nor does it block for computation
             return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
 #endif
-
     }
+
+    //TODO: Report error that the user is trying to use ASYNC triggers without building with multithreading support
+    return tags;
 }
 
 cv::Matx<unsigned char, 6, 6> encode(int id) const {
