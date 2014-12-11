@@ -74,13 +74,15 @@ void EstimatePose3D<RealT>::enableFilter(bool enabled)
 template<typename RealT>
 void EstimatePose3D<RealT>::setCamDelta(cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX)
 {
-    mFilter3D.setCamDelta(camDeltaR, camDeltaX);
+    if(mFilter3DEnabled)
+        mFilter3D.setCamDelta(camDeltaR, camDeltaX);
 }
 
 template<typename RealT>
 void EstimatePose3D<RealT>::operator()(typename Chilitags3D_<RealT>::TagPoseMap& objects)
 {
-    mFilter3D(objects);
+    if(mFilter3DEnabled)
+        mFilter3D(objects);
 }
 
 template<typename RealT>
