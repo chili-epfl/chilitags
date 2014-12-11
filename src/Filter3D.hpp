@@ -119,6 +119,14 @@ private:
     void getAngleAxis(cv::Mat& output);
 
     /**
+     * @brief Converts the angle-axis to quaternion and writes it to indices (3,4,5,6)
+     *
+     * @param input Angle-axis
+     * @param output State to receive quaternion
+     */
+    void getQuaternion(cv::Mat& input, cv::Mat& output);
+
+    /**
      * @brief Normalizes the quaternion part of the internal state vector
      */
     void normalizeQuat();

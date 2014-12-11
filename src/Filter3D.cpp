@@ -165,25 +165,12 @@ void Filter3D<RealT>::operator()(std::string const& id, cv::Mat& measuredTrans, 
 
     //Already existing filter
     else{
-        RealT theta = norm(measuredRot);
-        RealT sTheta2 = sin(theta/2);
 
         //Fill state
         mTempState.at<RealT>(0) = (RealT)measuredTrans.at<double>(0); //x
         mTempState.at<RealT>(1) = (RealT)measuredTrans.at<double>(1); //y
         mTempState.at<RealT>(2) = (RealT)measuredTrans.at<double>(2); //z
-
-        mTempState.at<RealT>(3) = cos(theta/2); //qr
-        if(theta < EPSILON){ //Use lim( theta -> 0 ){ sin(theta)/theta }
-            mTempState.at<RealT>(4) = ((RealT)measuredRot.at<double>(0)); //qi
-            mTempState.at<RealT>(5) = ((RealT)measuredRot.at<double>(1)); //qj
-            mTempState.at<RealT>(6) = ((RealT)measuredRot.at<double>(2)); //qk
-        }
-        else{
-            mTempState.at<RealT>(4) = ((RealT)measuredRot.at<double>(0))/theta*sTheta2; //qi
-            mTempState.at<RealT>(5) = ((RealT)measuredRot.at<double>(1))/theta*sTheta2; //qj
-            mTempState.at<RealT>(6) = ((RealT)measuredRot.at<double>(2))/theta*sTheta2; //qk
-        }
+        getQuaternion(measuredRot, mTempState);
 
         //Do the correction step
         shortestPathQuat(prevQuat);
@@ -214,20 +201,7 @@ void Filter3D<RealT>::initFilter(cv::KalmanFilter& filter, cv::Vec<RealT,4>& pre
     filter.statePost.at<RealT>(0) = (RealT)measuredTrans.at<double>(0); //x
     filter.statePost.at<RealT>(1) = (RealT)measuredTrans.at<double>(1); //y
     filter.statePost.at<RealT>(2) = (RealT)measuredTrans.at<double>(2); //z
-
-    RealT theta = norm(measuredRot);
-    filter.statePost.at<RealT>(3) = cos(theta/2); //qr
-    if(theta < EPSILON){ //Use lim( theta -> 0 ){ sin(theta)/theta }
-        filter.statePost.at<RealT>(4) = ((RealT)measuredRot.at<double>(0)); //qi
-        filter.statePost.at<RealT>(5) = ((RealT)measuredRot.at<double>(1)); //qj
-        filter.statePost.at<RealT>(6) = ((RealT)measuredRot.at<double>(2)); //qk
-    }
-    else{
-        RealT sTheta2 = sin(theta/2);
-        filter.statePost.at<RealT>(4) = ((RealT)measuredRot.at<double>(0))/theta*sTheta2; //qi
-        filter.statePost.at<RealT>(5) = ((RealT)measuredRot.at<double>(1))/theta*sTheta2; //qj
-        filter.statePost.at<RealT>(6) = ((RealT)measuredRot.at<double>(2))/theta*sTheta2; //qk
-    }
+    getQuaternion(measuredRot, filter.statePost);
 
     prevQuat(0) = filter.statePost.at<RealT>(3);
     prevQuat(1) = filter.statePost.at<RealT>(4);
@@ -253,6 +227,24 @@ void Filter3D<RealT>::getAngleAxis(cv::Mat& output)
         output.at<double>(0) = mTempState.at<RealT>(4)*theta/sTheta2; //rx
         output.at<double>(1) = mTempState.at<RealT>(5)*theta/sTheta2; //ry
         output.at<double>(2) = mTempState.at<RealT>(6)*theta/sTheta2; //rz
+    }
+}
+
+template<typename RealT>
+void Filter3D<RealT>::getQuaternion(cv::Mat& input, cv::Mat& output)
+{
+    RealT theta = norm(input);
+    output.at<RealT>(3) = cos(theta/2); //qr
+    if(theta < EPSILON){ //Use lim( theta -> 0 ){ sin(theta)/theta }
+        output.at<RealT>(4) = ((RealT)input.at<double>(0)); //qi
+        output.at<RealT>(5) = ((RealT)input.at<double>(1)); //qj
+        output.at<RealT>(6) = ((RealT)input.at<double>(2)); //qk
+    }
+    else{
+        RealT sTheta2 = sin(theta/2);
+        output.at<RealT>(4) = ((RealT)input.at<double>(0))/theta*sTheta2; //qi
+        output.at<RealT>(5) = ((RealT)input.at<double>(1))/theta*sTheta2; //qj
+        output.at<RealT>(6) = ((RealT)input.at<double>(2))/theta*sTheta2; //qk
     }
 }
 
