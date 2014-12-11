@@ -111,7 +111,6 @@ void Filter3D<RealT>::setCamDelta(cv::Vec<RealT, 4> const& q, cv::Vec<RealT, 3> 
     B2[0] = F2[0];  B2[1] = F2[1]; B2[2] = F2[2];
 
     //Set the control input
-    //TODO: memcpy
     u[0] = -camDeltaX(0);
     u[1] = -camDeltaX(1);
     u[2] = -camDeltaX(2);
@@ -123,35 +122,17 @@ void Filter3D<RealT>::operator()(typename Chilitags3D_<RealT>::TagPoseMap& tags)
     //TODO: These have to be double precision for rodrigues
     cv::Mat predictedRot(3,1,CV_64F);
     cv::Matx33d tempRotMat;
-    RealT theta;
-    RealT sTheta2;
 
     for(auto& kfq : mFilters){
         cv::KalmanFilter& filter = kfq.second.filter;
-        //cv::Vec<RealT,4>& prevQuat = kfq.second.prevQuat;
 
-        //Prediction step
+        //Do prediction step
         mF.copyTo(filter.transitionMatrix);
         mB.copyTo(filter.controlMatrix);
         filter.predict(mControl).copyTo(mTempState);
 
         //Convert quaternion rotation to angle-axis rotation
-        theta = sqrt(
-                mTempState.at<RealT>(4)*mTempState.at<RealT>(4) +
-                mTempState.at<RealT>(5)*mTempState.at<RealT>(5) +
-                mTempState.at<RealT>(6)*mTempState.at<RealT>(6));
-        theta = 2*atan2(theta, mTempState.at<RealT>(3));
-        sTheta2 = sin(theta/2);
-        if(theta < EPSILON){ //Use lim( theta -> 0 ){ theta/sin(theta) }
-            predictedRot.at<double>(0) = mTempState.at<RealT>(4); //rx
-            predictedRot.at<double>(1) = mTempState.at<RealT>(5); //ry
-            predictedRot.at<double>(2) = mTempState.at<RealT>(6); //rz
-        }
-        else{
-            predictedRot.at<double>(0) = mTempState.at<RealT>(4)*theta/sTheta2; //rx
-            predictedRot.at<double>(1) = mTempState.at<RealT>(5)*theta/sTheta2; //ry
-            predictedRot.at<double>(2) = mTempState.at<RealT>(6)*theta/sTheta2; //rz
-        }
+        getAngleAxis(predictedRot);
 
         //Convert angle-axis to 3x3 rotation matrix
         cv::Rodrigues(predictedRot, tempRotMat);
@@ -178,54 +159,16 @@ void Filter3D<RealT>::operator()(std::string const& id, cv::Mat& measuredTrans, 
     cv::KalmanFilter& filter = pair.first->second.filter;
     cv::Vec<RealT,4>& prevQuat = pair.first->second.prevQuat;
 
-    RealT theta = norm(measuredRot);
-    RealT sTheta2 = sin(theta/2);
-
     //Newly inserted
-    if(pair.second){
-        mQ.copyTo(filter.processNoiseCov);
-        mR.copyTo(filter.measurementNoiseCov);
-
-        //TODO: Control input will be the IMU data that "drives" the tag
-        //cv::setIdentity(filter.controlMatrix);
-
-        //We have no expectation from a tag other than staying still as long as there is no camera movement information
-        cv::setIdentity(filter.transitionMatrix);
-
-        //We make the same measurement as the state: (x,y,z,qr,qi,qj,qk)
-        cv::setIdentity(filter.measurementMatrix);
-
-        //Set initial state
-        filter.statePost.at<RealT>(0) = (RealT)measuredTrans.at<double>(0); //x
-        filter.statePost.at<RealT>(1) = (RealT)measuredTrans.at<double>(1); //y
-        filter.statePost.at<RealT>(2) = (RealT)measuredTrans.at<double>(2); //z
-
-        filter.statePost.at<RealT>(3) = cos(theta/2); //qr
-        if(theta < EPSILON){ //Use lim( theta -> 0 ){ sin(theta)/theta }
-            filter.statePost.at<RealT>(4) = ((RealT)measuredRot.at<double>(0)); //qi
-            filter.statePost.at<RealT>(5) = ((RealT)measuredRot.at<double>(1)); //qj
-            filter.statePost.at<RealT>(6) = ((RealT)measuredRot.at<double>(2)); //qk
-        }
-        else{
-            filter.statePost.at<RealT>(4) = ((RealT)measuredRot.at<double>(0))/theta*sTheta2; //qi
-            filter.statePost.at<RealT>(5) = ((RealT)measuredRot.at<double>(1))/theta*sTheta2; //qj
-            filter.statePost.at<RealT>(6) = ((RealT)measuredRot.at<double>(2))/theta*sTheta2; //qk
-        }
-
-        prevQuat(0) = filter.statePost.at<RealT>(3);
-        prevQuat(1) = filter.statePost.at<RealT>(4);
-        prevQuat(2) = filter.statePost.at<RealT>(5);
-        prevQuat(3) = filter.statePost.at<RealT>(6);
-    }
+    if(pair.second)
+        initFilter(filter, prevQuat, measuredTrans, measuredRot);
 
     //Already existing filter
     else{
+        RealT theta = norm(measuredRot);
+        RealT sTheta2 = sin(theta/2);
 
-        //Prediction step
-        //mF.copyTo(filter.transitionMatrix);
-        //filter.predict();
-
-        //Correction step
+        //Fill state
         mTempState.at<RealT>(0) = (RealT)measuredTrans.at<double>(0); //x
         mTempState.at<RealT>(1) = (RealT)measuredTrans.at<double>(1); //y
         mTempState.at<RealT>(2) = (RealT)measuredTrans.at<double>(2); //z
@@ -242,30 +185,74 @@ void Filter3D<RealT>::operator()(std::string const& id, cv::Mat& measuredTrans, 
             mTempState.at<RealT>(6) = ((RealT)measuredRot.at<double>(2))/theta*sTheta2; //qk
         }
 
+        //Do the correction step
         shortestPathQuat(prevQuat);
         filter.correct(mTempState).copyTo(mTempState);
         normalizeQuat();
 
+        //Write state back
         measuredTrans.at<double>(0) = mTempState.at<RealT>(0); //x
         measuredTrans.at<double>(1) = mTempState.at<RealT>(1); //y
         measuredTrans.at<double>(2) = mTempState.at<RealT>(2); //z
+        getAngleAxis(measuredRot);
+    }
+}
 
-        theta = sqrt(
-                mTempState.at<RealT>(4)*mTempState.at<RealT>(4) +
-                mTempState.at<RealT>(5)*mTempState.at<RealT>(5) +
-                mTempState.at<RealT>(6)*mTempState.at<RealT>(6));
-        theta = 2*atan2(theta, mTempState.at<RealT>(3));
-        sTheta2 = sin(theta/2);
-        if(theta < EPSILON){ //Use lim( theta -> 0 ){ theta/sin(theta) }
-            measuredRot.at<double>(0) = mTempState.at<RealT>(4); //rx
-            measuredRot.at<double>(1) = mTempState.at<RealT>(5); //ry
-            measuredRot.at<double>(2) = mTempState.at<RealT>(6); //rz
-        }
-        else{
-            measuredRot.at<double>(0) = mTempState.at<RealT>(4)*theta/sTheta2; //rx
-            measuredRot.at<double>(1) = mTempState.at<RealT>(5)*theta/sTheta2; //ry
-            measuredRot.at<double>(2) = mTempState.at<RealT>(6)*theta/sTheta2; //rz
-        }
+template<typename RealT>
+void Filter3D<RealT>::initFilter(cv::KalmanFilter& filter, cv::Vec<RealT,4>& prevQuat, cv::Mat& measuredTrans, cv::Mat& measuredRot)
+{
+    mQ.copyTo(filter.processNoiseCov);
+    mR.copyTo(filter.measurementNoiseCov);
+
+    //We have no expectation from a tag other than staying still as long as there is no camera movement information
+    cv::setIdentity(filter.transitionMatrix);
+
+    //We make the same measurement as the state: (x,y,z,qr,qi,qj,qk)
+    cv::setIdentity(filter.measurementMatrix);
+
+    //Set initial state
+    filter.statePost.at<RealT>(0) = (RealT)measuredTrans.at<double>(0); //x
+    filter.statePost.at<RealT>(1) = (RealT)measuredTrans.at<double>(1); //y
+    filter.statePost.at<RealT>(2) = (RealT)measuredTrans.at<double>(2); //z
+
+    RealT theta = norm(measuredRot);
+    filter.statePost.at<RealT>(3) = cos(theta/2); //qr
+    if(theta < EPSILON){ //Use lim( theta -> 0 ){ sin(theta)/theta }
+        filter.statePost.at<RealT>(4) = ((RealT)measuredRot.at<double>(0)); //qi
+        filter.statePost.at<RealT>(5) = ((RealT)measuredRot.at<double>(1)); //qj
+        filter.statePost.at<RealT>(6) = ((RealT)measuredRot.at<double>(2)); //qk
+    }
+    else{
+        RealT sTheta2 = sin(theta/2);
+        filter.statePost.at<RealT>(4) = ((RealT)measuredRot.at<double>(0))/theta*sTheta2; //qi
+        filter.statePost.at<RealT>(5) = ((RealT)measuredRot.at<double>(1))/theta*sTheta2; //qj
+        filter.statePost.at<RealT>(6) = ((RealT)measuredRot.at<double>(2))/theta*sTheta2; //qk
+    }
+
+    prevQuat(0) = filter.statePost.at<RealT>(3);
+    prevQuat(1) = filter.statePost.at<RealT>(4);
+    prevQuat(2) = filter.statePost.at<RealT>(5);
+    prevQuat(3) = filter.statePost.at<RealT>(6);
+}
+
+template<typename RealT>
+void Filter3D<RealT>::getAngleAxis(cv::Mat& output)
+{
+    RealT theta = sqrt(
+            mTempState.at<RealT>(4)*mTempState.at<RealT>(4) +
+            mTempState.at<RealT>(5)*mTempState.at<RealT>(5) +
+            mTempState.at<RealT>(6)*mTempState.at<RealT>(6));
+    theta = 2*atan2(theta, mTempState.at<RealT>(3));
+    RealT sTheta2 = sin(theta/2);
+    if(theta < EPSILON){ //Use lim( theta -> 0 ){ theta/sin(theta) }
+        output.at<double>(0) = mTempState.at<RealT>(4); //rx
+        output.at<double>(1) = mTempState.at<RealT>(5); //ry
+        output.at<double>(2) = mTempState.at<RealT>(6); //rz
+    }
+    else{
+        output.at<double>(0) = mTempState.at<RealT>(4)*theta/sTheta2; //rx
+        output.at<double>(1) = mTempState.at<RealT>(5)*theta/sTheta2; //ry
+        output.at<double>(2) = mTempState.at<RealT>(6)*theta/sTheta2; //rz
     }
 }
 

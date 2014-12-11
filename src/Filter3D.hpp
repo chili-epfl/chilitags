@@ -102,6 +102,23 @@ private:
     cv::Mat mTempState;                     ///< Temporary matrix to hold the state (x,y,z,qr,qi,qj,qk)
 
     /**
+     * @brief Initializes the filter for newly discovered tag
+     *
+     * @param filter Filter to initialize
+     * @param prevQuat Set to the current rotation for the future
+     * @param measuredTrans First measurement of position
+     * @param measuredRot First measurement of rotation
+     */
+    void initFilter(cv::KalmanFilter& filter, cv::Vec<RealT,4>& prevQuat, cv::Mat& measuredTrans, cv::Mat& measuredRot);
+
+    /**
+     * @brief Converts the quaternion rotation in the state to angle-axis representation
+     *
+     * @param output Double precision 3x1 matrix
+     */
+    void getAngleAxis(cv::Mat& output);
+
+    /**
      * @brief Normalizes the quaternion part of the internal state vector
      */
     void normalizeQuat();
