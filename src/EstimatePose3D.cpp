@@ -78,6 +78,12 @@ void EstimatePose3D<RealT>::setCamDelta(cv::Vec<RealT, 4> const& camDeltaR, cv::
 }
 
 template<typename RealT>
+void EstimatePose3D<RealT>::operator()(typename Chilitags3D_<RealT>::TagPoseMap& objects)
+{
+    mFilter3D(objects);
+}
+
+template<typename RealT>
 void EstimatePose3D<RealT>::operator()(std::string const& name,
         std::vector<cv::Point3_<RealT>> const& objectPoints,
         cv::Mat_<cv::Point2f> const& imagePoints,

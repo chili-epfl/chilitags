@@ -90,6 +90,13 @@ public:
     void setCamDelta(cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX);
 
     /**
+     * @brief Updates the poses of all known tags via statistical filtering
+     *
+     * @param objects Map to update in which ID maps to the transform
+     */
+    void operator()(typename Chilitags3D_<RealT>::TagPoseMap& objects);
+
+    /**
      * @brief Updates/inserts the pose of the given object in the given map
      *
      * @param name Unique ID of the object

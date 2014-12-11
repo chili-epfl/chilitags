@@ -32,6 +32,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/video/tracking.hpp>
 
+#include "chilitags.hpp"
+
 namespace chilitags {
 
 template<typename RealT>
@@ -44,7 +46,7 @@ public:
      */
     Filter3D();
 
-     /**
+    /**
      * @brief Informs the rotation and translation of the current camera frame in the previous camera frame
      *
      * @param camDeltaR Rotation of current camera frame in previous camera frame in unit quaternion format (w,vx,vy,vz)
@@ -53,13 +55,20 @@ public:
     void setCamDelta(cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX);
 
     /**
-     * @brief Filters the given 6D pose depending on the past measurements
+     * @brief Performs KF prediction step for all known tags
+     *
+     * @param tags The list of tags
+     */
+    void operator()(typename Chilitags3D_<RealT>::TagPoseMap& tags);
+
+    /**
+     * @brief Performs KF correction step for the given tag
      *
      * TODO: measuredTrans and measuredRot must be double for now
      *
      * @param id Unique identifier of the object
-     * @param measuredTrans Translation measurement to be filtered, 3x1 vector: (x,y,z)
-     * @param measuredRot Rotation measurement to be filtered, 3x1 axis-angle representation: (rx,ry,rz)
+     * @param measuredTrans Translation measurement, also the output, 3x1 vector: (x,y,z)
+     * @param measuredRot Rotation measurement, also the output, 3x1 axis-angle representation: (rx,ry,rz)
      */
     void operator()(std::string const& id, cv::Mat& measuredTrans, cv::Mat& measuredRot);
 
@@ -81,12 +90,16 @@ private:
         {}
     };
 
-    std::map<std::string, KFQ> mFilters;                ///< We keep one filter per object and do not discard them
+    std::map<std::string, KFQ> mFilters;    ///< We keep one filter per object and do not discard them
 
-    cv::Mat mQ;                                         ///< Process noise covariance matrix, to be tuned
-    cv::Mat mR;                                         ///< Measurement noise covariance matrix, to be tuned
+    cv::Mat mF;                             ///< Process matrix, depends on the camera movement info
+    cv::Mat mB;                             ///< Control matrix, depends on the camera movement info
+    cv::Mat mControl;                       ///< Control input, depends on the camera movement info
 
-    cv::Mat mTempState;                                 ///< Temporary matrix to hold the state (x,y,z,qr,qi,qj,qk)
+    cv::Mat mQ;                             ///< Process noise covariance matrix, to be tuned
+    cv::Mat mR;                             ///< Measurement noise covariance matrix, to be tuned
+
+    cv::Mat mTempState;                     ///< Temporary matrix to hold the state (x,y,z,qr,qi,qj,qk)
 
     /**
      * @brief Normalizes the quaternion part of the internal state vector

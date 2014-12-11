@@ -59,10 +59,17 @@ const Chilitags &getChilitags() const {
     return mChilitags;
 }
 
-TagPoseMap estimate(TagCornerMap const& tags, cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX) {
-
+TagPoseMap estimate(TagCornerMap const& tags, cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX)
+{
     TagPoseMap objects;
 
+    //Pass the latest camera movement difference for prediction
+    mEstimatePose3D.setCamDelta(camDeltaR, camDeltaX);
+
+    //Predict pose for all known tags with camera movement
+    mEstimatePose3D(objects);
+
+    //Correct pose prediction with new observations
     std::map<
         const std::string,     //name of the object
         std::pair<
@@ -120,7 +127,7 @@ TagPoseMap estimate(TagCornerMap const& tags, cv::Vec<RealT, 4> const& camDeltaR
                               objects);
     }
 
-    return mFilter(objects);
+    return objects;
 }
 
 TagPoseMap estimate(
