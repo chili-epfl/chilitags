@@ -51,5 +51,4 @@ endif()
 add_executable( filter3d-gui 3dfiltering/filter3d-gui.cpp)
 target_link_libraries( filter3d-gui chilitags )
 target_link_libraries( filter3d-gui ${OpenCV_LIBS} )
-install (TARGETS filter3d-gui RUNTIME DESTINATION bin)
 
