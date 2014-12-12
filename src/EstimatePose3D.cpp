@@ -78,6 +78,18 @@ void EstimatePose3D<RealT>::setFilterPersistence(RealT persistence)
 }
 
 template<typename RealT>
+void EstimatePose3D<RealT>::setFilterProcessNoiseCovariance(cv::Mat const& covariance)
+{
+    mFilter3D.setProcessNoiseCovariance(covariance);
+}
+
+template<typename RealT>
+void EstimatePose3D<RealT>::setFilterObservationNoiseCovariance(cv::Mat const& covariance)
+{
+    mFilter3D.setObservationNoiseCovariance(covariance);
+}
+
+template<typename RealT>
 void EstimatePose3D<RealT>::setCamDelta(cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX)
 {
     if(mFilter3DEnabled)

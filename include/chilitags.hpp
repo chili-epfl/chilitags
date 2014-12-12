@@ -478,7 +478,7 @@ void setDefaultTagSize(RealT defaultSize);
  *
  * @param enabled Whether to enable Kalman filtering
  */
-void enableFilter3D(bool enabled);
+void enableFilter(bool enabled);
 
 /**
  * @brief Sets the persistence of tags against being discarded when not observed
@@ -486,6 +486,39 @@ void enableFilter3D(bool enabled);
  * @param persistence Persistence value, roughly correponds to number of frames
  */
 void setPersistence(RealT persistence);
+
+/**
+ * @brief Sets the process noise covariance matrix a.k.a Q for the Kalman filter
+ *
+ * The state is described by (x,y,z,qw,qx,qy,qz) where x,y,z is the tag
+ * position and qw,qx,qy,qz is the tag orientation in quaternion
+ * representation. Therefore, the input matrix should correspond to
+ * cov((x,y,z,qw,qx,qy,qz)).
+ *
+ * When IMU data is present, the process moves the tag according to camera
+ * movement. When IMU data is not present, the process tries to keep the tag
+ * still. Smaller values in the process covariance matrix causes the tags to
+ * resist motion more.
+ *
+ * @param covariance 7x7 covariance matrix
+ */
+void setFilterProcessNoiseCovariance(cv::Mat const& covariance);
+
+/**
+ * @brief Sets the observation noise covariance matrix a.k.a R for the Kalman filter
+ *
+ * The observation (done by image processing on the camera image) is described
+ * by (x,y,z,qw,qx,qy,qz) where x,y,z is the tag position and qw,qx,qy,qz is
+ * the tag orientation in quaternion representation. Therefore, the input
+ * matrix should correspond to cov((x,y,z,qw,qx,qy,qz)).
+ *
+ * Larger values in the observation noise covariance matrix indicates noisier
+ * measurements and causes observations to affect the state less, making tags
+ * more resistant to motion.
+ *
+ * @param covariance 7x7 covariance matrix
+ */
+void setFilterObservationNoiseCovariance(cv::Mat const& covariance);
 
 /**
     For accurate results, Chilitags3D can be provided the calibration data of

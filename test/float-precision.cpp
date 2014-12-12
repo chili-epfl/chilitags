@@ -41,11 +41,11 @@ TEST(FloatPrecision, Snapshots) {
 
     chilitags::Chilitags3Df chilitagsf;
     chilitagsf.getChilitags().setPerformance(chilitags::Chilitags::ROBUST);
-    chilitagsf.enableFilter3D(false);
+    chilitagsf.enableFilter(false);
 
     chilitags::Chilitags3Dd chilitagsd;
     chilitagsd.getChilitags().setPerformance(chilitags::Chilitags::ROBUST);
-    chilitagsd.enableFilter3D(false);
+    chilitagsd.enableFilter(false);
 
     for (auto testCase : TestMetadata::all) {
         std::string path = std::string(cvtest::TS::ptr()->get_data_path())+testCase.filename;

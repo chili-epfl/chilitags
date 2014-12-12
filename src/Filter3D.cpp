@@ -42,7 +42,9 @@ Filter3D<RealT>::Filter3D() :
     mB(7, 3, CV_TYPE),
     mControl(3, 1, CV_TYPE),
     mQ(),
+    mQChanged(true),
     mR(),
+    mRChanged(true),
     mCovScales(7, 1, CV_TYPE),
     mPersistence(10.0f),
     mTempState(7, 1, CV_TYPE)
@@ -69,8 +71,7 @@ Filter3D<RealT>::Filter3D() :
             0,      0,      0,      0,      0,      0,      1e-5f);
 
     //Scale coefficients when calculating the trace of the covariance estimate
-    for(int i=0;i<7;i++)
-        mCovScales.at<RealT>(i) = sqrt(mQ.at<RealT>(i,i)*mR.at<RealT>(i,i));
+    recalculateCovScales();
 
     //Process matrix is 7x7 and is identity as long as there is no camera movement info
     cv::setIdentity(mF);
@@ -83,9 +84,32 @@ Filter3D<RealT>::Filter3D() :
 }
 
 template<typename RealT>
+inline void Filter3D<RealT>::recalculateCovScales()
+{
+    for(int i=0;i<7;i++)
+        mCovScales.at<RealT>(i) = sqrt(mQ.at<RealT>(i,i)*mR.at<RealT>(i,i));
+}
+
+template<typename RealT>
 void Filter3D<RealT>::setPersistence(RealT persistence)
 {
     mPersistence = persistence;
+}
+
+template<typename RealT>
+void Filter3D<RealT>::setProcessNoiseCovariance(cv::Mat const& covariance)
+{
+    covariance.copyTo(mQ);
+    recalculateCovScales();
+    mQChanged = true;
+}
+
+template<typename RealT>
+void Filter3D<RealT>::setObservationNoiseCovariance(cv::Mat const& covariance)
+{
+    covariance.copyTo(mR);
+    recalculateCovScales();
+    mRChanged = true;
 }
 
 template<typename RealT>
@@ -149,6 +173,10 @@ void Filter3D<RealT>::operator()(typename Chilitags3D_<RealT>::TagPoseMap& tags)
         }
 
         //Do prediction step
+        if(mQChanged)
+            mQ.copyTo(filter.processNoiseCov);
+        if(mRChanged)
+            mR.copyTo(filter.measurementNoiseCov);
         mF.copyTo(filter.transitionMatrix);
         mB.copyTo(filter.controlMatrix);
         filter.predict(mControl).copyTo(mTempState);
@@ -167,6 +195,9 @@ void Filter3D<RealT>::operator()(typename Chilitags3D_<RealT>::TagPoseMap& tags)
             0,                          0,                          0,                          1
         };
     }
+
+    mQChanged = false;
+    mRChanged = false;
 }
 
 template<typename RealT>

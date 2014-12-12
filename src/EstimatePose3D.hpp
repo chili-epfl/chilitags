@@ -89,6 +89,20 @@ public:
     void setFilterPersistence(RealT persistence);
 
     /**
+     * @brief Sets the process noise covariance matrix for the Kalman filter
+     *
+     * @param covariance 7x7 covariance matrix
+     */
+    void setFilterProcessNoiseCovariance(cv::Mat const& covariance);
+
+    /**
+     * @brief Sets the observation noise covariance matrix for the Kalman filter
+     *
+     * @param covariance 7x7 covariance matrix
+     */
+    void setFilterObservationNoiseCovariance(cv::Mat const& covariance);
+
+    /**
      * @brief Informs the rotation and translation of the current camera frame in the previous camera frame
      *
      * @param camDeltaR Rotation of current camera frame in previous camera frame in unit quaternion format (w,vx,vy,vz)

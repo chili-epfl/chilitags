@@ -54,6 +54,20 @@ public:
     void setPersistence(RealT persistence);
 
     /**
+     * @brief Sets the process noise covariance matrix Q
+     *
+     * @param covariance 7x7 covariance matrix
+     */
+    void setProcessNoiseCovariance(cv::Mat const& covariance);
+
+    /**
+     * @brief Sets the observation noise covariance matrix R
+     *
+     * @param covariance 7x7 covariance matrix
+     */
+    void setObservationNoiseCovariance(cv::Mat const& covariance);
+
+    /**
      * @brief Informs the rotation and translation of the current camera frame in the previous camera frame
      *
      * @param camDeltaR Rotation of current camera frame in previous camera frame in unit quaternion format (w,vx,vy,vz)
@@ -106,12 +120,19 @@ private:
     cv::Mat mControl;                       ///< Control input, depends on the camera movement info
 
     cv::Mat mQ;                             ///< Process noise covariance matrix, to be tuned
+    bool mQChanged;                         ///< Whether Q was updated externally
     cv::Mat mR;                             ///< Measurement noise covariance matrix, to be tuned
+    bool mRChanged;                         ///< Whether R was updated externally
 
     cv::Mat mCovScales;                     ///< Coefficients to scale the covariance matrix diagonal entries
     RealT mPersistence;                     ///< Persistence of tags against being discarded when not seen for a while
 
     cv::Mat mTempState;                     ///< Temporary matrix to hold the state (x,y,z,qr,qi,qj,qk)
+
+    /**
+     * @brief Recalculates the covariance matrix scale coefficients based on Q and R
+     */
+    void recalculateCovScales();
 
     /**
      * @brief Initializes the filter for newly discovered tag

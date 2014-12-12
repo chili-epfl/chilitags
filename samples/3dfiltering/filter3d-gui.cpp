@@ -96,19 +96,64 @@ int main(int argc, char* argv[])
 
     char keyPressed;
     bool filterEnabled = true;
+
+    cv::Mat Q = (cv::Mat_<float>(7,7) <<
+            1e-3f,  0,      0,      0,      0,      0,      0,
+            0,      1e-3f,  0,      0,      0,      0,      0,
+            0,      0,      1e-3f,  0,      0,      0,      0,
+            0,      0,      0,      1e-4f,  0,      0,      0,
+            0,      0,      0,      0,      1e-4f,  0,      0,
+            0,      0,      0,      0,      0,      1e-4f,  0,
+            0,      0,      0,      0,      0,      0,      1e-4f);
+    float alphaQ = 1.0f;
+
+    cv::Mat R = (cv::Mat_<float>(7,7) <<
+            1e-3f,  0,      0,      0,      0,      0,      0,
+            0,      1e-3f,  0,      0,      0,      0,      0,
+            0,      0,      1e-1f,  0,      0,      0,      0,
+            0,      0,      0,      1e-3f,  0,      0,      0,
+            0,      0,      0,      0,      1e-2f,  0,      0,
+            0,      0,      0,      0,      0,      1e-2f,  0,
+            0,      0,      0,      0,      0,      0,      1e-5f);
+    float alphaR = 1.0f;
+
     while ('q' != (keyPressed = (char) cv::waitKey(1))) {
 
-        if(keyPressed == 'f'){
-            filterEnabled = !filterEnabled;
-            chilitags3D.enableFilter3D(filterEnabled);
+        switch(keyPressed){
+            case 'f':
+                filterEnabled = !filterEnabled;
+                chilitags3D.enableFilter(filterEnabled);
+                break;
+            case 'w':
+                alphaQ *= 10.0f;
+                chilitags3D.setFilterProcessNoiseCovariance(alphaQ*Q);
+                break;
+            case 's':
+                alphaQ /= 10.0f;
+                chilitags3D.setFilterProcessNoiseCovariance(alphaQ*Q);
+                break;
+            case 'e':
+                alphaR *= 10.0f;
+                chilitags3D.setFilterObservationNoiseCovariance(alphaR*R);
+                break;
+            case 'd':
+                alphaR /= 10.0f;
+                chilitags3D.setFilterObservationNoiseCovariance(alphaR*R);
+                break;
         }
 
         cv::Mat inputImage;
         capture.read(inputImage);
         cv::Mat outputImage = inputImage.clone();
 
-        cv::putText(outputImage, cv::format("Filtering %s, press 'f' to toggle",filterEnabled ? "ENABLED" : "DISABLED"), 
+        cv::putText(outputImage, cv::format("Filtering %s, press 'f' to toggle",filterEnabled ? "ENABLED" : "DISABLED"),
                 cv::Point(8,20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255));
+
+        cv::putText(outputImage, cv::format("Process covariance multiplier: %f, press 'w' or 's' to modify", alphaQ),
+                cv::Point(8,36), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255));
+
+        cv::putText(outputImage, cv::format("Observation covariance multiplier: %f, press 'e' or 'd' to modify", alphaR),
+                cv::Point(8,52), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255));
 
         for (auto& kv : chilitags3D.estimate(inputImage, chilitags::Chilitags::DETECT_PERIODICALLY)) {
 
@@ -149,7 +194,7 @@ int main(int argc, char* argv[])
 #ifdef OPENCV3
                         2, cv::LINE_AA, SHIFT);
 #else
-                        2, CV_AA, SHIFT);
+                2, CV_AA, SHIFT);
 #endif
             }
         }

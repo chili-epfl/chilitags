@@ -139,12 +139,20 @@ void setDefaultTagSize(RealT defaultSize){
     };
 }
 
-void enableFilter3D(bool enabled){
+void enableFilter(bool enabled){
     mEstimatePose3D.enableFilter(enabled);
 }
 
 void setPersistence(RealT persistence){
     mEstimatePose3D.setFilterPersistence(persistence);
+}
+
+void setFilterProcessNoiseCovariance(cv::Mat const& covariance){
+    mEstimatePose3D.setFilterProcessNoiseCovariance(covariance);
+}
+
+void setFilterObservationNoiseCovariance(cv::Mat const& covariance){
+    mEstimatePose3D.setFilterObservationNoiseCovariance(covariance);
 }
 
 bool read3DConfiguration(const std::string &filenameOrString, bool omitOtherTags, bool readFromString) {
@@ -334,13 +342,23 @@ void Chilitags3D_<RealT>::setDefaultTagSize(RealT defaultSize){
 }
 
 template<typename RealT>
-void Chilitags3D_<RealT>::enableFilter3D(bool enabled){
-    mImpl->enableFilter3D(enabled);
+void Chilitags3D_<RealT>::enableFilter(bool enabled){
+    mImpl->enableFilter(enabled);
 }
 
 template<typename RealT>
 void Chilitags3D_<RealT>::setPersistence(RealT persistence){
     mImpl->setPersistence(persistence);
+}
+
+template<typename RealT>
+void Chilitags3D_<RealT>::setFilterProcessNoiseCovariance(cv::Mat const& covariance){
+    mImpl->setFilterProcessNoiseCovariance(covariance);
+}
+
+template<typename RealT>
+void Chilitags3D_<RealT>::setFilterObservationNoiseCovariance(cv::Mat const& covariance){
+    mImpl->setFilterObservationNoiseCovariance(covariance);
 }
 
 template<typename RealT>
