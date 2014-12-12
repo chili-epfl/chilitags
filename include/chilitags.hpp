@@ -481,6 +481,13 @@ void setDefaultTagSize(RealT defaultSize);
 void enableFilter3D(bool enabled);
 
 /**
+ * @brief Sets the persistence of tags against being discarded when not observed
+ *
+ * @param persistence Persistence value, roughly correponds to number of frames
+ */
+void setPersistence(RealT persistence);
+
+/**
     For accurate results, Chilitags3D can be provided the calibration data of
     the camera detecting the chilitags.  See
     https://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html

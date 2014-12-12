@@ -43,6 +43,8 @@ Filter3D<RealT>::Filter3D() :
     mControl(3, 1, CV_TYPE),
     mQ(),
     mR(),
+    mCovScales(7, 1, CV_TYPE),
+    mPersistence(10.0f),
     mTempState(7, 1, CV_TYPE)
 {
 
@@ -66,6 +68,10 @@ Filter3D<RealT>::Filter3D() :
             0,      0,      0,      0,      0,      1e-2f,  0,
             0,      0,      0,      0,      0,      0,      1e-5f);
 
+    //Scale coefficients when calculating the trace of the covariance estimate
+    for(int i=0;i<7;i++)
+        mCovScales.at<RealT>(i) = sqrt(mQ.at<RealT>(i,i)*mR.at<RealT>(i,i));
+
     //Process matrix is 7x7 and is identity as long as there is no camera movement info
     cv::setIdentity(mF);
 
@@ -74,6 +80,12 @@ Filter3D<RealT>::Filter3D() :
 
     //Control input is 3x1 and is zero as long as there is no linear camera movement info
     mControl = cv::Mat::zeros(3, 1, CV_TYPE);
+}
+
+template<typename RealT>
+void Filter3D<RealT>::setPersistence(RealT persistence)
+{
+    mPersistence = persistence;
 }
 
 template<typename RealT>
@@ -121,7 +133,20 @@ void Filter3D<RealT>::operator()(typename Chilitags3D_<RealT>::TagPoseMap& tags)
     cv::Matx33d tempRotMat;
 
     for(auto& kfq : mFilters){
+        if(kfq.second.deleted)
+            continue;
+
         cv::KalmanFilter& filter = kfq.second.filter;
+
+        //Calculate weighted covariance estimate trace, decide to discard or not
+        RealT trace = 0.0f;
+        for(int i=0;i<7;i++)
+            trace += filter.errorCovPost.at<RealT>(i,i)/mCovScales.at<RealT>(i);
+        trace /= 7.0f;
+        if(trace > mPersistence){
+            kfq.second.deleted = true;
+            continue;
+        }
 
         //Do prediction step
         mF.copyTo(filter.transitionMatrix);
@@ -155,10 +180,13 @@ void Filter3D<RealT>::operator()(std::string const& id, cv::Mat& measuredTrans, 
             std::make_tuple(7, 7, 3, CV_TYPE));
     cv::KalmanFilter& filter = pair.first->second.filter;
     cv::Vec<RealT,4>& prevQuat = pair.first->second.prevQuat;
+    bool& deleted = pair.first->second.deleted;
 
-    //Newly inserted
-    if(pair.second)
+    //Newly inserted or lazy-deleted
+    if(pair.second || deleted){
+        deleted = false;
         initFilter(filter, prevQuat, measuredTrans, measuredRot);
+    }
 
     //Already existing filter
     else{
@@ -189,6 +217,7 @@ void Filter3D<RealT>::initFilter(cv::KalmanFilter& filter, cv::Vec<RealT,4>& pre
 {
     mQ.copyTo(filter.processNoiseCov);
     mR.copyTo(filter.measurementNoiseCov);
+    filter.errorCovPost = cv::Mat::zeros(7, 7, CV_TYPE);
 
     //We have no expectation from a tag other than staying still as long as there is no camera movement information
     cv::setIdentity(filter.transitionMatrix);

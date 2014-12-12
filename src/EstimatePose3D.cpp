@@ -72,6 +72,12 @@ void EstimatePose3D<RealT>::enableFilter(bool enabled)
 }
 
 template<typename RealT>
+void EstimatePose3D<RealT>::setFilterPersistence(RealT persistence)
+{
+    mFilter3D.setPersistence(persistence);
+}
+
+template<typename RealT>
 void EstimatePose3D<RealT>::setCamDelta(cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX)
 {
     if(mFilter3DEnabled)

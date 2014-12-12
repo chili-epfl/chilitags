@@ -47,6 +47,13 @@ public:
     Filter3D();
 
     /**
+     * @brief Sets the persistence of tags against being discarded when not observed
+     *
+     * @param persistence Persistence value, roughly correponds to number of frames
+     */
+    void setPersistence(RealT persistence);
+
+    /**
      * @brief Informs the rotation and translation of the current camera frame in the previous camera frame
      *
      * @param camDeltaR Rotation of current camera frame in previous camera frame in unit quaternion format (w,vx,vy,vz)
@@ -78,15 +85,17 @@ private:
     const RealT EPSILON;    ///< One of FLT_EPSILON, DBL_EPSILON depending on the template type
 
     /**
-     * @brief Describes a Kalman filter and an associated previous quaternion rotation state
+     * @brief Describes a Kalman filter, an associated previous rotation state and a lazy deletion flag
      */
     struct KFQ{
         cv::KalmanFilter filter;
         cv::Vec<RealT,4> prevQuat;
+        bool deleted;
 
         KFQ(int dynamParams, int measureParams, int controlParams, int type) :
             filter(dynamParams, measureParams, controlParams, type),
-            prevQuat()
+            prevQuat(),
+            deleted(false)
         {}
     };
 
@@ -98,6 +107,9 @@ private:
 
     cv::Mat mQ;                             ///< Process noise covariance matrix, to be tuned
     cv::Mat mR;                             ///< Measurement noise covariance matrix, to be tuned
+
+    cv::Mat mCovScales;                     ///< Coefficients to scale the covariance matrix diagonal entries
+    RealT mPersistence;                     ///< Persistence of tags against being discarded when not seen for a while
 
     cv::Mat mTempState;                     ///< Temporary matrix to hold the state (x,y,z,qr,qi,qj,qk)
 

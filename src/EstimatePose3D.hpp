@@ -82,6 +82,13 @@ public:
     void enableFilter(bool enabled);
 
     /**
+     * @brief Sets the persistence of tags against being discarded when not observed
+     *
+     * @param persistence Persistence value, roughly correponds to number of frames
+     */
+    void setFilterPersistence(RealT persistence);
+
+    /**
      * @brief Informs the rotation and translation of the current camera frame in the previous camera frame
      *
      * @param camDeltaR Rotation of current camera frame in previous camera frame in unit quaternion format (w,vx,vy,vz)

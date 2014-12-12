@@ -143,6 +143,10 @@ void enableFilter3D(bool enabled){
     mEstimatePose3D.enableFilter(enabled);
 }
 
+void setPersistence(RealT persistence){
+    mEstimatePose3D.setFilterPersistence(persistence);
+}
+
 bool read3DConfiguration(const std::string &filenameOrString, bool omitOtherTags, bool readFromString) {
     mOmitOtherTags = omitOtherTags;
 
@@ -332,6 +336,11 @@ void Chilitags3D_<RealT>::setDefaultTagSize(RealT defaultSize){
 template<typename RealT>
 void Chilitags3D_<RealT>::enableFilter3D(bool enabled){
     mImpl->enableFilter3D(enabled);
+}
+
+template<typename RealT>
+void Chilitags3D_<RealT>::setPersistence(RealT persistence){
+    mImpl->setPersistence(persistence);
 }
 
 template<typename RealT>
