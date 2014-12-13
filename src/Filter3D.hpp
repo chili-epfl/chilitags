@@ -22,6 +22,106 @@
  * @file Filter3D.hpp
  * @brief 6D pose filter for multiple std::string ID'd objects
  * @author Ayberk Özgür
+ *
+ * At the core of this class is one regular Kalman filter per detected tag.
+ * In these filters, the state is described as the following 7x1 vector:
+ *
+ * X(t) = (x(t), y(t), z(t), q_w(t), q_x(t), q_y(t), q_z(t))^T
+ *      = (r(t), q(t))^T
+ *
+ * where x, y, z describe the tag position and q_w, q_x, q_y, q_z describe the
+ * tag orientation in unit quaternion form; this tag pose is in the camera
+ * frame, i.e the frame where 3D Chilitags detection is made.
+ *
+ * The state transition is made according to whether there is input data
+ * regarding camera movement, measured by e.g inertial sensors. There are two
+ * cases:
+ *
+ * 1.There is no camera movement information. In this case, the state
+ *   transition process is described as:
+ *
+ *   X(t|t-1) = I*X(t-1|t-1)
+ *
+ *   where I is a 7x7 identity matrix and there is no control input. In other
+ *   words, this transition mechanism resists against tag movement. The amount
+ *   of resistance depends on the process noise covariance matrix Q that should
+ *   be tuned by the user. Larger values in Q tends to decrease resistance
+ *   against motion.
+ *
+ * 2.There is camera movement information. In this case, the state transition
+ *   process becomes:
+ *
+ *   r(t|t-1) = (deltaR_camera(t in t-1)^-1)*r(t-1|t-1) - (deltaR_camera(t in t-1)^-1)*deltaX_camera(t in t-1)
+ *   q(t|t-1) = (deltaR_camera(t in t-1)^-1)*q(t-1|t-1)
+ *
+ *   Here, deltaR_camera(t in t-1) is a unit quaternion describing the rotation
+ *   of the camera at time t with respect to the frame described by the camera
+ *   at time t-1. deltaX_camera(t in t-1) is a 3x1 vector describing the
+ *   translation of the camera at time t with respect to the frame described by
+ *   the camera at time t-1 in millimeters. Therefore, the input to the
+ *   process at time t is the camera displacement from time t-1 to time t in
+ *   addition to the a posteriori state estimate from time t-1.
+ *
+ *   In the first equation, the multiplication represents vector rotation. In
+ *   other words, the 3x1 vectors are left multiplied by the inverse of the
+ *   3x3 rotation matrix described by deltaR_camera. In the second equation,
+ *   the multiplication represents Hamilton product, a.k.a quaternion
+ *   multiplication.
+ *
+ *   The two equations can be written in one as follows, giving the usual
+ *   Kalman filter process equation:
+ *
+ *   X(t|t-1) = F(t)*X(t-1|t-1) + B(t)*u(t)
+ *
+ *   Here, F(t) is a 7x7 matrix that can be written as the following:
+ *
+ *          /                          |                           \
+ *          |  rot(deltaR_camera^-1)   |            0              |
+ *          |                     (3x3)|                           |
+ *   F(t) = |------------------------------------------------------|
+ *          |                          |                           |
+ *          |            0             |   mat(deltaR_camera^-1)   |
+ *          \                          |                      (4x4)/
+ *
+ *   where rot() represents the orthogonal rotation matrix and mat() represents
+ *   the Hamilton product matrix given the input quaternion.
+ *
+ *   B(t) is a 7x3 matrix that can be written as the following:
+ *
+ *          /                          \
+ *          |  rot(deltaR_camera^-1)   |
+ *          |                     (3x3)|
+ *   B(t) = |--------------------------|
+ *          |                          |
+ *          |            0             |
+ *          \                          /
+ *
+ *   And finally, u(t) is a 3x1 vector that is equal to
+ *   -deltaX_camera(t in t-1)
+ *
+ *   Please note that if the camera displacement is zero, i.e deltaX_camera
+ *   is (0,0,0) and deltaR_camera is (1,0,0,0), the equation reduces to the one
+ *   in case (1) where the state stays the same.
+ *
+ * The observation, coming from the actual Chilitags detection, is
+ * decribed (similarly to the state) as:
+ *
+ * z(t) = (x~(t), y~(t), z~(t), q_w~(t), q_x~(t), q_y~(t), q_z~(t))^T
+ *      = (r~(t), q~(t))^T
+ *
+ * The resistance against the movement of the tag described by the observation
+ * depends on the observation noise covariance matrix R that is to be tuned by
+ * the user. Larger values in R tend to increase the resistance against
+ * motion.
+ *
+ * Given these, the a posteriori state estimate is calculated, as usual, as:
+ *
+ * X(t|t) = X(t|t-1) + K(t)*(z(t) - I*x(t|t-1))
+ *
+ * where K(t) is the current Kalman gain, calculated using the a priori state
+ * covariance estimate and I is a 7x7 identity matrix. Finally, the a
+ * posteriori state estimate is exported at each step as the filtered tag pose
+ * output.
  */
 
 #ifndef FILTER3D_HPP

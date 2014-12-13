@@ -50,7 +50,7 @@ Filter3D<RealT>::Filter3D() :
     mTempState(7, 1, CV_TYPE)
 {
 
-    //Process noise covariance is 7x7: cov((x,y,z,qw,qi,qj,qk))
+    //Process noise covariance is 7x7: cov((x,y,z,qw,qx,qy,qz))
     mQ = (cv::Mat_<RealT>(7,7) <<
             1e-3f,  0,      0,      0,      0,      0,      0,
             0,      1e-3f,  0,      0,      0,      0,      0,
@@ -60,7 +60,7 @@ Filter3D<RealT>::Filter3D() :
             0,      0,      0,      0,      0,      1e-4f,  0,
             0,      0,      0,      0,      0,      0,      1e-4f);
 
-    //Measurement noise covariance is 7x7: cov((x,y,z,qw,qi,qj,qk))
+    //Measurement noise covariance is 7x7: cov((x,y,z,qw,qx,qy,qz))
     mR = (cv::Mat_<RealT>(7,7) <<
             1e-3f,  0,      0,      0,      0,      0,      0,
             0,      1e-3f,  0,      0,      0,      0,      0,
@@ -253,7 +253,7 @@ void Filter3D<RealT>::initFilter(cv::KalmanFilter& filter, cv::Vec<RealT,4>& pre
     //We have no expectation from a tag other than staying still as long as there is no camera movement information
     cv::setIdentity(filter.transitionMatrix);
 
-    //We make the same measurement as the state: (x,y,z,qr,qi,qj,qk)
+    //We make the same measurement as the state: (x,y,z,qw,qx,qy,qz)
     cv::setIdentity(filter.measurementMatrix);
 
     //Set initial state
@@ -293,17 +293,17 @@ template<typename RealT>
 void Filter3D<RealT>::getQuaternion(double* input, RealT* output)
 {
     RealT theta = (RealT)sqrt(input[0]*input[0] + input[1]*input[1] + input[2]*input[2]);
-    output[0] = cos(theta/2); //qr
+    output[0] = cos(theta/2); //qw
     if(theta < EPSILON){ //Use lim( theta -> 0 ){ sin(theta)/theta }
-        output[1] = (RealT)input[0]; //qi
-        output[2] = (RealT)input[1]; //qj
-        output[3] = (RealT)input[2]; //qk
+        output[1] = (RealT)input[0]; //qx
+        output[2] = (RealT)input[1]; //qy
+        output[3] = (RealT)input[2]; //qz
     }
     else{
         RealT sTheta2 = sin(theta/2);
-        output[1] = (RealT)input[0]/theta*sTheta2; //qi
-        output[2] = (RealT)input[1]/theta*sTheta2; //qj
-        output[3] = (RealT)input[2]/theta*sTheta2; //qk
+        output[1] = (RealT)input[0]/theta*sTheta2; //qx
+        output[2] = (RealT)input[1]/theta*sTheta2; //qy
+        output[3] = (RealT)input[2]/theta*sTheta2; //qz
     }
 }
 
