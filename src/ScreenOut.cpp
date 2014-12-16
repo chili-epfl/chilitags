@@ -41,7 +41,7 @@ ScreenOut<RealT>::ScreenOut() :
 }
 
 template<typename RealT>
-inline void ScreenOut<RealT>::setFloorVector(cv::Vec<RealT, 3> floorVector)
+inline void ScreenOut<RealT>::setFloorVector(cv::Vec<RealT, 3> const& floorVector)
 {
     if(floorVector(0) == 0.0f && floorVector(1) == 0.0f && floorVector(2) == 0.0f)
         mScreenUpsideDown = false;

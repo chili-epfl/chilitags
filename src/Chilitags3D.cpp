@@ -156,6 +156,10 @@ void setFilterObservationNoiseCovariance(cv::Mat const& covariance){
     mEstimatePose3D.setFilterObservationNoiseCovariance(covariance);
 }
 
+void setFloorVector(cv::Vec<RealT, 3> const& floorVector){
+    mEstimatePose3D.setFloorVector(floorVector);
+}
+
 bool read3DConfiguration(const std::string &filenameOrString, bool omitOtherTags, bool readFromString) {
     mOmitOtherTags = omitOtherTags;
 
@@ -360,6 +364,11 @@ void Chilitags3D_<RealT>::setFilterProcessNoiseCovariance(cv::Mat const& covaria
 template<typename RealT>
 void Chilitags3D_<RealT>::setFilterObservationNoiseCovariance(cv::Mat const& covariance){
     mImpl->setFilterObservationNoiseCovariance(covariance);
+}
+
+template<typename RealT>
+void Chilitags3D_<RealT>::setFloorVector(cv::Vec<RealT,3> const& floorVector){
+    mImpl->setFloorVector(floorVector);
 }
 
 template<typename RealT>

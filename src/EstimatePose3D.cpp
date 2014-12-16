@@ -97,6 +97,12 @@ void EstimatePose3D<RealT>::setCamDelta(cv::Vec<RealT, 4> const& camDeltaR, cv::
 }
 
 template<typename RealT>
+void EstimatePose3D<RealT>::setFloorVector(cv::Vec<RealT, 3> const& floorVector)
+{
+    mScreenOut.setFloorVector(floorVector);
+}
+
+template<typename RealT>
 void EstimatePose3D<RealT>::operator()(typename Chilitags3D_<RealT>::TagPoseMap& objects)
 {
     if(mFilter3DEnabled)
@@ -120,6 +126,9 @@ void EstimatePose3D<RealT>::operator()(std::string const& name,
             cv::ITERATIVE);
 #endif
     //TODO: Rotation and translation vectors come out of solvePnP as double
+
+    if(mScreenOut(mTempRotation))
+        return;
 
     if(mFilter3DEnabled)
         mFilter3D(name, mTempTranslation, mTempRotation);

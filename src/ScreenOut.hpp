@@ -48,7 +48,7 @@ public:
      *
      * @param floorVector The latest floor vector
      */
-    void setFloorVector(cv::Vec<RealT, 3> floorVector);
+    void setFloorVector(cv::Vec<RealT, 3> const& floorVector);
 
     /**
      * @brief Calculates whether the tag is invalid
