@@ -28,6 +28,7 @@
 
 #include <chilitags.hpp>
 #include "Refine.hpp"
+#include "ScreenOut.hpp"
 
 namespace chilitags {
 
@@ -44,6 +45,7 @@ TagCornerMap operator()(cv::Mat const& inputImage);
 protected:
 
 Refine mRefine;
+ScreenOut<float> mScreenOut;
 
 cv::Mat mPrevFrame;
 TagCornerMap mFromTags;

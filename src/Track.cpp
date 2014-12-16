@@ -89,7 +89,7 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
 
         if (cv::sum(cv::Mat(status))[0] == status.size()) {
             quad = mRefine(grayscaleInputImage, result, 0.5f/10.0f);
-            if(ScreenOut::isConvex(quad))
+            if(!mScreenOut(quad))
                 trackedTags[tag.first] = quad;
         }
     }
