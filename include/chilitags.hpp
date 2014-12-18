@@ -105,7 +105,7 @@ enum DetectionTrigger {
     tag has already been detected previously, but moves too fast to be detected
     again.
 */
-    TRACK_AND_DETECT,
+    TRACK_AND_DETECT = 0,
 
 /**
     Disable tracking: only full detections are performed. Compared to
@@ -216,7 +216,7 @@ enum PerformancePreset {
 /**
     Favor speed over accuracy: no corner refinment, no subsampling.
 */
-    FASTER,
+    FASTER = 0,
 /**
     Balance speed and accuracy (default): corners are refined, no subsampling.
 */
