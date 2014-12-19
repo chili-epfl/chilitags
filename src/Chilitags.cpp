@@ -26,6 +26,7 @@
 #include "Track.hpp"
 
 #include <opencv2/imgproc/imgproc.hpp>
+#include <iostream>
 
 // The class that takes care of all the detection of Chilitags.
 namespace chilitags {
@@ -133,6 +134,18 @@ TagCornerMap find(
         case ASYNC_DETECT_ALWAYS:
             mDetect.launchBackgroundThread(mTrack);
             break;
+    }
+#else
+    if (detectionTrigger == ASYNC_DETECT_PERIODICALLY) {
+        std::cerr
+            << "Warning: Chilitags built without multithreading.\n"
+            << "         Changing trigger to DETECT_PERIODICALLY.\n";
+        detectionTrigger = DETECT_PERIODICALLY;
+    } else if (detectionTrigger == ASYNC_DETECT_ALWAYS) {
+        std::cerr
+            << "Warning: Chilitags built without multithreading.\n"
+            << "         Changing detection trigger to TRACK_AND_DETECT.\n";
+        detectionTrigger = TRACK_AND_DETECT;
     }
 #endif
 
