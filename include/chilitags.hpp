@@ -364,7 +364,8 @@ typedef std::map<std::string, TransformMatrix> TagPoseMap;
     To first detect th tags in the image, Chilitags3D creates a Chilitags
     instance, which can be accessed through the getChilitags() accessors. This
     Chilitags instance is set to have a persistence of 0, because Chilitags3D
-    uses a more advanced Kalman filter.
+    uses a more advanced Kalman filter. See enableFilter() and setPersistence()
+    for more details.
 
     You can also create yourself a separate instance of Chilitagsfor the 2D
     detection of tags and use it by calling
@@ -498,7 +499,8 @@ void setDefaultTagSize(RealT defaultSize);
 void enableFilter(bool enabled);
 
 /**
- * @brief Sets the persistence of tags against being discarded when not observed
+ * @brief Sets the persistence of tags against being discarded when not
+ * observed (10 by default)
  *
  * @param persistence Persistence value, roughly correponds to number of frames
  */
@@ -515,7 +517,9 @@ void setPersistence(RealT persistence);
  * When IMU data is present, the process moves the tag according to camera
  * movement. When IMU data is not present, the process tries to keep the tag
  * still. Smaller values in the process covariance matrix causes the tags to
- * resist motion more.
+ * resist motion more. By default, this matrix has
+ * 1e-3, 1e-3, 1e-3, 1e-4, 1e-4, 1e-4, 1e-4
+ * on its diagonal.
  *
  * @param covariance 7x7 covariance matrix
  */
@@ -531,7 +535,9 @@ void setFilterProcessNoiseCovariance(cv::Mat const& covariance);
  *
  * Larger values in the observation noise covariance matrix indicates noisier
  * measurements and causes observations to affect the state less, making tags
- * more resistant to motion.
+ * more resistant to motion. By default, this matrix has
+ * 1e-3, 1e-3, 1e-1, 1e-3, 1e-2, 1e-2, 1e-5
+ * on its diagonal.
  *
  * @param covariance 7x7 covariance matrix
  */
