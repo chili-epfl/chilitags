@@ -61,11 +61,26 @@ public:
 
 /**
     Constructs a object ready to detect tags.
+    It sets a default persistence of 5 frames for the tags, and a gain of 0.
+    Please refer to the documentation of setFilter() for more detail.
     The default detection performance is balanced between accuracy and
     processing time (see Chilitags::FAST); it can be changed with
     setPerformance().
  */
 Chilitags();
+
+/**
+    Parameters to paliate with the imperfections of the detection.
+
+    \param persistence the number of frames in which a tag should be absent
+    before being removed from the output of find(). 0 means that tags disappear
+    directly if they are not detected.
+
+    \param gain a value between 0 and 1 corresponding to the weight of the
+    previous (filtered) position in the new filtered position. 0 means that the
+    latest position of the tag is returned.
+ */
+void setFilter(int persistence, float gain);
 
 /**
     Values of the parameter to tell find() how to combine tracking and full
@@ -347,7 +362,9 @@ typedef std::map<std::string, TransformMatrix> TagPoseMap;
     object, and how big they are.
 
     To first detect th tags in the image, Chilitags3D creates a Chilitags
-    instance, which can be accessed through the getChilitags() accessors.
+    instance, which can be accessed through the getChilitags() accessors. This
+    Chilitags instance is set to have a persistence of 0, because Chilitags3D
+    uses a more advanced Kalman filter.
 
     You can also create yourself a separate instance of Chilitagsfor the 2D
     detection of tags and use it by calling

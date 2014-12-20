@@ -21,6 +21,7 @@
 #include <chilitags.hpp>
 
 #include "EnsureGreyscale.hpp"
+#include "Filter.hpp"
 #include "Detect.hpp"
 #include "Track.hpp"
 
@@ -55,6 +56,7 @@ Impl() :
     mEnsureGreyscale(),
     mDecode(),
 
+    mFilter(5, 0.f),
     mDetect(),
     mTrack(),
 
@@ -62,6 +64,11 @@ Impl() :
     mCallsBeforeDetection(15)
 {
     setPerformance(FAST);
+}
+
+void setFilter(int persistence, float gain) {
+    mFilter.setPersistence(persistence);
+    mFilter.setGain(gain);
 }
 
 void setPerformance(PerformancePreset preset) {
@@ -148,7 +155,7 @@ TagCornerMap find(
 
         case DETECT_ONLY:
             mDetect(mResizedGrayscaleInput, tags);
-            return scaleBy(tags, scaleFactor);
+            return scaleBy(mFilter(tags), scaleFactor);
 
         case TRACK_ONLY:
             return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
@@ -159,7 +166,7 @@ TagCornerMap find(
             tags = mTrack(mResizedGrayscaleInput);
             mDetect(mResizedGrayscaleInput, tags);
             mTrack.update(tags);
-            return scaleBy(tags, scaleFactor);
+            return scaleBy(mFilter(tags), scaleFactor);
 
         case DETECT_PERIODICALLY:
             mCallsBeforeNextDetection--;
@@ -174,7 +181,7 @@ TagCornerMap find(
                 tags = mTrack(mResizedGrayscaleInput);
                 mDetect(mResizedGrayscaleInput, tags);
                 mTrack.update(tags);
-                return scaleBy(tags, scaleFactor);
+                return scaleBy(mFilter(tags), scaleFactor);
             }
 
 #ifdef HAS_MULTITHREADING
@@ -253,6 +260,8 @@ EnsureGreyscale mEnsureGreyscale;
 
 Decode mDecode;
 
+Filter<int, Quad> mFilter;
+
 Detect mDetect;
 
 Track mTrack;
@@ -265,6 +274,10 @@ int mCallsBeforeDetection;
 Chilitags::Chilitags() :
     mImpl(new Impl())
 {
+}
+
+void Chilitags::setFilter(int persistence, float gain) {
+    mImpl->setFilter(persistence, gain);
 }
 
 void Chilitags::setPerformance(PerformancePreset preset) {

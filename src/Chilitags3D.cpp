@@ -42,6 +42,7 @@ Impl(cv::Size cameraResolution) :
     mId2Configuration()
 {
     setDefaultTagSize(20.f);
+    mChilitags.setFilter(0, 0.0f);
 }
 
 const Chilitags &getChilitags() const {
