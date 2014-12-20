@@ -30,31 +30,21 @@
 #include <iostream>
 
 namespace {
-    typedef chilitags::FindOutdated<int>
-            FindOutdated2D;
-
-    typedef chilitags::FindOutdated<std::string>
-            FindOutdated3D;
-
     const chilitags::TagCornerMap EMPTY_TAG_LIST;
     const chilitags::TagCornerMap ONLY_TAG_42 = {{42, {}}};
     const chilitags::TagCornerMap ONLY_TAG_43 = {{43, {}}};
-
-    const chilitags::Chilitags3D::TagPoseMap EMPTY_OBJECT_LIST;
-    const chilitags::Chilitags3D::TagPoseMap ONLY_OBJECT_42 = {{"42", {}}};
-    const chilitags::Chilitags3D::TagPoseMap ONLY_OBJECT_43 = {{"43", {}}};
 }
 
-TEST(FindOutdated2D, ZeroPersistence) {
-    FindOutdated2D findOutdated(0);
+TEST(FindOutdated, ZeroPersistence) {
+    chilitags::FindOutdated findOutdated(0);
 
     EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
     EXPECT_EQ(0, findOutdated(ONLY_TAG_42).size());
     EXPECT_EQ(1, findOutdated(EMPTY_TAG_LIST).size());
 }
 
-TEST(FindOutdated2D, InvalidateOne) {
-    FindOutdated2D findOutdated(3);
+TEST(FindOutdated, InvalidateOne) {
+    chilitags::FindOutdated findOutdated(3);
 
     EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
     EXPECT_EQ(0, findOutdated(ONLY_TAG_42).size());
@@ -64,8 +54,8 @@ TEST(FindOutdated2D, InvalidateOne) {
     EXPECT_EQ(1, findOutdated(EMPTY_TAG_LIST).size());
 }
 
-TEST(FindOutdated2D, InvalidateFirst) {
-    FindOutdated2D findOutdated(2);
+TEST(FindOutdated, InvalidateFirst) {
+    chilitags::FindOutdated findOutdated(2);
 
     EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
     EXPECT_EQ(0, findOutdated(ONLY_TAG_42).size());
@@ -74,8 +64,8 @@ TEST(FindOutdated2D, InvalidateFirst) {
     EXPECT_EQ(1, findOutdated(ONLY_TAG_43).size());
 }
 
-TEST(FindOutdated2D, ChangePersistence) {
-    FindOutdated2D findOutdated(2);
+TEST(FindOutdated, ChangePersistence) {
+    chilitags::FindOutdated findOutdated(2);
 
     EXPECT_EQ(0, findOutdated(EMPTY_TAG_LIST).size());
     EXPECT_EQ(0, findOutdated(ONLY_TAG_42).size());
@@ -84,48 +74,8 @@ TEST(FindOutdated2D, ChangePersistence) {
     EXPECT_EQ(1, findOutdated(EMPTY_TAG_LIST).size());
 }
 
-TEST(FindOutdated3D, ZeroPersistence) {
-    FindOutdated3D findOutdated(0);
-
-    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
-    EXPECT_EQ(0, findOutdated(ONLY_OBJECT_42).size());
-    EXPECT_EQ(1, findOutdated(EMPTY_OBJECT_LIST).size());
-
-}
-
-TEST(FindOutdated3D, InvalidateOne) {
-    FindOutdated3D findOutdated(3);
-
-    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
-    EXPECT_EQ(0, findOutdated(ONLY_OBJECT_42).size());
-    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
-    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
-    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
-    EXPECT_EQ(1, findOutdated(EMPTY_OBJECT_LIST).size());
-}
-
-TEST(FindOutdated3D, InvalidateFirst) {
-    FindOutdated3D findOutdated(2);
-
-    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
-    EXPECT_EQ(0, findOutdated(ONLY_OBJECT_42).size());
-    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
-    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
-    EXPECT_EQ(1, findOutdated(ONLY_OBJECT_43).size());
-}
-
-TEST(FindOutdated3D, ChangePersistence) {
-    FindOutdated3D findOutdated(2);
-
-    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
-    EXPECT_EQ(0, findOutdated(ONLY_OBJECT_42).size());
-    findOutdated.setPersistence(1);
-    EXPECT_EQ(0, findOutdated(EMPTY_OBJECT_LIST).size());
-    EXPECT_EQ(1, findOutdated(EMPTY_OBJECT_LIST).size());
-}
-
 TEST(Filter, ZeroGain) {
-    chilitags::Filter<int, chilitags::Quad> filter(0, 0.0f);
+    chilitags::Filter filter(0, 0.0f);
     chilitags::Quad coordinates {
         1.0f,2.0f,
         3.0f,4.0f,
@@ -151,7 +101,7 @@ TEST(Filter, ZeroGain) {
 }
 
 TEST(Filter, NonZeroGain) {
-    chilitags::Filter<int, chilitags::Quad> filter(0, 0.1f);
+    chilitags::Filter filter(0, 0.1f);
     chilitags::Quad coordinates {
         1.0f,2.0f,
         3.0f,4.0f,

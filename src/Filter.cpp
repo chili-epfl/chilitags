@@ -24,18 +24,15 @@
 
 namespace chilitags {
 
-template<typename Id>
-FindOutdated<Id>::FindOutdated(int persistence) :
+FindOutdated::FindOutdated(int persistence) :
     mPersistence(persistence),
     mDisappearanceTime()
 {
 }
 
-template <typename Id>
-template <typename Coordinates>
-std::vector<Id> FindOutdated<Id>::operator()(const std::map<Id, Coordinates > &tags){
+std::vector<int> FindOutdated::operator()(const std::map<int, Quad> &tags){
 
-    std::vector<Id> tagsToForget;
+    std::vector<int> tagsToForget;
 
     auto tagIt = tags.cbegin();
     auto ageIt = mDisappearanceTime.begin();
@@ -83,16 +80,14 @@ std::vector<Id> FindOutdated<Id>::operator()(const std::map<Id, Coordinates > &t
     return tagsToForget;
 }
 
-template<typename Id, typename Coordinates>
-Filter<Id, Coordinates>::Filter(int persistence, float gain):
+Filter::Filter(int persistence, float gain):
 mFindOutdated(persistence),
 mGain(gain),
 mFilteredCoordinates()
 {}
 
-template<typename Id, typename Coordinates>
-const std::map<Id, Coordinates> & Filter<Id, Coordinates>::operator()(
-    const std::map<Id, Coordinates > &tags) {
+const std::map<int, Quad> & Filter::operator()(
+    const std::map<int, Quad> &tags) {
 
     for(const auto &tagToForget : mFindOutdated(tags)) {
         //TODO lookup can be avoided if Ids are sorted
@@ -121,12 +116,5 @@ const std::map<Id, Coordinates> & Filter<Id, Coordinates>::operator()(
 
     return mFilteredCoordinates;
 }
-
-template class FindOutdated<int>;
-template class Filter<int, Quad>;
-
-template class FindOutdated<std::string>;
-template class Filter<std::string, cv::Matx44f>;
-template class Filter<std::string, cv::Matx44d>;
 
 }

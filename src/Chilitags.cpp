@@ -260,7 +260,7 @@ EnsureGreyscale mEnsureGreyscale;
 
 Decode mDecode;
 
-Filter<int, Quad> mFilter;
+Filter mFilter;
 
 Detect mDetect;
 

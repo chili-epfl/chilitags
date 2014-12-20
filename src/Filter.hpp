@@ -21,8 +21,8 @@
 /** This header contains various utilities to paliate with imperfect detection.
  */
 
-#ifndef Filters_HPP
-#define Filters_HPP
+#ifndef Filter_HPP
+#define Filter_HPP
 
 #include <map>
 #include <vector>
@@ -31,7 +31,6 @@
 
 namespace chilitags {
 
-template<typename Id>
 class FindOutdated {
 
 public:
@@ -42,19 +41,17 @@ void setPersistence(int persistence) {
     mPersistence = persistence;
 }
 
-template <typename Coordinates>
-std::vector<Id> operator()(const std::map<Id, Coordinates > &tags);
+std::vector<int> operator()(const std::map<int, Quad> &tags);
 
 protected:
 
 int mPersistence;
-std::map<Id, int> mDisappearanceTime;
+std::map<int, int> mDisappearanceTime;
 
 };
 
 
 
-template<typename Id, typename Coordinates>
 class Filter {
 public:
     Filter(int persistence, float gain);
@@ -67,13 +64,13 @@ public:
         mGain = gain;
     }
 
-    const std::map<Id, Coordinates> & operator()(
-        const std::map<Id, Coordinates > &tags) ;
+    const std::map<int, Quad> & operator()(
+        const std::map<int, Quad > &tags) ;
 
 protected:
-    FindOutdated<Id> mFindOutdated;
+    FindOutdated mFindOutdated;
     float mGain;
-    std::map<Id, Coordinates> mFilteredCoordinates;
+    std::map<int, Quad> mFilteredCoordinates;
 };
 
 
