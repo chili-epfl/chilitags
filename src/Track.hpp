@@ -22,7 +22,9 @@
 #define Track_HPP
 
 #include <map>
+#ifdef HAS_MULTITHREADING
 #include <pthread.h>
+#endif
 
 #include <opencv2/core/core.hpp>
 
@@ -48,7 +50,9 @@ Refine mRefine;
 cv::Mat mPrevFrame;
 TagCornerMap mFromTags;
 
+#ifdef HAS_MULTITHREADING
 pthread_mutex_t mInputLock;
+#endif
 
 };
 

@@ -26,17 +26,26 @@
 
 namespace chilitags{
 
+#ifdef HAS_MULTITHREADING
 Track::Track():
     mRefine(),
     mPrevFrame(),
     mFromTags(),
-    mInputLock(PTHREAD_MUTEX_INITIALIZER)
+	mInputLock(PTHREAD_MUTEX_INITIALIZER)
+#else
+Track::Track():
+    mRefine(),
+    mPrevFrame(),
+    mFromTags()
+#endif
 {
 }
 
 void Track::update(TagCornerMap const& tags)
 {
-    pthread_mutex_lock(&mInputLock);
+#ifdef HAS_MULTITHREADING
+	pthread_mutex_lock(&mInputLock);
+#endif
 
     auto targetIt = mFromTags.begin();
     for(const auto& tag : tags){
@@ -49,7 +58,9 @@ void Track::update(TagCornerMap const& tags)
             targetIt = mFromTags.insert(targetIt, tag);
     }
 
-    pthread_mutex_unlock(&mInputLock);
+#ifdef HAS_MULTITHREADING
+	pthread_mutex_unlock(&mInputLock);
+#endif
 }
 
 TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
@@ -59,7 +70,9 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
     std::vector<float> errors;
 
     //Do the tracking
-    pthread_mutex_lock(&mInputLock);
+#ifdef HAS_MULTITHREADING
+	pthread_mutex_lock(&mInputLock);
+#endif
     TagCornerMap trackedTags;
     Quad quad;
     for (auto tag : mFromTags) {
@@ -96,7 +109,9 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
 
     mFromTags = std::move(trackedTags);
     TagCornerMap tagsCopy = mFromTags; //TODO: Try to get around this copy
+#ifdef HAS_MULTITHREADING
     pthread_mutex_unlock(&mInputLock);
+#endif
 
     //Swap current and previous frames
     grayscaleInputImage.copyTo(mPrevFrame);
