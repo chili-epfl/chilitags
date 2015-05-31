@@ -21,9 +21,9 @@
 #ifndef TestMetadata_HPP
 #define TestMetadata_HPP
 
-namespace TestMetadata {
+namespace chilitags {
 
-struct TestCase {
+struct DetectionTestCase {
     std::string filename;
     std::vector<int> expectedTagIds;
     std::vector<int> knownMissedTagIds;
@@ -36,12 +36,14 @@ struct TestCase {
     static bool contains(const std::vector<int> &v, int x) {
         return std::find(v.begin(), v.end(), x) != v.end();
     }
+
+    const static std::vector< DetectionTestCase > all;
 };
 
 // The string is the filename of an image,
 // the first list correspond to the ids of tags shown on the image,
 // and the second list to the ids of the tags that are undetected.
-std::vector< TestCase > all = {
+const std::vector< DetectionTestCase > DetectionTestCase::all = {
     {"stills/4360x2448/smartphone01.jpg",
         {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34},
      {}},
@@ -139,6 +141,7 @@ std::vector< TestCase > all = {
         {50, 51, 55, 62},
         {62,}},
 };
+
 }
 
 #endif

@@ -54,6 +54,7 @@ declare_test(TESTNAME integration)
 declare_test(TESTNAME pose-estimation NEEDS_DATA)
 declare_test(TESTNAME detection-performance NEEDS_DATA)
 declare_test(TESTNAME float-precision NEEDS_DATA)
+declare_test(TESTNAME precision NEEDS_DATA)
 
 add_executable(find-crash find-crash.cpp)
 target_link_libraries(find-crash chilitags)
