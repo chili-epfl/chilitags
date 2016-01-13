@@ -40,6 +40,8 @@ std::pair<int, Quad> operator()(
     const std::vector<unsigned char> &bits,
     const Quad &corners);
 
+std::pair<int, Quad> doDecode(const std::vector<unsigned char> &bits, const Quad &corners);
+
 const Codec &getCodec() const {
     return mCodec;
 }

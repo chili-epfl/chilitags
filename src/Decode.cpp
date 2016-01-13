@@ -19,6 +19,7 @@
 *******************************************************************************/
 
 #include "Decode.hpp"
+#include <iostream>
 
 namespace chilitags{
 
@@ -43,6 +44,18 @@ Decode::~Decode()
 }
 
 std::pair<int, Quad> Decode::operator()(const std::vector<unsigned char> &bits, const Quad &corners)
+{
+    auto result = doDecode(bits, corners);
+    if (result.first == INVALID_TAG) {
+        //flip the bits, in case this tag is inverted
+        std::vector<unsigned char> flippedBits(bits.size());
+        std::transform(bits.begin(), bits.end(), flippedBits.begin(), [](const unsigned char& c) { return 1 - c; });
+        result = doDecode(flippedBits, corners);
+    }
+    return result;
+}
+
+std::pair<int, Quad> Decode::doDecode(const std::vector<unsigned char> &bits, const Quad &corners)
 {
     for (int i = 0; i < DATA_SIZE; ++i)
     {

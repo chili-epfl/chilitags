@@ -36,10 +36,22 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <iostream>
+#include <csignal>
 
+
+bool sRunning = true;
+cv::VideoCapture capture;
+
+void quitFunction(int sig) {
+    std::cout << "Caught interrupt. Closing" << std::endl;
+    capture.release();
+    sRunning = false;
+}
 
 int main(int argc, char* argv[])
 {
+    signal(SIGINT, quitFunction);
+
     // Simple parsing of the parameters related to the image acquisition
     int xRes = 640;
     int yRes = 480;
@@ -53,7 +65,7 @@ int main(int argc, char* argv[])
     }
 
     // The source of input images
-    cv::VideoCapture capture(cameraIndex);
+    capture.open(cameraIndex);
     if (!capture.isOpened())
     {
         std::cerr << "Unable to initialise video capture." << std::endl;
@@ -81,7 +93,7 @@ int main(int argc, char* argv[])
 
     cv::namedWindow("DisplayChilitags");
     // Main loop, exiting when 'q is pressed'
-    for (; 'q' != (char) cv::waitKey(1); ) {
+    for (; 'q' != (char) cv::waitKey(1) and sRunning; ) {
 
         // Capture a new image.
         capture.read(inputImage);
