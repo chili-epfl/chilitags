@@ -39,6 +39,7 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 option(WITH_SAMPLES                     "Build demos" OFF)
 option(WITH_TESTS                       "Build tests" OFF)
 option(WITH_JNI_BINDINGS                "Build JNI bindings compatible with ordinary Java and Android" OFF)
+option(WITH_INVERTED_TAGS               "Support for 'inverted' tags" OFF)
 option(ANDROID_INSTALL_LIBRARIES        "Install the chilitag libraries inside project at ANDROID_PROJECT_ROOT" OFF)
 
 if(DEFINED ANDROID) #OPENCV has a nice macro for this: OCV_OPTION, consider using it.
@@ -75,6 +76,10 @@ endif()
 
 if(WITH_PTHREADS)
     add_definitions(-DHAS_MULTITHREADING)
+endif()
+
+if(WITH_INVERTED_TAGS)
+    add_definitions(-DHAS_INVERTED_TAGS)
 endif()
 
 if(${OpenCV_VERSION} VERSION_GREATER 2.9.0)
