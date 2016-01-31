@@ -19,7 +19,6 @@
 *******************************************************************************/
 
 #include "Decode.hpp"
-#include <iostream>
 
 namespace chilitags{
 
