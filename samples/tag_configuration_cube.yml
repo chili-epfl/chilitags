@@ -1,0 +1,34 @@
+%YAML:1.0
+
+blue_cube:
+    - tag: 6
+      size: 30
+      rotation: [180., 0., 0]
+      translation: [-15.0, 15.0, 25.9]
+      keep: 0
+    - tag: 7
+      size: 30
+      rotation: [0., 0., 180]
+      translation: [15.0, 15.0, -25.9]
+      keep: 0
+    - tag: 8
+      size: 30
+      translation: [15.0, -25.9, 15.0]
+      rotation: [-90., 0., 90]
+      keep: 0
+    - tag: 9
+      size: 30
+      translation: [-25.9, 15.0, -15.]
+      rotation: [0., 90., 180]
+      keep: 0
+    - tag: 10
+      size: 30
+      translation: [25.9, 15.0, 15.]
+      rotation: [180., -90., 0]
+      keep: 0
+    - tag: 11
+      size: 30
+      translation: [-15.0, 25.9, 15.0]
+      rotation: [90., 0., -90]
+      keep: 0
+
