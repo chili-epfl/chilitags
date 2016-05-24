@@ -66,7 +66,7 @@ to draw the tag. The darker, the better. Black is default and optimal.
 
  * `./creator 42` will produce 42.png, a 14x14 pixels image of tag #42. The white padding is `2*1` pixels thick, the black border is `2*1` pixels thick, and the matrix is `6*1` pixels large.
 
- * `./creator 123 40` will produce 123.png, a 280x280 pixels image of tag #123. The white padding is `2*20` pixels thick, the black border is `2*20` pixels thick, and the matrix is `6*20` pixels large.
+ * `./creator 123 20` will produce 123.png, a 280x280 pixels image of tag #123. The white padding is `2*20` pixels thick, the black border is `2*20` pixels thick, and the matrix is `6*20` pixels large.
 
  * `./creator 321 1 n` will produce 321.png, a 10x10 pixels image of tag #321. There is no white padding, the black border is `2*1` pixels thick, and the matrix is `6*1` pixels large.
 
