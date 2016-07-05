@@ -544,6 +544,23 @@ void setFilterProcessNoiseCovariance(cv::Mat const& covariance);
 void setFilterObservationNoiseCovariance(cv::Mat const& covariance);
 
 /**
+ * @brief Sets the unit floor vector that will screen out upside down tags
+ *
+ * For the next 3D estimation, sets the floor vector against which all upside
+ * down tag detections will be discarded. The floor vector is defined as the
+ * inverse of the unit vector that points towards the center of the Earth. This
+ * means that all tags whose z axes make a smaller than 90 degree angle with
+ * this vector will be discarded. The floor vector must be in the camera frame.
+ *
+ * By default, the internal floor vector is zero, meaning that the upside down
+ * screening is disabled. The floor vector can be set to zero at any time to
+ * disable upside-down screening.
+ *
+ * @param floorVector Unit floor vector or zero vector to disable upside-down screening
+ */
+void setFloorVector(cv::Vec<RealT, 3> const& floorVector);
+
+/**
     For accurate results, Chilitags3D can be provided the calibration data of
     the camera detecting the chilitags.  See
     https://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html

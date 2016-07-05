@@ -133,6 +133,7 @@
 #include <opencv2/video/tracking.hpp>
 
 #include "chilitags.hpp"
+#include "ScreenOut.hpp"
 
 namespace chilitags {
 

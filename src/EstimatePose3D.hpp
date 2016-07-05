@@ -111,6 +111,13 @@ public:
     void setCamDelta(cv::Vec<RealT, 4> const& camDeltaR, cv::Vec<RealT, 3> const& camDeltaX);
 
     /**
+     * @brief Sets the floor vector in the camera frame for upside-down screening
+     *
+     * @param floorVector Latest floor vector
+     */
+    void setFloorVector(cv::Vec<RealT, 3> const& floorVector);
+
+    /**
      * @brief Updates the poses of all known tags via statistical filtering
      *
      * @param objects Map to update in which ID maps to the transform
@@ -132,17 +139,19 @@ public:
 
 protected:
 
-    Filter3D<RealT> mFilter3D;  ///< Kalman filter to increase stability of the tag
-    bool mFilter3DEnabled;      ///< Whether to enable pose filtering
+    Filter3D<RealT> mFilter3D;      ///< Kalman filter to increase stability of the tag
+    bool mFilter3DEnabled;          ///< Whether to enable pose filtering
 
-    cv::Mat mCameraMatrix;      ///< 3x3 camera matrix
-    cv::Mat mDistCoeffs;        ///< Empty or 4x1 or 5x1 or 8x1 Distortion coefficients of the camera
+    ScreenOut<RealT> mScreenOut;    ///< Object that discards upside-down readings
 
-    cv::Mat mTempRotation;      ///< 3x1 axis-angle: (rx,ry,rz)
-    cv::Mat mTempTranslation;   ///< 3x1 translation: (x,y,z)
+    cv::Mat mCameraMatrix;          ///< 3x3 camera matrix
+    cv::Mat mDistCoeffs;            ///< Empty or 4x1 or 5x1 or 8x1 Distortion coefficients of the camera
+
+    cv::Mat mTempRotation;          ///< 3x1 axis-angle: (rx,ry,rz)
+    cv::Mat mTempTranslation;       ///< 3x1 translation: (x,y,z)
 
     //TODO: This is double because of rodrigues, it doesn't accept float at the time of writing
-    cv::Matx33d mTempRotMat;    ///< 3x3 rotation matrix representation of mTempRotation
+    cv::Matx33d mTempRotMat;        ///< 3x3 rotation matrix representation of mTempRotation
 
 };
 
