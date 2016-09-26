@@ -155,6 +155,22 @@ in its source code.
 Specific instructions for building Chilitags for Android can be found under 
 [README-ANDROID.md](README-ANDROID.md).
 
+### Coding style
+
+This repository uses `uncrustify`, a tool that does automatic code formatting based on a predefined configuration defined in `uncrustify.cfg`.
+In order to keep the code formatting consistent, it is useful to uncrustify before committing.
+You may consider using a git pre-commit hook to remind you of this.
+
+For example, you can add a pre-commit hook that inhibits you from committing if the source files are not formatted correctly.
+Simply add a file `.git/hooks/pre-commit` that contains the following
+```bash
+#!/bin/sh
+
+exec uncrustify -c uncrustify.cfg --check src/* include/*
+```
+
+More complex hooks can be built, such as [this one](https://github.com/githubbrowser/Pre-commit-hooks/blob/master/pre-commit-uncrustify) that runs uncrustify before every commit and stores the diff in a patch.
+
 Licence
 -------
 
