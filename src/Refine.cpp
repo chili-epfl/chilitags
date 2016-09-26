@@ -30,7 +30,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #endif
 
-namespace chilitags{
+namespace chilitags {
 
 Refine::Refine()
 {
@@ -79,8 +79,8 @@ Quad Refine::operator()(
                  refinedQuad(i), refinedQuad(i),
                  cv::Scalar::all(255), 5);
         cv::rectangle(debugImage,
-                 refinedQuad(i)-cv::Point2f(cornerNeighbourhood, cornerNeighbourhood), refinedQuad(i)+cv::Point2f(cornerNeighbourhood, cornerNeighbourhood),
-                 cv::Scalar::all(255));
+                      refinedQuad(i)-cv::Point2f(cornerNeighbourhood, cornerNeighbourhood), refinedQuad(i)+cv::Point2f(cornerNeighbourhood, cornerNeighbourhood),
+                      cv::Scalar::all(255));
         printf("%1.1f  %1.1f        ", refinedQuad(i).x, refinedQuad(i).y);
     }
     printf("\n");

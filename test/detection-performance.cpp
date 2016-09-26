@@ -135,9 +135,9 @@ TEST(Integration, Snapshots) {
 
             if(!falsePositives.empty())
                 ADD_FAILURE()
-                << "False positive !\n"
-                << "    File: " << testCase.filename << "\n"
-                << "   Id(s): " << cv::Mat(falsePositives) << "\n";
+                    << "False positive !\n"
+                    << "    File: " << testCase.filename << "\n"
+                    << "   Id(s): " << cv::Mat(falsePositives) << "\n";
 
 
             std::vector<int> falseNegatives = my_set_difference(
@@ -149,9 +149,9 @@ TEST(Integration, Snapshots) {
 
             if(!unexpectedFalseNegatives.empty())
                 ADD_FAILURE()
-                << "False negative !\n"
-                << "    File: " << testCase.filename << "\n"
-                << "   Id(s): " << cv::Mat(unexpectedFalseNegatives) << "\n";
+                    << "False negative !\n"
+                    << "    File: " << testCase.filename << "\n"
+                    << "   Id(s): " << cv::Mat(unexpectedFalseNegatives) << "\n";
 
             std::vector<int> unexpectedTruePositives = my_set_difference(
                 testCase.knownMissedTagIds, falseNegatives);
@@ -169,11 +169,11 @@ TEST(Integration, Snapshots) {
         }
         else {
             ADD_FAILURE()
-            << "Unable to read: " << path << "\n"
-            << "Did you correctly set the OPENCV_TEST_DATA_PATH environment variable?\n"
-            << "CMake takes care of this if you set its TEST_DATA variable.\n"
-            << "You can download the test data from\n"
-            << "https://github.com/chili-epfl/chilitags-testdata";
+                << "Unable to read: " << path << "\n"
+                << "Did you correctly set the OPENCV_TEST_DATA_PATH environment variable?\n"
+                << "CMake takes care of this if you set its TEST_DATA variable.\n"
+                << "You can download the test data from\n"
+                << "https://github.com/chili-epfl/chilitags-testdata";
         }
     }
     cout << "Processing times (ms) results, on " << ITERATIONS << " iterations:\n";
@@ -181,25 +181,25 @@ TEST(Integration, Snapshots) {
 
     for (const auto & durations : referenceDuration) {
         cout
-        << std::setw(3) << durations.second.size()/ITERATIONS
-        << std::setw(10) << resolution[durations.first]
-        << std::setw(10) << std::fixed << std::setprecision(1) << mean(durations.second)
-        << std::setw(10) << std::fixed << std::setprecision(1) << sigma(durations.second)
-        << "\n";
+            << std::setw(3) << durations.second.size()/ITERATIONS
+            << std::setw(10) << resolution[durations.first]
+            << std::setw(10) << std::fixed << std::setprecision(1) << mean(durations.second)
+            << std::setw(10) << std::fixed << std::setprecision(1) << sigma(durations.second)
+            << "\n";
     }
 
     std::cout << totalFalseNegatives << "/" << total << " tags were not detected.\n";
     if (newTruePositives > 0) {
         std::cout
-        << "You "<< (newFalseNegatives>0 ? "partially" : "")
-        << "improved the detection:\n"
-        << newFalseNegatives << " new false negatives (bad) and "
-        << newTruePositives  << " new true positives (good)\n"
-        << "Please review, and if necessary, update the test case.\n";
+            << "You "<< (newFalseNegatives>0 ? "partially" : "")
+            << "improved the detection:\n"
+            << newFalseNegatives << " new false negatives (bad) and "
+            << newTruePositives  << " new true positives (good)\n"
+            << "Please review, and if necessary, update the test case.\n";
     }
     if (totalFalsePositives > 0) {
         std::cout << "There are " << totalFalsePositives << " false positives.\n";
-        
+
     }
 
     //chilitags.setCornerRefinement(false);
@@ -229,11 +229,11 @@ TEST(Integration, Snapshots) {
         }
         else {
             ADD_FAILURE()
-            << "Unable to read: " << path << "\n"
-            << "Did you correctly set the OPENCV_TEST_DATA_PATH environment variable?\n"
-            << "CMake takes care of this if you set its TEST_DATA variable.\n"
-            << "You can download the test data from\n"
-            << "https://github.com/chili-epfl/chilitags-testdata";
+                << "Unable to read: " << path << "\n"
+                << "Did you correctly set the OPENCV_TEST_DATA_PATH environment variable?\n"
+                << "CMake takes care of this if you set its TEST_DATA variable.\n"
+                << "You can download the test data from\n"
+                << "https://github.com/chili-epfl/chilitags-testdata";
         }
     }
 
@@ -248,19 +248,21 @@ TEST(Integration, Snapshots) {
             perfDurationsIt->second.begin(), perfDurationsIt->second.end(),
             durations.second.begin(),
             perfDurationsIt->second.begin(),
-            [](float a, float b){return 100.0f*(a-b)/b;});
+            [](float a, float b){
+            return 100.0f*(a-b)/b;
+        });
 
         bool increased = perfFalseNegativesIt->second > referenceFalseNegativesIt->second;
-        cout 
+        cout
             << std::setw(3) << durations.second.size()/ITERATIONS
             << std::setw(10) << resolution[durations.first]
             << std::setw(17) << std::fixed << std::setprecision(0) <<
-                mean(perfDurationsIt->second) << "%"
+            mean(perfDurationsIt->second) << "%"
             << std::setw(11) << perfFalseNegativesIt->second
             << " vs "
             << std::setw(3) << referenceFalseNegativesIt->second
-            << (increased?" (+" : " (")
-            << perfFalseNegativesIt->second - referenceFalseNegativesIt->second 
+            << (increased ? " (+" : " (")
+            << perfFalseNegativesIt->second - referenceFalseNegativesIt->second
             << ")"
             << "\n";
         totalNewFalseNegatives += perfFalseNegativesIt->second;

@@ -80,11 +80,12 @@ std::vector<int> FindOutdated::operator()(const std::map<int, Quad> &tags){
     return tagsToForget;
 }
 
-Filter::Filter(int persistence, float gain):
-mFindOutdated(persistence),
-mGain(gain),
-mFilteredCoordinates()
-{}
+Filter::Filter(int persistence, float gain) :
+    mFindOutdated(persistence),
+    mGain(gain),
+    mFilteredCoordinates()
+{
+}
 
 const std::map<int, Quad> & Filter::operator()(
     const std::map<int, Quad> &tags) {

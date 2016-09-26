@@ -24,16 +24,16 @@
 
 #include "opencv2/video/tracking.hpp"
 
-namespace chilitags{
+namespace chilitags {
 
 #ifdef HAS_MULTITHREADING
-Track::Track():
+Track::Track() :
     mRefine(),
     mPrevFrame(),
     mFromTags(),
-	mInputLock(PTHREAD_MUTEX_INITIALIZER)
+    mInputLock(PTHREAD_MUTEX_INITIALIZER)
 #else
-Track::Track():
+Track::Track() :
     mRefine(),
     mPrevFrame(),
     mFromTags()
@@ -44,11 +44,11 @@ Track::Track():
 void Track::update(TagCornerMap const& tags)
 {
 #ifdef HAS_MULTITHREADING
-	pthread_mutex_lock(&mInputLock);
+    pthread_mutex_lock(&mInputLock);
 #endif
 
     auto targetIt = mFromTags.begin();
-    for(const auto& tag : tags){
+    for(const auto& tag : tags) {
         while(targetIt != mFromTags.end() && targetIt->first < tag.first)
             targetIt++;
 
@@ -59,7 +59,7 @@ void Track::update(TagCornerMap const& tags)
     }
 
 #ifdef HAS_MULTITHREADING
-	pthread_mutex_unlock(&mInputLock);
+    pthread_mutex_unlock(&mInputLock);
 #endif
 }
 
@@ -71,7 +71,7 @@ TagCornerMap Track::operator()(cv::Mat const& grayscaleInputImage)
 
     //Do the tracking
 #ifdef HAS_MULTITHREADING
-	pthread_mutex_lock(&mInputLock);
+    pthread_mutex_lock(&mInputLock);
 #endif
     TagCornerMap trackedTags;
     Quad quad;

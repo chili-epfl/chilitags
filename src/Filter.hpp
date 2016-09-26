@@ -54,23 +54,23 @@ std::map<int, int> mDisappearanceTime;
 
 class Filter {
 public:
-    Filter(int persistence, float gain);
+Filter(int persistence, float gain);
 
-    void setPersistence(int persistence) {
-        mFindOutdated.setPersistence(persistence);
-    }
+void setPersistence(int persistence) {
+    mFindOutdated.setPersistence(persistence);
+}
 
-    void setGain(float gain) {
-        mGain = gain;
-    }
+void setGain(float gain) {
+    mGain = gain;
+}
 
-    const std::map<int, Quad> & operator()(
-        const std::map<int, Quad > &tags) ;
+const std::map<int, Quad> & operator()(
+    const std::map<int, Quad > &tags);
 
 protected:
-    FindOutdated mFindOutdated;
-    float mGain;
-    std::map<int, Quad> mFilteredCoordinates;
+FindOutdated mFindOutdated;
+float mGain;
+std::map<int, Quad> mFilteredCoordinates;
 };
 
 

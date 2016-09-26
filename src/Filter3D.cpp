@@ -1,22 +1,22 @@
 /*******************************************************************************
- *   Copyright 2013-2014 EPFL                                                   *
- *   Copyright 2013-2014 Quentin Bonnard                                        *
- *                                                                              *
- *   This file is part of chilitags.                                            *
- *                                                                              *
- *   Chilitags is free software: you can redistribute it and/or modify          *
- *   it under the terms of the Lesser GNU General Public License as             *
- *   published by the Free Software Foundation, either version 3 of the         *
- *   License, or (at your option) any later version.                            *
- *                                                                              *
- *   Chilitags is distributed in the hope that it will be useful,               *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
- *   GNU Lesser General Public License for more details.                        *
- *                                                                              *
- *   You should have received a copy of the GNU Lesser General Public License   *
- *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
- *******************************************************************************/
+*   Copyright 2013-2014 EPFL                                                   *
+*   Copyright 2013-2014 Quentin Bonnard                                        *
+*                                                                              *
+*   This file is part of chilitags.                                            *
+*                                                                              *
+*   Chilitags is free software: you can redistribute it and/or modify          *
+*   it under the terms of the Lesser GNU General Public License as             *
+*   published by the Free Software Foundation, either version 3 of the         *
+*   License, or (at your option) any later version.                            *
+*                                                                              *
+*   Chilitags is distributed in the hope that it will be useful,               *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+*   GNU Lesser General Public License for more details.                        *
+*                                                                              *
+*   You should have received a copy of the GNU Lesser General Public License   *
+*   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
+*******************************************************************************/
 
 /**
  * @file Filter3D.cpp
@@ -26,13 +26,13 @@
 
 #include "Filter3D.hpp"
 
-#include<type_traits>
-#include<cmath>
-#include<cfloat>
+#include <type_traits>
+#include <cmath>
+#include <cfloat>
 
 #include <opencv2/calib3d/calib3d.hpp>
 
-namespace chilitags{
+namespace chilitags {
 
 template<typename RealT>
 Filter3D<RealT>::Filter3D() :
@@ -52,23 +52,23 @@ Filter3D<RealT>::Filter3D() :
 
     //Process noise covariance is 7x7: cov((x,y,z,qw,qx,qy,qz))
     mQ = (cv::Mat_<RealT>(7,7) <<
-            1e-3f,  0,      0,      0,      0,      0,      0,
-            0,      1e-3f,  0,      0,      0,      0,      0,
-            0,      0,      1e-3f,  0,      0,      0,      0,
-            0,      0,      0,      1e-4f,  0,      0,      0,
-            0,      0,      0,      0,      1e-4f,  0,      0,
-            0,      0,      0,      0,      0,      1e-4f,  0,
-            0,      0,      0,      0,      0,      0,      1e-4f);
+          1e-3f,  0,      0,      0,      0,      0,      0,
+          0,      1e-3f,  0,      0,      0,      0,      0,
+          0,      0,      1e-3f,  0,      0,      0,      0,
+          0,      0,      0,      1e-4f,  0,      0,      0,
+          0,      0,      0,      0,      1e-4f,  0,      0,
+          0,      0,      0,      0,      0,      1e-4f,  0,
+          0,      0,      0,      0,      0,      0,      1e-4f);
 
     //Measurement noise covariance is 7x7: cov((x,y,z,qw,qx,qy,qz))
     mR = (cv::Mat_<RealT>(7,7) <<
-            1e-3f,  0,      0,      0,      0,      0,      0,
-            0,      1e-3f,  0,      0,      0,      0,      0,
-            0,      0,      1e-1f,  0,      0,      0,      0,
-            0,      0,      0,      1e-3f,  0,      0,      0,
-            0,      0,      0,      0,      1e-2f,  0,      0,
-            0,      0,      0,      0,      0,      1e-2f,  0,
-            0,      0,      0,      0,      0,      0,      1e-5f);
+          1e-3f,  0,      0,      0,      0,      0,      0,
+          0,      1e-3f,  0,      0,      0,      0,      0,
+          0,      0,      1e-1f,  0,      0,      0,      0,
+          0,      0,      0,      1e-3f,  0,      0,      0,
+          0,      0,      0,      0,      1e-2f,  0,      0,
+          0,      0,      0,      0,      0,      1e-2f,  0,
+          0,      0,      0,      0,      0,      0,      1e-5f);
 
     //Scale coefficients when calculating the trace of the covariance estimate
     recalculateCovScales();
@@ -86,7 +86,7 @@ Filter3D<RealT>::Filter3D() :
 template<typename RealT>
 inline void Filter3D<RealT>::recalculateCovScales()
 {
-    for(int i=0;i<7;i++)
+    for(int i=0; i<7; i++)
         mCovScales.at<RealT>(i) = sqrt(mQ.at<RealT>(i,i)*mR.at<RealT>(i,i));
 }
 
@@ -156,7 +156,7 @@ void Filter3D<RealT>::operator()(typename Chilitags3D_<RealT>::TagPoseMap& tags)
     cv::Mat predictedRot(3,1,CV_64F);
     cv::Matx33d tempRotMat;
 
-    for(auto& kfq : mFilters){
+    for(auto& kfq : mFilters) {
         if(kfq.second.deleted)
             continue;
 
@@ -164,10 +164,10 @@ void Filter3D<RealT>::operator()(typename Chilitags3D_<RealT>::TagPoseMap& tags)
 
         //Calculate weighted covariance estimate trace, decide to discard or not
         RealT trace = 0.0f;
-        for(int i=0;i<7;i++)
+        for(int i=0; i<7; i++)
             trace += filter.errorCovPost.at<RealT>(i,i)/mCovScales.at<RealT>(i);
         trace /= 7.0f;
-        if(trace > mPersistence){
+        if(trace > mPersistence) {
             kfq.second.deleted = true;
             continue;
         }
@@ -207,14 +207,14 @@ void Filter3D<RealT>::operator()(std::string const& id, cv::Mat& measuredTrans, 
     //Second set of 4 params are for Kalman filter: # of state dimensions, # of measurement dimensions,
     //# of control input dimensions and float precision of internal matrices
     auto pair = mFilters.emplace(std::piecewise_construct,
-            std::make_tuple(id),
-            std::make_tuple(7, 7, 3, CV_TYPE));
+                                 std::make_tuple(id),
+                                 std::make_tuple(7, 7, 3, CV_TYPE));
     cv::KalmanFilter& filter = pair.first->second.filter;
     cv::Vec<RealT,4>& prevQuat = pair.first->second.prevQuat;
     bool& deleted = pair.first->second.deleted;
 
     //Newly inserted or lazy-deleted
-    if(pair.second || deleted){
+    if(pair.second || deleted) {
         deleted = false;
         initFilter(filter, prevQuat, measuredTrans, measuredRot);
     }
@@ -277,7 +277,7 @@ void Filter3D<RealT>::getAngleAxis(RealT* input, double* output)
     RealT theta = sqrt(input[1]*input[1] + input[2]*input[2] + input[3]*input[3]);
     theta = 2*atan2(theta, input[0]);
     RealT sTheta2 = sin(theta/2);
-    if(theta < EPSILON){ //Use lim( theta -> 0 ){ theta/sin(theta) }
+    if(theta < EPSILON) { //Use lim( theta -> 0 ){ theta/sin(theta) }
         output[0] = input[1]; //rx
         output[1] = input[2]; //ry
         output[2] = input[3]; //rz
@@ -294,7 +294,7 @@ void Filter3D<RealT>::getQuaternion(double* input, RealT* output)
 {
     RealT theta = (RealT)sqrt(input[0]*input[0] + input[1]*input[1] + input[2]*input[2]);
     output[0] = cos(theta/2); //qw
-    if(theta < EPSILON){ //Use lim( theta -> 0 ){ sin(theta)/theta }
+    if(theta < EPSILON) { //Use lim( theta -> 0 ){ sin(theta)/theta }
         output[1] = (RealT)input[0]; //qx
         output[2] = (RealT)input[1]; //qy
         output[3] = (RealT)input[2]; //qz
@@ -312,7 +312,7 @@ inline void Filter3D<RealT>::normalizeQuat()
 {
     RealT* quat = (RealT*)mTempState.ptr() + 3;
     RealT norm = sqrt(quat[0]*quat[0] + quat[1]*quat[1] + quat[2]*quat[2] + quat[3]*quat[3]);
-    if(norm > EPSILON){
+    if(norm > EPSILON) {
         quat[0] /= norm;
         quat[1] /= norm;
         quat[2] /= norm;
@@ -334,10 +334,10 @@ inline void Filter3D<RealT>::shortestPathQuat(cv::Vec<RealT,4>& prevQuat)
     //If -q would be closer to q_prev than +q, replace new q with -q
     //The following comes from the derivation of |q - q_prev|^2 - |-q - q_prev|^2
     if(
-            quat[0]*prevQuat(0) +
-            quat[1]*prevQuat(1) +
-            quat[2]*prevQuat(2) +
-            quat[3]*prevQuat(3) < 0){
+        quat[0]*prevQuat(0) +
+        quat[1]*prevQuat(1) +
+        quat[2]*prevQuat(2) +
+        quat[3]*prevQuat(3) < 0) {
         quat[0] = -quat[0];
         quat[1] = -quat[1];
         quat[2] = -quat[2];

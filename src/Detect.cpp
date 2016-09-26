@@ -1,28 +1,28 @@
 /*******************************************************************************
- *   Copyright 2013-2014 EPFL                                                   *
- *   Copyright 2013-2014 Quentin Bonnard                                        *
- *                                                                              *
- *   This file is part of chilitags.                                            *
- *                                                                              *
- *   Chilitags is free software: you can redistribute it and/or modify          *
- *   it under the terms of the Lesser GNU General Public License as             *
- *   published by the Free Software Foundation, either version 3 of the         *
- *   License, or (at your option) any later version.                            *
- *                                                                              *
- *   Chilitags is distributed in the hope that it will be useful,               *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
- *   GNU Lesser General Public License for more details.                        *
- *                                                                              *
- *   You should have received a copy of the GNU Lesser General Public License   *
- *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
- *******************************************************************************/
+*   Copyright 2013-2014 EPFL                                                   *
+*   Copyright 2013-2014 Quentin Bonnard                                        *
+*                                                                              *
+*   This file is part of chilitags.                                            *
+*                                                                              *
+*   Chilitags is free software: you can redistribute it and/or modify          *
+*   it under the terms of the Lesser GNU General Public License as             *
+*   published by the Free Software Foundation, either version 3 of the         *
+*   License, or (at your option) any later version.                            *
+*                                                                              *
+*   Chilitags is distributed in the hope that it will be useful,               *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+*   GNU Lesser General Public License for more details.                        *
+*                                                                              *
+*   You should have received a copy of the GNU Lesser General Public License   *
+*   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
+*******************************************************************************/
 
 #include "Detect.hpp"
 
-#include<iostream>
+#include <iostream>
 
-namespace chilitags{
+namespace chilitags {
 
 #ifdef OPENCV3
 #include <opencv2/core/utility.hpp>
@@ -58,8 +58,8 @@ void Detect::setCornerRefinement(bool refineCorners)
 
 void Detect::doDetection(TagCornerMap& tags)
 {
-    if(mRefineCorners){
-        for(const auto& quad : mFindQuads(mFrame)){
+    if(mRefineCorners) {
+        for(const auto& quad : mFindQuads(mFrame)) {
             auto refinedQuad = mRefine(mFrame, quad, 1.5f/10.0f);
             auto tag = mDecode(mReadBits(mFrame, refinedQuad), refinedQuad);
             if(tag.first != Decode::INVALID_TAG)
@@ -72,7 +72,7 @@ void Detect::doDetection(TagCornerMap& tags)
         }
     }
     else{
-        for(const auto& quad : mFindQuads(mFrame)){
+        for(const auto& quad : mFindQuads(mFrame)) {
             auto tag = mDecode(mReadBits(mFrame, quad), quad);
             if(tag.first != Decode::INVALID_TAG)
                 tags[tag.first] = tag.second;
@@ -84,14 +84,14 @@ void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags)
 {
 #ifdef HAS_MULTITHREADING
     //Run single threaded
-    if(!mBackgroundRunning){
+    if(!mBackgroundRunning) {
         mFrame = greyscaleImage;
         doDetection(tags);
     }
 
     //Detection thread running in the background, just deliver the frame and tags
     else{
-        if(mNeedFrame){
+        if(mNeedFrame) {
             pthread_mutex_lock(&mInputLock);
 
             greyscaleImage.copyTo(mFrame);
@@ -111,22 +111,22 @@ void Detect::operator()(cv::Mat const& greyscaleImage, TagCornerMap& tags)
 #ifdef HAS_MULTITHREADING
 void Detect::launchBackgroundThread(Track& track)
 {
-    if(!mBackgroundRunning){
+    if(!mBackgroundRunning) {
         mTrack = &track;
         mBackgroundShouldRun = true;
         mBackgroundRunning = true;
-        if(pthread_create(&mBackgroundThread, NULL, dispatchRun, (void*)this)){
+        if(pthread_create(&mBackgroundThread, NULL, dispatchRun, (void*)this)) {
             mBackgroundShouldRun = false;
             mBackgroundRunning = false;
             std::cerr << "Error: Thread could not be launched in " << __PRETTY_FUNCTION__
-                << ", not enough resources or PTHREAD_THREADS_MAX was hit!" << std::endl;
+                      << ", not enough resources or PTHREAD_THREADS_MAX was hit!" << std::endl;
         }
     }
 }
 
 void Detect::shutdownBackgroundThread()
 {
-    if(mBackgroundRunning){
+    if(mBackgroundRunning) {
         pthread_mutex_lock(&mInputLock);
         mBackgroundShouldRun = false;
         pthread_cond_signal(&mInputCond);
@@ -142,7 +142,7 @@ void* Detect::dispatchRun(void* args)
 
 void Detect::run()
 {
-    while(mBackgroundShouldRun){
+    while(mBackgroundShouldRun) {
         pthread_mutex_lock(&mInputLock);
 
         //Wait for the input frame to arrive

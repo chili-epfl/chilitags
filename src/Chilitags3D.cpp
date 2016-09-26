@@ -28,7 +28,7 @@
 #include <opencv2/core/utility.hpp>
 #endif
 
-namespace chilitags{
+namespace chilitags {
 
 template<typename RealT>
 class Chilitags3D_<RealT>::Impl {
@@ -48,7 +48,7 @@ Impl(cv::Size cameraResolution) :
 const Chilitags &getChilitags() const {
     return mChilitags;
 }
-      Chilitags &getChilitags()       {
+Chilitags &getChilitags()       {
     return mChilitags;
 }
 
@@ -66,8 +66,8 @@ TagPoseMap estimate(TagCornerMap const& tags, cv::Vec<RealT, 4> const& camDeltaR
     std::map<
         const std::string,     //name of the object
         std::pair<
-            std::vector<cv::Point3_<RealT>>,      //points in object
-            std::vector<cv::Point2f>>>   //points in frame
+            std::vector<cv::Point3_<RealT> >,      //points in object
+            std::vector<cv::Point2f> > >   //points in frame
     objectToPointMapping;
 
     auto configurationIt = mId2Configuration.begin();
@@ -85,9 +85,9 @@ TagPoseMap estimate(TagCornerMap const& tags, cv::Vec<RealT, 4> const& camDeltaR
                 const auto &configuration = configurationIt->second;
                 if (configuration.second.mKeep) {
                     mEstimatePose3D(cv::format("tag_%d", tagId),
-                                          configuration.second.mLocalcorners,
-                                          corners,
-                                          objects);
+                                    configuration.second.mLocalcorners,
+                                    corners,
+                                    objects);
                 }
                 auto & pointMapping = objectToPointMapping[configuration.first];
                 pointMapping.first.insert(
@@ -100,24 +100,24 @@ TagPoseMap estimate(TagCornerMap const& tags, cv::Vec<RealT, 4> const& camDeltaR
                     corners.end());
             } else if (!mOmitOtherTags) {
                 mEstimatePose3D(cv::format("tag_%d", tagId),
-                                      mDefaultTagCorners,
-                                      corners,
-                                      objects);
+                                mDefaultTagCorners,
+                                corners,
+                                objects);
             }
 
         } else if (!mOmitOtherTags) {
             mEstimatePose3D(cv::format("tag_%d", tagId),
-                                  mDefaultTagCorners,
-                                  corners,
-                                  objects);
+                            mDefaultTagCorners,
+                            corners,
+                            objects);
         }
     }
 
     for (auto& objectToPoints : objectToPointMapping) {
         mEstimatePose3D(objectToPoints.first,
-                              objectToPoints.second.first,
-                              cv::Mat_<cv::Point2f>(objectToPoints.second.second),
-                              objects);
+                        objectToPoints.second.first,
+                        cv::Mat_<cv::Point2f>(objectToPoints.second.second),
+                        objects);
     }
 
     return objects;
@@ -167,7 +167,7 @@ bool read3DConfiguration(const std::string &filenameOrString, bool omitOtherTags
 
     cv::FileStorage configuration(filenameOrString, mode);
     if (!configuration.isOpened()) {
-        if(readFromString){
+        if(readFromString) {
             std::cerr << "Could not read tag configuration: " << std::endl;
             std::cerr << filenameOrString << std::endl;
         }
@@ -226,8 +226,12 @@ cv::Size readCalibration(const std::string &filename) {
     return size;
 }
 
-const cv::Mat &getCameraMatrix()     const {return mEstimatePose3D.getCameraMatrix();}
-const cv::Mat &getDistortionCoeffs() const{return mEstimatePose3D.getDistortionCoeffs();}
+const cv::Mat &getCameraMatrix()     const {
+    return mEstimatePose3D.getCameraMatrix();
+}
+const cv::Mat &getDistortionCoeffs() const {
+    return mEstimatePose3D.getDistortionCoeffs();
+}
 
 private:
 
@@ -266,10 +270,10 @@ struct TagConfig {
         auto F = sin(rotation[2] * DEG2RAD);
 
         TransformMatrix transformation(
-                   C*E ,        -C*F ,    D , translation[0] ,
-             B*D*E+A*F ,  -B*D*F+A*E , -B*C , translation[1] ,
-            -A*D*E+B*F ,   A*D*F+B*E ,  A*C , translation[2] ,
-                    0.f,          0.f,   0.f, 1.f             );
+            C*E,        -C*F,    D, translation[0],
+            B*D*E+A*F,  -B*D*F+A*E, -B*C, translation[1],
+            -A*D*E+B*F,   A*D*F+B*E,  A*C, translation[2],
+            0.f,          0.f,   0.f, 1.f             );
 
         for (auto i : {0, 1, 2, 3}) {
             auto corner = transformation*cv::Matx<RealT, 4, 1>(mLocalcorners[i].x, mLocalcorners[i].y, 0.f, 1.f);
@@ -284,12 +288,12 @@ struct TagConfig {
     // this array stores the 3D location of the
     // 4 corners of the tag *in the parent
     // object frame*. It is automatically computed.
-    std::vector<cv::Point3_<RealT>> mCorners;
+    std::vector<cv::Point3_<RealT> > mCorners;
 
     // this array stores the 3D location of the
     // 4 corners of the tag *in the tag
     // own frame*. It is automatically computed.
-    std::vector<cv::Point3_<RealT>> mLocalcorners;
+    std::vector<cv::Point3_<RealT> > mLocalcorners;
 };
 
 Chilitags mChilitags;
@@ -298,7 +302,7 @@ EstimatePose3D<RealT> mEstimatePose3D;
 
 bool mOmitOtherTags;
 
-std::vector<cv::Point3_<RealT>> mDefaultTagCorners;
+std::vector<cv::Point3_<RealT> > mDefaultTagCorners;
 
 // associates a tag id with an object name and the configuration of the tag
 // in this object
@@ -384,11 +388,13 @@ Chilitags3D_<RealT>::~Chilitags3D_() = default;
 
 template<typename RealT>
 const cv::Mat &Chilitags3D_<RealT>::getCameraMatrix()     const {
-    return mImpl->getCameraMatrix();}
+    return mImpl->getCameraMatrix();
+}
 
 template<typename RealT>
 const cv::Mat &Chilitags3D_<RealT>::getDistortionCoeffs() const {
-    return mImpl->getDistortionCoeffs();}
+    return mImpl->getDistortionCoeffs();
+}
 
 //All possible instantiations of Chilitags3D
 template class Chilitags3D_<float>;

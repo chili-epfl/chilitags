@@ -1,22 +1,22 @@
 /*******************************************************************************
- *   Copyright 2013-2014 EPFL                                                   *
- *   Copyright 2013-2014 Quentin Bonnard                                        *
- *                                                                              *
- *   This file is part of chilitags.                                            *
- *                                                                              *
- *   Chilitags is free software: you can redistribute it and/or modify          *
- *   it under the terms of the Lesser GNU General Public License as             *
- *   published by the Free Software Foundation, either version 3 of the         *
- *   License, or (at your option) any later version.                            *
- *                                                                              *
- *   Chilitags is distributed in the hope that it will be useful,               *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
- *   GNU Lesser General Public License for more details.                        *
- *                                                                              *
- *   You should have received a copy of the GNU Lesser General Public License   *
- *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
- *******************************************************************************/
+*   Copyright 2013-2014 EPFL                                                   *
+*   Copyright 2013-2014 Quentin Bonnard                                        *
+*                                                                              *
+*   This file is part of chilitags.                                            *
+*                                                                              *
+*   Chilitags is free software: you can redistribute it and/or modify          *
+*   it under the terms of the Lesser GNU General Public License as             *
+*   published by the Free Software Foundation, either version 3 of the         *
+*   License, or (at your option) any later version.                            *
+*                                                                              *
+*   Chilitags is distributed in the hope that it will be useful,               *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+*   GNU Lesser General Public License for more details.                        *
+*                                                                              *
+*   You should have received a copy of the GNU Lesser General Public License   *
+*   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
+*******************************************************************************/
 
 #include <iostream>
 
@@ -98,48 +98,48 @@ int main(int argc, char* argv[])
     bool filterEnabled = true;
 
     cv::Mat Q = (cv::Mat_<float>(7,7) <<
-            1e-3f,  0,      0,      0,      0,      0,      0,
-            0,      1e-3f,  0,      0,      0,      0,      0,
-            0,      0,      1e-3f,  0,      0,      0,      0,
-            0,      0,      0,      1e-4f,  0,      0,      0,
-            0,      0,      0,      0,      1e-4f,  0,      0,
-            0,      0,      0,      0,      0,      1e-4f,  0,
-            0,      0,      0,      0,      0,      0,      1e-4f);
+                 1e-3f,  0,      0,      0,      0,      0,      0,
+                 0,      1e-3f,  0,      0,      0,      0,      0,
+                 0,      0,      1e-3f,  0,      0,      0,      0,
+                 0,      0,      0,      1e-4f,  0,      0,      0,
+                 0,      0,      0,      0,      1e-4f,  0,      0,
+                 0,      0,      0,      0,      0,      1e-4f,  0,
+                 0,      0,      0,      0,      0,      0,      1e-4f);
     float alphaQ = 1.0f;
 
     cv::Mat R = (cv::Mat_<float>(7,7) <<
-            1e-3f,  0,      0,      0,      0,      0,      0,
-            0,      1e-3f,  0,      0,      0,      0,      0,
-            0,      0,      1e-1f,  0,      0,      0,      0,
-            0,      0,      0,      1e-3f,  0,      0,      0,
-            0,      0,      0,      0,      1e-2f,  0,      0,
-            0,      0,      0,      0,      0,      1e-2f,  0,
-            0,      0,      0,      0,      0,      0,      1e-5f);
+                 1e-3f,  0,      0,      0,      0,      0,      0,
+                 0,      1e-3f,  0,      0,      0,      0,      0,
+                 0,      0,      1e-1f,  0,      0,      0,      0,
+                 0,      0,      0,      1e-3f,  0,      0,      0,
+                 0,      0,      0,      0,      1e-2f,  0,      0,
+                 0,      0,      0,      0,      0,      1e-2f,  0,
+                 0,      0,      0,      0,      0,      0,      1e-5f);
     float alphaR = 1.0f;
 
     while ('q' != (keyPressed = (char) cv::waitKey(1))) {
 
-        switch(keyPressed){
-            case 'f':
-                filterEnabled = !filterEnabled;
-                chilitags3D.enableFilter(filterEnabled);
-                break;
-            case 'w':
-                alphaQ *= 10.0f;
-                chilitags3D.setFilterProcessNoiseCovariance(alphaQ*Q);
-                break;
-            case 's':
-                alphaQ /= 10.0f;
-                chilitags3D.setFilterProcessNoiseCovariance(alphaQ*Q);
-                break;
-            case 'e':
-                alphaR *= 10.0f;
-                chilitags3D.setFilterObservationNoiseCovariance(alphaR*R);
-                break;
-            case 'd':
-                alphaR /= 10.0f;
-                chilitags3D.setFilterObservationNoiseCovariance(alphaR*R);
-                break;
+        switch(keyPressed) {
+        case 'f':
+            filterEnabled = !filterEnabled;
+            chilitags3D.enableFilter(filterEnabled);
+            break;
+        case 'w':
+            alphaQ *= 10.0f;
+            chilitags3D.setFilterProcessNoiseCovariance(alphaQ*Q);
+            break;
+        case 's':
+            alphaQ /= 10.0f;
+            chilitags3D.setFilterProcessNoiseCovariance(alphaQ*Q);
+            break;
+        case 'e':
+            alphaR *= 10.0f;
+            chilitags3D.setFilterObservationNoiseCovariance(alphaR*R);
+            break;
+        case 'd':
+            alphaR /= 10.0f;
+            chilitags3D.setFilterObservationNoiseCovariance(alphaR*R);
+            break;
         }
 
         cv::Mat inputImage;
@@ -147,22 +147,22 @@ int main(int argc, char* argv[])
         cv::Mat outputImage = inputImage.clone();
 
         cv::putText(outputImage, cv::format("Filtering %s, press 'f' to toggle",filterEnabled ? "ENABLED" : "DISABLED"),
-                cv::Point(8,20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255));
+                    cv::Point(8,20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255));
 
         cv::putText(outputImage, cv::format("Process covariance multiplier: %f, press 'w' or 's' to modify", alphaQ),
-                cv::Point(8,36), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255));
+                    cv::Point(8,36), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255));
 
         cv::putText(outputImage, cv::format("Observation covariance multiplier: %f, press 'e' or 'd' to modify", alphaR),
-                cv::Point(8,52), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255));
+                    cv::Point(8,52), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255));
 
         for (auto& kv : chilitags3D.estimate(inputImage, chilitags::Chilitags::DETECT_PERIODICALLY)) {
 
             static const float DEFAULT_SIZE = 20.f;
             static const cv::Vec4d UNITS[4] {
                 {0.f, 0.f, 0.f, 1.f},
-                    {DEFAULT_SIZE, 0.f, 0.f, 1.f},
-                    {0.f, DEFAULT_SIZE, 0.f, 1.f},
-                    {0.f, 0.f, DEFAULT_SIZE, 1.f},
+                {DEFAULT_SIZE, 0.f, 0.f, 1.f},
+                {0.f, DEFAULT_SIZE, 0.f, 1.f},
+                {0.f, 0.f, DEFAULT_SIZE, 1.f},
             };
 
             cv::Matx44d transformation = kv.second;
@@ -176,8 +176,8 @@ int main(int argc, char* argv[])
             std::vector<cv::Point2f> t2DPoints;
             for (auto homogenousPoint : referential)
                 t2DPoints.push_back(cv::Point2f(
-                            homogenousPoint[0]/homogenousPoint[3],
-                            homogenousPoint[1]/homogenousPoint[3]));
+                                        homogenousPoint[0]/homogenousPoint[3],
+                                        homogenousPoint[1]/homogenousPoint[3]));
 
             static const int SHIFT = 16;
             static const float PRECISION = 1<<SHIFT;
@@ -187,14 +187,14 @@ int main(int argc, char* argv[])
             };
             for (int i : {1,2,3}) {
                 cv::line(
-                        outputImage,
-                        PRECISION*t2DPoints[0],
-                        PRECISION*t2DPoints[i],
-                        AXIS_COLORS[i-1],
+                    outputImage,
+                    PRECISION*t2DPoints[0],
+                    PRECISION*t2DPoints[i],
+                    AXIS_COLORS[i-1],
 #ifdef OPENCV3
-                        2, cv::LINE_AA, SHIFT);
+                    2, cv::LINE_AA, SHIFT);
 #else
-                2, CV_AA, SHIFT);
+                    2, CV_AA, SHIFT);
 #endif
             }
         }

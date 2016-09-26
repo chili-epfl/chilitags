@@ -1,22 +1,22 @@
 /*******************************************************************************
- *   Copyright 2013-2014 EPFL                                                   *
- *   Copyright 2013-2014 Quentin Bonnard                                        *
- *                                                                              *
- *   This file is part of chilitags.                                            *
- *                                                                              *
- *   Chilitags is free software: you can redistribute it and/or modify          *
- *   it under the terms of the Lesser GNU General Public License as             *
- *   published by the Free Software Foundation, either version 3 of the         *
- *   License, or (at your option) any later version.                            *
- *                                                                              *
- *   Chilitags is distributed in the hope that it will be useful,               *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
- *   GNU Lesser General Public License for more details.                        *
- *                                                                              *
- *   You should have received a copy of the GNU Lesser General Public License   *
- *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
- *******************************************************************************/
+*   Copyright 2013-2014 EPFL                                                   *
+*   Copyright 2013-2014 Quentin Bonnard                                        *
+*                                                                              *
+*   This file is part of chilitags.                                            *
+*                                                                              *
+*   Chilitags is free software: you can redistribute it and/or modify          *
+*   it under the terms of the Lesser GNU General Public License as             *
+*   published by the Free Software Foundation, either version 3 of the         *
+*   License, or (at your option) any later version.                            *
+*                                                                              *
+*   Chilitags is distributed in the hope that it will be useful,               *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+*   GNU Lesser General Public License for more details.                        *
+*                                                                              *
+*   You should have received a copy of the GNU Lesser General Public License   *
+*   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
+*******************************************************************************/
 
 /**
  * @file EstimatePose3D.cpp
@@ -29,7 +29,7 @@
 
 #include <opencv2/calib3d/calib3d.hpp>
 
-namespace chilitags{
+namespace chilitags {
 
 template<typename RealT>
 EstimatePose3D<RealT>::EstimatePose3D(cv::Size cameraResolution) :
@@ -40,10 +40,10 @@ EstimatePose3D<RealT>::EstimatePose3D(cv::Size cameraResolution) :
 {
     float focalLength = 700.0f;
     mCameraMatrix = (cv::Mat_<float>(3,3) <<
-        focalLength,    0,              cameraResolution.width/2,
-        0,              focalLength,    cameraResolution.height/2,
-        0,              0,              1
-    );
+                     focalLength,    0,              cameraResolution.width/2,
+                     0,              focalLength,    cameraResolution.height/2,
+                     0,              0,              1
+                     );
 }
 
 template<typename RealT>
@@ -105,19 +105,19 @@ void EstimatePose3D<RealT>::operator()(typename Chilitags3D_<RealT>::TagPoseMap&
 
 template<typename RealT>
 void EstimatePose3D<RealT>::operator()(std::string const& name,
-        std::vector<cv::Point3_<RealT>> const& objectPoints,
-        cv::Mat_<cv::Point2f> const& imagePoints,
-        typename Chilitags3D_<RealT>::TagPoseMap& objects)
+                                       std::vector<cv::Point3_<RealT> > const& objectPoints,
+                                       cv::Mat_<cv::Point2f> const& imagePoints,
+                                       typename Chilitags3D_<RealT>::TagPoseMap& objects)
 {
 
     // Find the 3D pose of our tag
     cv::solvePnP(objectPoints, imagePoints,
-            mCameraMatrix, mDistCoeffs,
-            mTempRotation, mTempTranslation, false,
+                 mCameraMatrix, mDistCoeffs,
+                 mTempRotation, mTempTranslation, false,
 #ifdef OPENCV3
-            cv::SOLVEPNP_ITERATIVE);
+                 cv::SOLVEPNP_ITERATIVE);
 #else
-            cv::ITERATIVE);
+                 cv::ITERATIVE);
 #endif
     //TODO: Rotation and translation vectors come out of solvePnP as double
 

@@ -71,7 +71,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/chilitags.pc.in")
         set(COMPILE_FLAGS "${COMPILE_FLAGS} -D${DEF}")
     endforeach()
 
-    configure_file(${CMAKE_SOURCE_DIR}/chilitags.pc.in 
+    configure_file(${CMAKE_SOURCE_DIR}/chilitags.pc.in
       ${CMAKE_CURRENT_BINARY_DIR}/chilitags.pc
       @ONLY )
 

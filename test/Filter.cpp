@@ -30,9 +30,9 @@
 #include <iostream>
 
 namespace {
-    const chilitags::TagCornerMap EMPTY_TAG_LIST;
-    const chilitags::TagCornerMap ONLY_TAG_42 = {{42, {}}};
-    const chilitags::TagCornerMap ONLY_TAG_43 = {{43, {}}};
+const chilitags::TagCornerMap EMPTY_TAG_LIST;
+const chilitags::TagCornerMap ONLY_TAG_42 = {{42, {}}};
+const chilitags::TagCornerMap ONLY_TAG_43 = {{43, {}}};
 }
 
 TEST(FindOutdated, ZeroPersistence) {

@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 
-namespace chilitags{
+namespace chilitags {
 
 Codec::Codec(int bitsId, int bitsCrc, int bitsFec, const char *xorMask, const char *crcPoly) :
     m_bitsId(bitsId),
@@ -199,7 +199,7 @@ bool Codec::decode(const unsigned char *data, int & id) const {
 // param encoded_id: first 20 bits of the tag to decode
 
 bool Codec::viterbi(const unsigned char *encoded_id,
-                               const unsigned char *tag_data, tag_info_t **tag) const {
+                    const unsigned char *tag_data, tag_info_t **tag) const {
     *tag = NULL;
     m_hamming_dist[0] = 0;
     for (int i = 0; i < m_bitsId + 1; i++) {

@@ -93,18 +93,18 @@ void setFilter(int persistence, float gain);
     \li The *tracking* compares two succesive input images and tries to update
     the position of tags that were previously detected. This process is
     significantly faster than the full detection, but can not detect new tags.
-*/
+ */
 enum DetectionTrigger {
 /**
     First track results of the previous call to find(), then run a full
     detection on the same input image. The detected position overrides the
     position resulting from tracking if the same tag is both tracked and
-    detected. 
+    detected.
 
     This improves the robustness of the detection, e.g. in the case where the
     tag has already been detected previously, but moves too fast to be detected
     again.
-*/
+ */
     TRACK_AND_DETECT = 0,
 
 /**
@@ -116,7 +116,7 @@ enum DetectionTrigger {
      `DETECT_ONLY` is however useful when Chilitags processes sequence of
      unrelated images, e.g.  in the batch processing of still images. In this
      case, tracking is useless and most likely generates false positives.
-*/
+ */
     DETECT_ONLY,
 
 /**
@@ -133,7 +133,7 @@ enum DetectionTrigger {
 
     Another interesting use case is to call `find()` with `TRACK_ONLY` as long
     as an expected (set of) tag(s) is found, and with `DETECT_ONLY` otherwise.
-*/
+ */
     TRACK_ONLY,
 
 /**
@@ -146,7 +146,7 @@ enum DetectionTrigger {
     full detection. It defaults to 15, i.e. out of 15 consecutive calls to
     `find()`, 1 will use a full detection, and the 14 others will only track
     previous results.
-*/
+ */
     DETECT_PERIODICALLY,
 
     /**
@@ -205,7 +205,7 @@ TagCornerMap find(
     default is 15, which means that out of 15 consecutive calls to find(),
     one will use a full detection, and the 14 others will only track
     previous results.
-*/
+ */
 void setDetectionPeriod(int period);
 
 /**
@@ -215,16 +215,16 @@ void setDetectionPeriod(int period);
 enum PerformancePreset {
 /**
     Favor speed over accuracy: no corner refinment, no subsampling.
-*/
+ */
     FASTER = 0,
 /**
     Balance speed and accuracy (default): corners are refined, no subsampling.
-*/
+ */
     FAST,
 /**
     Favor robustness over accuracy: corner are refined, input is
     subsampled down to 160 pixels wide.
-*/
+ */
     ROBUST,
 };
 
@@ -232,7 +232,7 @@ enum PerformancePreset {
     Applies one of the performance tuning preset (See PerformancePreset). To
     tune more finely the performance trade-offs, see setCornerRefinment(),
     setMaxInputWidth(), and setMinInputWidth().
-*/
+ */
 void setPerformance(PerformancePreset preset);
 
 //@{
@@ -395,9 +395,9 @@ Chilitags &getChilitags();
     convention to code the rotation and translation parameters in homogeneous
     coordinates:
     \verbatim
-    { r11 , r12 , r13 , tx 
-      r21 , r22 , r23 , ty 
-      r31 , r32 , r33 , tz 
+    { r11 , r12 , r13 , tx
+      r21 , r22 , r23 , ty
+      r31 , r32 , r33 , tz
         0 ,   0 ,   0 ,  1 }
     \endverbatim
     \param tags a list of tags, as returned by Chilitags::find().
@@ -411,8 +411,8 @@ Chilitags &getChilitags();
     the last camera frame.
  */
 TagPoseMap estimate(const TagCornerMap & tags,
-    cv::Vec<RealT, 4> const& camDeltaR = cv::Vec<RealT, 4>(1,0,0,0),
-    cv::Vec<RealT, 3> const& camDeltaX = cv::Vec<RealT, 3>(0,0,0));
+                    cv::Vec<RealT, 4> const& camDeltaR = cv::Vec<RealT, 4>(1,0,0,0),
+                    cv::Vec<RealT, 3> const& camDeltaX = cv::Vec<RealT, 3>(0,0,0));
 
 /**
     This is a convenience variant of estimate() which also takes care of the
@@ -423,9 +423,9 @@ TagPoseMap estimate(const TagCornerMap & tags,
     convention to code the rotation and translation parameters in homogeneous
     coordinates:
     \verbatim
-    { r11 , r12 , r13 , tx 
-      r21 , r22 , r23 , ty 
-      r31 , r32 , r33 , tz 
+    { r11 , r12 , r13 , tx
+      r21 , r22 , r23 , ty
+      r31 , r32 , r33 , tz
         0 ,   0 ,   0 ,  1 }
     \endverbatim
 
@@ -579,12 +579,12 @@ cv::Size readCalibration(const std::string &filename);
 
 /**
     Returns the camera matrix used for the pose estimation.
-*/
+ */
 const cv::Mat &getCameraMatrix()     const;
 
 /**
     Returns the distortion coefficients used for the pose estimation.
-*/
+ */
 const cv::Mat &getDistortionCoeffs() const;
 
 ~Chilitags3D_();

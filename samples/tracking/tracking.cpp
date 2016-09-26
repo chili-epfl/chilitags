@@ -119,8 +119,8 @@ int main(int argc, char* argv[])
             // will take over and return tags processed from the previous call
             // to track() as long as there is something returned.
             // When nothing is returned, we are back to regular detection.
-            auto tags = 
-                trackedChilitags.find(inputImage, tracking?chilitags::Chilitags::TRACK_ONLY:chilitags::Chilitags::TRACK_AND_DETECT);
+            auto tags =
+                trackedChilitags.find(inputImage, tracking ? chilitags::Chilitags::TRACK_ONLY : chilitags::Chilitags::TRACK_AND_DETECT);
             int64 endTime = cv::getTickCount();
             drawTags(outputImage, tags, startTime, endTime, false);
             tracking = !tags.empty();
@@ -143,9 +143,9 @@ void drawTags(
     bool detection
     ){
     cv::Scalar COLOR = detection ?
-        cv::Scalar(0, 0, 255):
-        cv::Scalar(255, 0, 0);
-        
+                       cv::Scalar(0, 0, 255) :
+                       cv::Scalar(255, 0, 0);
+
     for (const auto & tag : tags) {
 
         const cv::Mat_<cv::Point2f> corners(tag.second);
@@ -158,9 +158,9 @@ void drawTags(
                 PRECISION*corners(i),
                 PRECISION*corners((i+1)%4),
 #ifdef OPENCV3
-                COLOR, detection?3:1, cv::LINE_AA, SHIFT);
+                COLOR, detection ? 3 : 1, cv::LINE_AA, SHIFT);
 #else
-                COLOR, detection?3:1, CV_AA, SHIFT);
+                COLOR, detection ? 3 : 1, CV_AA, SHIFT);
 #endif
         }
 
@@ -174,9 +174,9 @@ void drawTags(
                 cv::format("%dx%d %4.0f ms (press '%c' to toggle %s)",
                            outputImage.cols, outputImage.rows,
                            processingTime,
-                           detection?'d':'t',
-                           detection?"simple detection":"tracking"
+                           detection ? 'd' : 't',
+                           detection ? "simple detection" : "tracking"
                            ),
-                cv::Point(32,detection?32:64),
+                cv::Point(32,detection ? 32 : 64),
                 cv::FONT_HERSHEY_SIMPLEX, 0.5f, COLOR);
 }

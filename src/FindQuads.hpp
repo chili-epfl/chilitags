@@ -35,7 +35,9 @@ FindQuads();
 
 std::vector<Quad> operator()(const cv::Mat &greyscaleImage);
 
-void setMinInputWidth(int minWidth) {mMinInputWidth = minWidth;}
+void setMinInputWidth(int minWidth) {
+    mMinInputWidth = minWidth;
+}
 
 protected:
 

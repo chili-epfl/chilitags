@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
         << "       to use the live feed of a camera as input.\n"
         << "\n"
         << "Hit Ctrl-C to stop the program.\n"
-        ;
+    ;
     while(capture.read(inputImage)) {
         cv::imwrite("lastimage.png", inputImage);
         chilitags.find(inputImage);

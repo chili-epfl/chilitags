@@ -21,7 +21,7 @@
 #include "EnsureGreyscale.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
 
-namespace chilitags{
+namespace chilitags {
 
 EnsureGreyscale::EnsureGreyscale() : mOutputImage(){
 }

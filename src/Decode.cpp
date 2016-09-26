@@ -20,7 +20,7 @@
 
 #include "Decode.hpp"
 
-namespace chilitags{
+namespace chilitags {
 
 const int Decode::INVALID_TAG = -1;
 const int DATA_SIZE = 6;
@@ -49,7 +49,9 @@ std::pair<int, Quad> Decode::operator()(const std::vector<unsigned char> &bits, 
     if (result.first == INVALID_TAG) {
         //flip the bits, in case this tag is inverted
         std::vector<unsigned char> flippedBits(bits.size());
-        std::transform(bits.begin(), bits.end(), flippedBits.begin(), [](const unsigned char& c) { return 1 - c; });
+        std::transform(bits.begin(), bits.end(), flippedBits.begin(), [](const unsigned char& c) {
+                return 1 - c;
+            });
         result = doDecode(flippedBits, corners);
     }
 #endif
@@ -72,8 +74,8 @@ std::pair<int, Quad> Decode::doDecode(const std::vector<unsigned char> &bits, co
 
     int orientation = -1;
     int id = INVALID_TAG;
-         if (mCodec.decode(mMatrix   , id)) orientation = 0;
-    else if (mCodec.decode(mMatrix90 , id)) orientation = 1;
+    if (mCodec.decode(mMatrix, id)) orientation = 0;
+    else if (mCodec.decode(mMatrix90, id)) orientation = 1;
     else if (mCodec.decode(mMatrix180, id)) orientation = 2;
     else if (mCodec.decode(mMatrix270, id)) orientation = 3;
 

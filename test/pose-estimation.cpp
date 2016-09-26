@@ -18,8 +18,8 @@
  *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
  *******************************************************************************/
 
-#include<fstream>
-#include<string>
+#include <fstream>
+#include <string>
 
 #ifdef OPENCV3
 #include <opencv2/ts.hpp>
@@ -45,8 +45,8 @@ const cv::Matx44f projectionMatrix = {
 };
 
 cv::Matx44f makeTransformation(
-        float rx, float ry, float rz,
-        float tx, float ty, float tz){
+    float rx, float ry, float rz,
+    float tx, float ty, float tz){
 
     static const float DEG2RAD = 3.141593f / 180.f;
     float A = cos(rx * DEG2RAD);
@@ -57,10 +57,10 @@ cv::Matx44f makeTransformation(
     float F = sin(rz * DEG2RAD);
 
     return {
-        C*E,        -C*F,       D,      tx,
-        B*D*E+A*F,  -B*D*F+A*E, -B*C,   ty,
-        -A*D*E+B*F, A*D*F+B*E,  A*C,    tz,
-        0.f,        0.f,        0.f,    1.f,
+               C*E,        -C*F,       D,      tx,
+                B*D*E+A*F,  -B*D*F+A*E, -B*C,   ty,
+               -A*D*E+B*F, A*D*F+B*E,  A*C,    tz,
+               0.f,        0.f,        0.f,    1.f,
     };
 }
 
@@ -81,10 +81,10 @@ chilitags::Quad makeTransformedCorners(cv::Matx44f transformation, float size) {
     transformedPoint2 /= transformedPoint2(3);
     transformedPoint3 /= transformedPoint3(3);
     return {
-        (float) transformedPoint0(0), (float) transformedPoint0(1),
-        (float) transformedPoint1(0), (float) transformedPoint1(1),
-        (float) transformedPoint2(0), (float) transformedPoint2(1),
-        (float) transformedPoint3(0), (float) transformedPoint3(1),
+               (float) transformedPoint0(0), (float) transformedPoint0(1),
+               (float) transformedPoint1(0), (float) transformedPoint1(1),
+               (float) transformedPoint2(0), (float) transformedPoint2(1),
+               (float) transformedPoint3(0), (float) transformedPoint3(1),
     };
 }
 
@@ -144,7 +144,7 @@ TEST(Estimate3dPose, Configurations) {
     {
         chilitags::Chilitags3D chilitags3D(CAMERA_SIZE);
         chilitags3D.setDefaultTagSize(20.f);
-        if(chilitags3D.readTagConfiguration(cvtest::TS::ptr()->get_data_path() + "misc/tag_configuration_sample.yml",true)){
+        if(chilitags3D.readTagConfiguration(cvtest::TS::ptr()->get_data_path() + "misc/tag_configuration_sample.yml",true)) {
             auto result = chilitags3D.estimate(tags);
 
             EXPECT_EQ(expected.size(), result.size());
@@ -179,8 +179,8 @@ TEST(Estimate3dPose, Configurations) {
         chilitags3D.setDefaultTagSize(20.f);
         std::ifstream configfile(cvtest::TS::ptr()->get_data_path() + "misc/tag_configuration_sample.yml");
         std::string str((std::istreambuf_iterator<char>(configfile)), //DO NOT REMOVE EXTRA PARENTHESIS!
-                std::istreambuf_iterator<char>());
-        if(chilitags3D.readTagConfiguration(str,true,true)){
+                        std::istreambuf_iterator<char>());
+        if(chilitags3D.readTagConfiguration(str,true,true)) {
             auto result = chilitags3D.estimate(tags);
 
             EXPECT_EQ(expected.size(), result.size());

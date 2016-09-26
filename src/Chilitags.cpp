@@ -32,16 +32,16 @@
 namespace chilitags {
 
 namespace {
-    chilitags::TagCornerMap scaleBy(chilitags::TagCornerMap tags, float factor) {
-        if (factor == 1.0f) return tags;
-        for(auto &tag: tags) {
-            //Maybe this translation should be moved to Refine ?
-            cv::add(tag.second, cv::Scalar::all(-0.5f), tag.second);
-            tag.second = factor*tag.second;
-            cv::add(tag.second, cv::Scalar::all(0.5f), tag.second);
-        }
-        return tags;
+chilitags::TagCornerMap scaleBy(chilitags::TagCornerMap tags, float factor) {
+    if (factor == 1.0f) return tags;
+    for(auto &tag: tags) {
+        //Maybe this translation should be moved to Refine ?
+        cv::add(tag.second, cv::Scalar::all(-0.5f), tag.second);
+        tag.second = factor*tag.second;
+        cv::add(tag.second, cv::Scalar::all(0.5f), tag.second);
     }
+    return tags;
+}
 }
 
 class Chilitags::Impl
@@ -73,20 +73,20 @@ void setFilter(int persistence, float gain) {
 
 void setPerformance(PerformancePreset preset) {
     switch (preset) {
-        case FASTER:
-            mDetect.setCornerRefinement(false);
-            mDetect.setMinInputWidth(0);
-            break;
-        case FAST:
-            mDetect.setCornerRefinement(true);
-            mDetect.setMinInputWidth(0);
-            break;
-        case ROBUST:
-            mDetect.setCornerRefinement(true);
-            mDetect.setMinInputWidth(160);
-            break;
-        default:
-            break;
+    case FASTER:
+        mDetect.setCornerRefinement(false);
+        mDetect.setMinInputWidth(0);
+        break;
+    case FAST:
+        mDetect.setCornerRefinement(true);
+        mDetect.setMinInputWidth(0);
+        break;
+    case ROBUST:
+        mDetect.setCornerRefinement(true);
+        mDetect.setMinInputWidth(160);
+        break;
+    default:
+        break;
     }
 }
 
@@ -114,7 +114,7 @@ TagCornerMap find(
     float scaleFactor = 1.0f;
     if (mMaxInputWidth > 0 && inputImage.cols > mMaxInputWidth) {
         scaleFactor = (float)inputImage.cols/(float)mMaxInputWidth;
-        cv::resize(inputImage, mResizedInput, cv::Size(), 1.0f/scaleFactor , 1.0f/scaleFactor , cv::INTER_NEAREST);
+        cv::resize(inputImage, mResizedInput, cv::Size(), 1.0f/scaleFactor, 1.0f/scaleFactor, cv::INTER_NEAREST);
         mResizedGrayscaleInput = mEnsureGreyscale(mResizedInput);
     }
     else {
@@ -123,17 +123,17 @@ TagCornerMap find(
 
     //Take care of the background thread (if exists)
 #ifdef HAS_MULTITHREADING
-    switch(detectionTrigger){
-        case DETECT_ONLY:
-        case TRACK_ONLY:
-        case TRACK_AND_DETECT:
-        case DETECT_PERIODICALLY:
-            mDetect.shutdownBackgroundThread();
-            break;
-        case ASYNC_DETECT_PERIODICALLY:
-        case ASYNC_DETECT_ALWAYS:
-            mDetect.launchBackgroundThread(mTrack);
-            break;
+    switch(detectionTrigger) {
+    case DETECT_ONLY:
+    case TRACK_ONLY:
+    case TRACK_AND_DETECT:
+    case DETECT_PERIODICALLY:
+        mDetect.shutdownBackgroundThread();
+        break;
+    case ASYNC_DETECT_PERIODICALLY:
+    case ASYNC_DETECT_ALWAYS:
+        mDetect.launchBackgroundThread(mTrack);
+        break;
     }
 #else
     if (detectionTrigger == ASYNC_DETECT_PERIODICALLY) {
@@ -151,53 +151,53 @@ TagCornerMap find(
 
     // Do detection/tracking/both depending on detection trigger
     TagCornerMap tags;
-    switch(detectionTrigger){
+    switch(detectionTrigger) {
 
-        case DETECT_ONLY:
-            mDetect(mResizedGrayscaleInput, tags);
-            return scaleBy(mFilter(tags), scaleFactor);
+    case DETECT_ONLY:
+        mDetect(mResizedGrayscaleInput, tags);
+        return scaleBy(mFilter(tags), scaleFactor);
 
-        case TRACK_ONLY:
+    case TRACK_ONLY:
+        return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
+
+    case TRACK_AND_DETECT:
+
+        //Track and do one detection on top, overwriting track results
+        tags = mTrack(mResizedGrayscaleInput);
+        mDetect(mResizedGrayscaleInput, tags);
+        mTrack.update(tags);
+        return scaleBy(mFilter(tags), scaleFactor);
+
+    case DETECT_PERIODICALLY:
+        mCallsBeforeNextDetection--;
+
+        //If detection period is not yet reached, track only
+        if(mCallsBeforeNextDetection > 0)
             return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
 
-        case TRACK_AND_DETECT:
-
-            //Track and do one detection on top, overwriting track results
+        //If detection period is reached, track and do one detection on top, overwriting track results
+        else{
+            mCallsBeforeNextDetection = mCallsBeforeDetection;
             tags = mTrack(mResizedGrayscaleInput);
             mDetect(mResizedGrayscaleInput, tags);
             mTrack.update(tags);
             return scaleBy(mFilter(tags), scaleFactor);
-
-        case DETECT_PERIODICALLY:
-            mCallsBeforeNextDetection--;
-
-            //If detection period is not yet reached, track only
-            if(mCallsBeforeNextDetection > 0)
-                return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
-
-            //If detection period is reached, track and do one detection on top, overwriting track results
-            else{
-                mCallsBeforeNextDetection = mCallsBeforeDetection;
-                tags = mTrack(mResizedGrayscaleInput);
-                mDetect(mResizedGrayscaleInput, tags);
-                mTrack.update(tags);
-                return scaleBy(mFilter(tags), scaleFactor);
-            }
+        }
 
 #ifdef HAS_MULTITHREADING
-        case ASYNC_DETECT_PERIODICALLY:
-            mCallsBeforeNextDetection--;
+    case ASYNC_DETECT_PERIODICALLY:
+        mCallsBeforeNextDetection--;
 
-            //If the detection period is reached, deliver new frame to background detection thread
-            if(mCallsBeforeNextDetection <= 0){
-                mCallsBeforeNextDetection = mCallsBeforeDetection;
-                mDetect(mResizedGrayscaleInput, tags); //This does not update tags, nor does it block for computation
-            }
-            return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
+        //If the detection period is reached, deliver new frame to background detection thread
+        if(mCallsBeforeNextDetection <= 0) {
+            mCallsBeforeNextDetection = mCallsBeforeDetection;
+            mDetect(mResizedGrayscaleInput, tags);     //This does not update tags, nor does it block for computation
+        }
+        return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
 
-        case ASYNC_DETECT_ALWAYS:
-            mDetect(mResizedGrayscaleInput, tags); //This does not update tags, nor does it block for computation
-            return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
+    case ASYNC_DETECT_ALWAYS:
+        mDetect(mResizedGrayscaleInput, tags);     //This does not update tags, nor does it block for computation
+        return scaleBy(mTrack(mResizedGrayscaleInput), scaleFactor);
 #endif
     }
 
@@ -241,9 +241,9 @@ cv::Mat draw(int id, int cellSize, bool withMargin, cv::Scalar color) const {
     cv::resize(outlinedImage, sizedImage, sizedImage.size(), 0, 0, cv::INTER_NEAREST);
 
     // Coloring
-    cv::Mat   redImage = (1-sizedImage)*color[0]+sizedImage*255;
+    cv::Mat redImage = (1-sizedImage)*color[0]+sizedImage*255;
     cv::Mat greenImage = (1-sizedImage)*color[1]+sizedImage*255;
-    cv::Mat  blueImage = (1-sizedImage)*color[2]+sizedImage*255;
+    cv::Mat blueImage = (1-sizedImage)*color[2]+sizedImage*255;
     cv::Mat colorImage(sizedImage.size(), CV_8UC3);
     cv::merge(std::vector<cv::Mat>{blueImage, greenImage, redImage}, colorImage);
 

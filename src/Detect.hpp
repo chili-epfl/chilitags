@@ -1,22 +1,22 @@
 /*******************************************************************************
- *   Copyright 2013-2014 EPFL                                                   *
- *   Copyright 2013-2014 Quentin Bonnard                                        *
- *                                                                              *
- *   This file is part of chilitags.                                            *
- *                                                                              *
- *   Chilitags is free software: you can redistribute it and/or modify          *
- *   it under the terms of the Lesser GNU General Public License as             *
- *   published by the Free Software Foundation, either version 3 of the         *
- *   License, or (at your option) any later version.                            *
- *                                                                              *
- *   Chilitags is distributed in the hope that it will be useful,               *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
- *   GNU Lesser General Public License for more details.                        *
- *                                                                              *
- *   You should have received a copy of the GNU Lesser General Public License   *
- *   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
- *******************************************************************************/
+*   Copyright 2013-2014 EPFL                                                   *
+*   Copyright 2013-2014 Quentin Bonnard                                        *
+*                                                                              *
+*   This file is part of chilitags.                                            *
+*                                                                              *
+*   Chilitags is free software: you can redistribute it and/or modify          *
+*   it under the terms of the Lesser GNU General Public License as             *
+*   published by the Free Software Foundation, either version 3 of the         *
+*   License, or (at your option) any later version.                            *
+*                                                                              *
+*   Chilitags is distributed in the hope that it will be useful,               *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of             *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+*   GNU Lesser General Public License for more details.                        *
+*                                                                              *
+*   You should have received a copy of the GNU Lesser General Public License   *
+*   along with Chilitags.  If not, see <http://www.gnu.org/licenses/>.         *
+*******************************************************************************/
 
 #ifndef DETECT_HPP
 #define DETECT_HPP
@@ -41,48 +41,48 @@ class Detect {
 
 public:
 
-    Detect();
+Detect();
 
-    void setMinInputWidth(int minWidth);
+void setMinInputWidth(int minWidth);
 
-    void setCornerRefinement(bool refineCorners);
+void setCornerRefinement(bool refineCorners);
 
-    void operator()(cv::Mat const& inputImage, TagCornerMap& tags);
+void operator()(cv::Mat const& inputImage, TagCornerMap& tags);
 
 #ifdef HAS_MULTITHREADING
-    void launchBackgroundThread(Track& track);
+void launchBackgroundThread(Track& track);
 
-    void shutdownBackgroundThread();
+void shutdownBackgroundThread();
 #endif
 
 protected:
 
-    bool mRefineCorners;
+bool mRefineCorners;
 
-    FindQuads mFindQuads;
-    Refine mRefine;
-    ReadBits mReadBits;
-    Decode mDecode;
+FindQuads mFindQuads;
+Refine mRefine;
+ReadBits mReadBits;
+Decode mDecode;
 
-    cv::Mat mFrame;
-    TagCornerMap mTags;
+cv::Mat mFrame;
+TagCornerMap mTags;
 
-    void doDetection(TagCornerMap& tags);
+void doDetection(TagCornerMap& tags);
 
 #ifdef HAS_MULTITHREADING
-    Track* mTrack;
+Track* mTrack;
 
-    pthread_t mBackgroundThread;
+pthread_t mBackgroundThread;
 
-    bool mBackgroundRunning;
-    bool mBackgroundShouldRun;
-    bool mNeedFrame;
+bool mBackgroundRunning;
+bool mBackgroundShouldRun;
+bool mNeedFrame;
 
-    pthread_cond_t mInputCond;
-    pthread_mutex_t mInputLock;
+pthread_cond_t mInputCond;
+pthread_mutex_t mInputLock;
 
-    static void* dispatchRun(void* args);
-    void run();
+static void* dispatchRun(void* args);
+void run();
 #endif
 
 };

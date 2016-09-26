@@ -44,8 +44,8 @@ TEST(Integration, Minimal) {
     float far   = zoom*12.0f;
     chilitags::Quad expectedCorners = {
         close, close,
-        far  , close,
-        far  , far  ,
+        far, close,
+        far, far,
         close, far
     };
 
@@ -55,7 +55,7 @@ TEST(Integration, Minimal) {
     auto actualCorners = tags.cbegin()->second;
     for (int i : {0,1,2,3}) {
         EXPECT_GT(0.1f, cv::norm(actualCorners.row(i) - expectedCorners.row(i)))
-        << "with i=" << i;
+            << "with i=" << i;
     }
 }
 
@@ -89,18 +89,18 @@ TEST(Integration, MaxWidth) {
     ASSERT_EQ(tagsWith.size(), tagsWithout.size());
 
     for (auto withIt = tagsWith.cbegin(), withoutIt = tagsWithout.cbegin();
-        withIt != tagsWith.cend();
-        ++withIt, ++withoutIt) {
+         withIt != tagsWith.cend();
+         ++withIt, ++withoutIt) {
 
         EXPECT_EQ(withIt->first, withoutIt->first);
 
         for (int i : {0,1,2,3}) {
             EXPECT_GT(3.0f, cv::norm(
-                   withIt->second.row(i) -
-                withoutIt->second.row(i)))
-            << "with i=" << i
-            << ",\n withIt[i]=" << withIt->second.row(i)
-            << ",\n withoutIt[i]=" << withoutIt->second.row(i);
+                          withIt->second.row(i) -
+                          withoutIt->second.row(i)))
+                << "with i=" << i
+                << ",\n withIt[i]=" << withIt->second.row(i)
+                << ",\n withoutIt[i]=" << withoutIt->second.row(i);
         }
     }
 }

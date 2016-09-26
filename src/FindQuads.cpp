@@ -45,7 +45,7 @@ void drawContour(cv::Mat &image, cv::Mat &contour, cv::Scalar color, cv::Point o
 
 }
 
-namespace chilitags{
+namespace chilitags {
 
 FindQuads::FindQuads() :
     mGrayPyramid(1),

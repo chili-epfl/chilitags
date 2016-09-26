@@ -29,8 +29,8 @@
 #include "HardcodedIds.hpp"
 
 namespace {
-    cv::Vec3b WHITE(255,255,255);
-    cv::Vec3b BLACK(0,0,0);
+cv::Vec3b WHITE(255,255,255);
+cv::Vec3b BLACK(0,0,0);
 }
 
 TEST(Drawer, Defaults) {
@@ -65,7 +65,7 @@ TEST(Drawer, DrawCode) {
         for (int i = 0; i<6; ++i) {
             for (int j = 0; j<6; ++j) {
                 ASSERT_EQ(
-                    hardcodedIds.id[t][6*i+j]?WHITE:BLACK,
+                    hardcodedIds.id[t][6*i+j] ? WHITE : BLACK,
                     image.at<cv::Vec3b>(2+i,2+j));
             }
         }
@@ -85,7 +85,7 @@ TEST(Drawer, WithMargin) {
         for (int i = 0; i<6; ++i) {
             for (int j = 0; j<6; ++j) {
                 ASSERT_EQ(
-                    hardcodedIds.id[t][6*i+j]?WHITE:BLACK,
+                    hardcodedIds.id[t][6*i+j] ? WHITE : BLACK,
                     image.at<cv::Vec3b>(4+i,4+j));
             }
         }
@@ -119,7 +119,7 @@ TEST(Drawer, Zoom) {
                 for (int y = zoom*(2+i); y<zoom*(2+i+1); ++y) {
                     for (int x = zoom*(2+j); x<zoom*(2+j+1); ++x) {
                         ASSERT_EQ(
-                            hardcodedIds.id[t][6*i+j]?WHITE:BLACK,
+                            hardcodedIds.id[t][6*i+j] ? WHITE : BLACK,
                             image.at<cv::Vec3b>(y,x));
                     }
                 }
@@ -143,7 +143,7 @@ TEST(Drawer, ZoomWithMargin) {
                 for (int y = zoom*(4+i); y<zoom*(4+i+1); ++y) {
                     for (int x = zoom*(4+j); x<zoom*(4+j+1); ++x) {
                         ASSERT_EQ(
-                            hardcodedIds.id[t][6*i+j]?WHITE:BLACK,
+                            hardcodedIds.id[t][6*i+j] ? WHITE : BLACK,
                             image.at<cv::Vec3b>(y,x));
                     }
                 }

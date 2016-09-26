@@ -120,8 +120,8 @@ int main(int argc, char* argv[])
             std::vector<cv::Point2f> t2DPoints;
             for (auto homogenousPoint : referential)
                 t2DPoints.push_back(cv::Point2f(
-                    homogenousPoint[0]/homogenousPoint[3],
-                    homogenousPoint[1]/homogenousPoint[3]));
+                                        homogenousPoint[0]/homogenousPoint[3],
+                                        homogenousPoint[1]/homogenousPoint[3]));
 
             static const int SHIFT = 16;
             static const float PRECISION = 1<<SHIFT;
