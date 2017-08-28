@@ -31,6 +31,25 @@ add_library(
         ${chilitags_source}
 )
 
+include(GenerateExportHeader)
+generate_export_header(chilitags
+    BASE_NAME CHILITAGS
+    EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/chilitags_export.hpp
+)
+
+target_include_directories(chilitags PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+    $<INSTALL_INTERFACE:include/chilitags>
+)
+
+target_compile_definitions(chilitags_static PUBLIC
+    -DCHILITAGS_STATIC_DEFINE
+)
+target_include_directories(chilitags_static PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+    $<INSTALL_INTERFACE:include/chilitags>
+)
+
 target_link_libraries(chilitags ${OpenCV_LIBS})
 target_link_libraries(chilitags_static ${OpenCV_LIBS})
 
@@ -40,6 +59,7 @@ if(WITH_PTHREADS AND NOT DEFINED ANDROID) #Android pthreads don't require -lpthr
 endif()
 
 install (TARGETS chilitags chilitags_static
+    RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
@@ -55,6 +75,7 @@ file(GLOB_RECURSE chilitags_headers ../include/*)
 
 install(FILES
     ${chilitags_headers}
+    ${PROJECT_BINARY_DIR}/chilitags_export.hpp
     DESTINATION include/chilitags
 )
 

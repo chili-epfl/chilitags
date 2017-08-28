@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
 
     cv::namedWindow("DisplayChilitags");
     // Main loop, exiting when 'q is pressed'
-    for (; 'q' != (char) cv::waitKey(1) and sRunning; ) {
+    for (; 'q' != (char) cv::waitKey(1) && sRunning; ) {
 
         // Capture a new image.
         capture.read(inputImage);
