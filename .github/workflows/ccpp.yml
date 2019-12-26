@@ -1,0 +1,13 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ros:kinetic
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: prepare directory
+      run: echo "Hello World"
