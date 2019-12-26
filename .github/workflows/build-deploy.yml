@@ -12,6 +12,6 @@ jobs:
     - name: where am i?
       run: pwd && ls
     - name: run docker
-      run: docker run ros:kinetic-perception ./build.sh
+      run: docker run ros:kinetic-perception -v /home/runner/work/chilitags/chilitags:/root /root/build.sh
     - name: identify
       run: whoami
