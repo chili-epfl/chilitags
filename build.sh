@@ -1,12 +1,23 @@
 #!/bin/sh
 
+# Makes the package, then generates the binary package and deploys it to the repository
+# Run this script in a docker container by mapping your source directory to it's root folder
+# docker run -v ~/{path}/chilitags/:/root ros:kinetic-perception /root/build.sh
+
 set -e # fail on error
 
+cd /root
+
+rm -rf build
 mkdir build
 cd build
 cmake ..
 make
 
-apt-get -y install fakeroot
-
+# build the binary from the source directory
+apt-get -y update
+apt-get -y install javahelper # required for debhelper
+cd ..
 fakeroot debian/rules binary
+
+ls ../

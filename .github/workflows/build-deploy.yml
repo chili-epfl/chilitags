@@ -13,5 +13,3 @@ jobs:
       run: pwd && ls
     - name: run the build script inside of the ros docker image
       run: docker run -v /home/runner/work/chilitags/chilitags:/root ros:kinetic-perception /root/build.sh
-    - name: identify
-      run: whoami
