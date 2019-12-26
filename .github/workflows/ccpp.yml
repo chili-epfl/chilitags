@@ -11,3 +11,5 @@ jobs:
     - uses: actions/checkout@v1
     - name: prepare directory
       run: echo "Hello World!"
+    - name: identify
+      run: whoami
