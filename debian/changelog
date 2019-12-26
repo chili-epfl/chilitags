@@ -1,3 +1,7 @@
+chilitags (2.0.1-rc2) xenial; urgency=low
+
+  * BB-756 Continuous integration with Github actions and Cloudsmith repository
+
 chilitags (2.0.1-rc1) xenial; urgency=low
 
   * Initial release. 
