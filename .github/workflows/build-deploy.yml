@@ -4,12 +4,19 @@ on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-16.04
-    
+
     steps:
-    - uses: actions/checkout@v1
-    - name: where am i?
-      run: pwd && ls
-    - name: run the build script inside of the ros docker image
-      run: docker run -v /home/runner/work/chilitags/chilitags:/root ros:kinetic-perception /root/build.sh
+      - uses: actions/checkout@v1
+      - name: where am i?
+        run: pwd && ls
+      - name: show docker info to see if cache is working
+        run: docker info
+      - name: Cache docker images
+        uses: actions/cache@v1
+        with:
+          path: /var/lib/docker
+          key: ${{ runner.os }}-docker-images
+      - name: build and deploy running build script in docker container
+        run: docker run -v /home/runner/work/chilitags/chilitags:/root ros:kinetic-perception /root/build.sh
+         
