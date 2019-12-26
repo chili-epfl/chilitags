@@ -1,5 +1,12 @@
 #!/bin/sh
 
-whoami
+set -e # fail on error
 
-time
+mkdir build
+cd build
+cmake ..
+make
+
+apt-get -y install fakeroot
+
+fakeroot debian/rules binary
