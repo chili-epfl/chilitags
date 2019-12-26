@@ -16,7 +16,7 @@ fakeroot debian/rules clean
 fakeroot debian/rules binary
 
 # prepare tools for deployment to cloudsmith
-apt -y install python-pip
+python -m pip install --upgrade pip
 pip install cloudsmith-cli
 # requires a CLOUDSMITH_API_KEY env variable to pushx
 cloudsmith push deb automodality/trial/ubuntu/xenial ../chilitags_*
