@@ -8,16 +8,14 @@ set -e # fail on error
 
 cd /root
 
-rm -rf build
-mkdir build
-cd build
-cmake ..
-make
-
 # build the binary from the source directory
+fakeroot debian/rules clean
 apt-get -y update
 apt-get -y install javahelper # required for debhelper
-cd ..
 fakeroot debian/rules binary
 
-ls ../
+# prepare tools for deployment to cloudsmith
+apt -y install python-pip
+pip install cloudsmith-cli
+# requires a CLOUDSMITH_API_KEY env variable to pushx
+cloudsmith push deb automodality/trial/ubuntu/xenial ../chilitags_*
