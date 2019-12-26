@@ -10,6 +10,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: run docker
-      run: docker run -it ros:kinetic-perception
+      run: docker run ros:kinetic-perception build.sh
     - name: identify
       run: whoami
