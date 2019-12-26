@@ -9,7 +9,9 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: where am i?
+      run: pwd && ls
     - name: run docker
-      run: docker run ros:kinetic-perception build.sh
+      run: docker run ros:kinetic-perception ./build.sh
     - name: identify
       run: whoami
