@@ -1,0 +1,25 @@
+name: Package
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-16.04
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: where am i?
+        run: pwd && ls
+      - name: show docker info to see if cache is working
+        run: docker info
+      - name: Cache docker images
+        uses: actions/cache@v1
+        with:
+          path: /var/lib/docker
+          key: ${{ runner.os }}-docker-images
+      - name: build and deploy running build script in docker container
+        # Secret required: CLOUDSMITH_API_KEY 
+        # From: https://cloudsmith.io/user/settings/api/ - Not yours, but ci@automodality.com user.
+        # To: https://github.com/AutoModality/chilitags/settings/secrets 
+        run: docker run -v /home/runner/work/chilitags/chilitags:/root --env CLOUDSMITH_API_KEY=${{ secrets.CLOUDSMITH_API_KEY }} ros:kinetic-perception /root/package.sh
+         
