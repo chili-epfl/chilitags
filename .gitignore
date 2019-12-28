@@ -19,3 +19,5 @@ libs/
 #Python cache
 *.pyc
 
+#generated files
+debian/changelog

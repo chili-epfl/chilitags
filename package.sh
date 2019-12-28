@@ -6,17 +6,34 @@
 
 set -e # fail on error
 
+# the change log indicates the project name and version
+write_changelog(){
+    branch="$(git rev-parse --abbrev-ref HEAD)"
+    timestamp=$(date +%Y%m%d%H%M%S)
+    branch_escaped=$(echo "$branch" | sed -r "s/[/]+/-/g") #replace / with - for feature/BB-73 or BB-73/good-stuff
+    version="$timestamp-$branch_escaped"
+    project_name="$(basename $(git config remote.origin.url |sed "s/\.git$//"))"
+    echo "$project_name ($version) unstable; urgency=low" > debian/changelog
+}
+
+# make and create the debian package locally 
+create_package(){
+    apt-get -y update
+    apt-get -y install javahelper # required for debhelper
+    fakeroot debian/rules clean
+    fakeroot debian/rules binary
+}
+
+# send the package to the repository
+push_package(){
+    # prepare tools for deployment to cloudsmith
+    apt-get -y install python-pip
+    pip install cloudsmith-cli
+    # requires a CLOUDSMITH_API_KEY env variable to pushx
+    cloudsmith push deb automodality/trial/ubuntu/xenial ../chilitags_*
+}
+
 cd /root
-
-# build the binary from the source directory
-
-apt-get -y update
-apt-get -y install javahelper # required for debhelper
-fakeroot debian/rules clean
-fakeroot debian/rules binary
-
-# prepare tools for deployment to cloudsmith
-apt-get -y install python-pip
-pip install cloudsmith-cli
-# requires a CLOUDSMITH_API_KEY env variable to pushx
-cloudsmith push deb automodality/trial/ubuntu/xenial ../chilitags_*
+write_changelog
+create_package
+push_package
