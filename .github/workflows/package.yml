@@ -23,5 +23,5 @@ jobs:
         # Secret required: CLOUDSMITH_API_KEY 
         # From: https://cloudsmith.io/user/settings/api/ - Not yours, but ci@automodality.com user.
         # To: https://github.com/AutoModality/chilitags/settings/secrets 
-        run: docker run -v /home/runner/work/chilitags/chilitags:/root --env CLOUDSMITH_API_KEY=${{ secrets.CLOUDSMITH_API_KEY }} --env USER=${{ GITHUB_ACTOR }} ros:kinetic-perception /root/package.sh
+        run: docker run -v $GITHUB_WORKSPACE:/root --env CLOUDSMITH_API_KEY=${{ secrets.CLOUDSMITH_API_KEY }} --env USER=$GITHUB_ACTOR ros:kinetic-perception /root/package.sh
          
