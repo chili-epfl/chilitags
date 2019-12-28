@@ -8,12 +8,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - name: where am i?
-        run: pwd && ls
-      - name: where is home?
-        run: $HOME
-      - name: show docker info to see if cache is working
-        run: docker info
       - name: Cache docker images
         uses: actions/cache@v1
         with:
