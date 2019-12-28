@@ -10,6 +10,8 @@ jobs:
       - uses: actions/checkout@v1
       - name: where am i?
         run: pwd && ls
+      - name: where is home?
+        run: $HOME
       - name: show docker info to see if cache is working
         run: docker info
       - name: Cache docker images
@@ -21,5 +23,5 @@ jobs:
         # Secret required: CLOUDSMITH_API_KEY 
         # From: https://cloudsmith.io/user/settings/api/ - Not yours, but ci@automodality.com user.
         # To: https://github.com/AutoModality/chilitags/settings/secrets 
-        run: docker run -v /home/runner/work/chilitags/chilitags:/root --env CLOUDSMITH_API_KEY=${{ secrets.CLOUDSMITH_API_KEY }} ros:kinetic-perception /root/package.sh
+        run: docker run -v /home/runner/work/chilitags/chilitags:/root --env CLOUDSMITH_API_KEY=${{ secrets.CLOUDSMITH_API_KEY }} --env USER=${{ GITHUB_ACTOR }} ros:kinetic-perception /root/package.sh
          

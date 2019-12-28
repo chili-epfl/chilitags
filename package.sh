@@ -6,13 +6,13 @@
 
 set -e # fail on error
 
+# user - environment variable representing the person triggering the build
+
 # the change log indicates the project name and version
 write_changelog(){
-    branch="$(git rev-parse --abbrev-ref HEAD)"
-    timestamp=$(date +%Y%m%d%H%M%S)
-    branch_escaped=$(echo "$branch" | sed -r "s/[/]+/-/g") #replace / with - for feature/BB-73 or BB-73/good-stuff
-    version="$timestamp-$branch_escaped"
     project_name="$(basename $(git config remote.origin.url |sed "s/\.git$//"))"
+    timestamp=$(date +%Y%m%d%H%M%S)
+    version="$timestamp-$user"
     echo "$project_name ($version) unstable; urgency=low" > debian/changelog
 }
 
