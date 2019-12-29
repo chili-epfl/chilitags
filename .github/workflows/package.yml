@@ -3,8 +3,7 @@ name: Package
 on:
   push:
     branches:    
-    - '[A-Z]+-[0-9]+'
-    - '[A-Z]+-[0-9]+/*'
+    - master
 jobs:
   build:
     runs-on: ubuntu-16.04
