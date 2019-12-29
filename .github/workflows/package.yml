@@ -1,15 +1,14 @@
-name: Developer Package
-
-on:
-  push:
-    branches:    
-    - master
+name: Development Package
+on: pull_request
 jobs:
-  build:
+  package:
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
       - name: package
         uses: ./.github/actions/package@local
-      
+        with:
+          author: $GITHUB_ACTOR
+          github_ref: $GITHUB_REF
+
          

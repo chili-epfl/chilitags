@@ -1,6 +1,13 @@
 # action.yml
 name: 'Package on Ros Kinetic Perception'
 description: 'Debian packaging on ros:kinetic-perception'
+inputs:
+  author:  
+    description: 'Who triggered the action'
+    required: true
+  github-ref: 
+    description: 'The branch or tag reference'
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
