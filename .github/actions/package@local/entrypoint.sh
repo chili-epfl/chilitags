@@ -2,10 +2,7 @@
 
 set -e # fail on error
 
-pwd
-ls
-mkdir build
-cd build
-pwd
-cmake ..
-make
+apt-get -y update
+apt-get -y install javahelper # required for debhelper
+fakeroot debian/rules clean
+fakeroot debian/rules binary
