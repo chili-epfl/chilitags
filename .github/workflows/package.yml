@@ -9,8 +9,8 @@ jobs:
         id: package
         uses: ./.github/actions/package@local
         with:
-          author: "$GITHUB_ACTOR"
-          github-ref: "$GITHUB_REF"
+          author: $GITHUB_ACTOR
+          github-ref: $GITHUB_REF
       - name: The generated package
         run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
          
