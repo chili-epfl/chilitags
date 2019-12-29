@@ -13,4 +13,6 @@ jobs:
           github-ref: ${{ github.ref }}
       - name: The generated package
         run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
+      - name: The actual file
+        run: ls -l ${{ steps.package.outputs.artifact-path }}"
          

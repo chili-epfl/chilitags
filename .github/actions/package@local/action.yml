@@ -1,4 +1,4 @@
-# action.yml
+# see package.yml for usage 
 name: 'Package on Ros Kinetic Perception'
 description: 'Debian packaging on ros:kinetic-perception'
 inputs:
@@ -6,7 +6,7 @@ inputs:
     description: 'Who triggered the action'
     required: true
   github-ref: 
-    description: 'The branch or tag reference'
+    description: 'The branch or tag reference (refs/pull/2/merge)'
     required: true
 outputs:
   artifact-path:
@@ -15,6 +15,6 @@ outputs:
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  args:
+  args: # see entrypoint.sh for the recipient of these
     - ${{ inputs.author }}
     - ${{ inputs.github-ref }}
