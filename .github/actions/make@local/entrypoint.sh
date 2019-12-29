@@ -2,10 +2,7 @@
 
 set -e # fail on error
 
-echo $PATH
-
-export $PATH=$PATH;/opt/ros/kinetic/bin
-echo $PATH
+source /opt/ros/kinetic/setup.bash
 
 mkdir build
 cd build
