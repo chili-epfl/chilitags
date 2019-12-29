@@ -2,15 +2,10 @@
 
 set -e # fail on error
 
-apt-get -y update
-apt-get -y install libopencv-dev
+echo $PATH
 
-pwd
-ls
-ls /opt/ros/kinetic/bin
-whoami
-which opencv_version
-
+export $PATH=$PATH;/opt/ros/kinetic/bin
+echo $PATH
 
 mkdir build
 cd build
