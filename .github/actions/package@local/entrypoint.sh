@@ -4,6 +4,7 @@ set -e # fail on error
 
 apt-get -y update
 apt-get -y install javahelper # required for debhelper
+apt-get -y install libopencv-dev
 
 project_name="$(basename $(git config remote.origin.url |sed "s/\.git$//"))"
 timestamp=$(date +%Y%m%d%H%M%S)

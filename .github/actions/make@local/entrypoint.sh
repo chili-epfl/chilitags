@@ -2,6 +2,8 @@
 
 set -e # fail on error
 
+apt-get -y install libopencv-dev
+
 pwd
 ls
 ls /opt/ros/kinetic/bin
