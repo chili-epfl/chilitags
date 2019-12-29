@@ -11,13 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: show root
-        run: ls .
-      - name: show github
-        run: ls .github/
-      - name: show actions
-        run: ls .github/actions
-      - name: show make action dir 
-        run: ls .github/actions/action-make-ros-kinetic-perception@BB-758
       - name: make
-        uses: ./.github/actions/action-make-ros-kinetic-perception@BB-758
+        uses: ./.github/actions/action-make-ros-kinetic-perception@1.0.0
 
