@@ -17,7 +17,7 @@ jobs:
       - name: show actions
         run: ls .github/actions
       - name: show make action dir 
-        run: ls .github/actions/action-make-ros-kinetic-perception
+        run: ls .github/actions/action-make-ros-kinetic-perception@BB-758
       - name: make
         uses: ./.github/actions/action-make-ros-kinetic-perception@BB-758
 
