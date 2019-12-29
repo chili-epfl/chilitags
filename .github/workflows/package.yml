@@ -2,12 +2,6 @@ name: Package
 
 on:
   push:
-     branches:    
-     - dev
-     tags:
-       - 'v[0-9]+.[0-9]+.[0-9]+'
-       - 'v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+'
-  pull_request:
     branches:    
     - '[A-Z]+-[0-9]+'
     - '[A-Z]+-[0-9]+/*'
@@ -16,14 +10,7 @@ jobs:
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
-      - name: Cache docker images
-        uses: actions/cache@v1
-        with:
-          path: /var/lib/docker
-          key: ${{ runner.os }}-docker-images
-      - name: build and deploy running build script in docker container
-        # Secret required: CLOUDSMITH_API_KEY 
-        # From: https://cloudsmith.io/user/settings/api/ - Not yours, but ci@automodality.com user.
-        # To: https://github.com/AutoModality/chilitags/settings/secrets 
-        run: docker run -v $GITHUB_WORKSPACE:/root --env CLOUDSMITH_API_KEY=${{ secrets.CLOUDSMITH_API_KEY }} --env USER=$GITHUB_ACTOR ros:kinetic-perception /root/package.sh
+      - name: package
+        uses: ./.github/actions/package@local
+      
          
