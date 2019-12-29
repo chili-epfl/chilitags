@@ -2,6 +2,7 @@
 
 set -e # fail on error
 
+apt-get -y update
 apt-get -y install libopencv-dev
 
 pwd
