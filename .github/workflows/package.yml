@@ -1,4 +1,4 @@
-name: Package
+name: Developer Package
 
 on:
   push:
