@@ -8,7 +8,7 @@ jobs:
       - name: package
         uses: ./.github/actions/package@local
         with:
-          author: $GITHUB_ACTOR
-          github_ref: $GITHUB_REF
+          author: "$GITHUB_ACTOR"
+          github_ref: "$GITHUB_REF"
 
          

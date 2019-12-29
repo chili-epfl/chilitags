@@ -7,7 +7,7 @@ author=$1
 github_ref=$2
 
 echo "author=$author"
-echo "github_ref="$github_ref"
+echo "github_ref=$github_ref"
 
 source /opt/ros/kinetic/setup.bash
 
