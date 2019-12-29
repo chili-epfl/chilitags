@@ -6,5 +6,6 @@ pwd
 ls
 mkdir build
 cd build
+pwd
 cmake ..
 make
