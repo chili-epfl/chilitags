@@ -5,7 +5,9 @@ set -e # fail on error
 pwd
 ls
 ls /opt/ros/kinetic/bin
-opencv_version
+whoami
+which opencv_version
+
 
 mkdir build
 cd build
