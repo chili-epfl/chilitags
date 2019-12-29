@@ -11,9 +11,4 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: make
-        uses: docker://ros:kinetic-perception        
-        run: |
-          mkdir build
-          cd build 
-          cmake ..
-          make
+        uses: actions/action-make-ros-kinetic-perception
