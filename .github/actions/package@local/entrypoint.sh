@@ -26,4 +26,4 @@ fakeroot debian/rules binary
 
 artifact_filename=$(ls .. | grep $project_name)
 
-echo ::set-output name=artifact_path::$artifact_filename
+echo ::set-output name=artifact-path::$artifact_filename
