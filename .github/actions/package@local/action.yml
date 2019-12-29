@@ -8,6 +8,13 @@ inputs:
   github-ref: 
     description: 'The branch or tag reference'
     required: true
+outputs:
+  artifact-path:
+    description: 'The file path where the artifact can be found'
+
 runs:
   using: 'docker'
   image: 'Dockerfile'
+  args:
+    - ${{ inputs.author }}
+    - ${{ inputs.github-ref }}

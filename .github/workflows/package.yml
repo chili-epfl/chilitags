@@ -6,9 +6,11 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: package
+        id: package
         uses: ./.github/actions/package@local
         with:
           author: "$GITHUB_ACTOR"
-          github_ref: "$GITHUB_REF"
-
+          github-ref: "$GITHUB_REF"
+      - name: The generated package
+        run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
          

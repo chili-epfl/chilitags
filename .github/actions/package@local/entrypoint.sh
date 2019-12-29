@@ -23,3 +23,7 @@ echo "chilitags (0.0.0-12345) unstable; urgency=low" > debian/changelog
 
 fakeroot debian/rules clean
 fakeroot debian/rules binary
+
+artifact_filename=$(ls .. | grep $project_name)
+
+echo ::set-output name=artifact_path::$artifact_filename
