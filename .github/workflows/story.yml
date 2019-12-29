@@ -11,4 +11,4 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: make
-        uses: actions/action-make-ros-kinetic-perception
+        uses: .github/actions/action-make-ros-kinetic-perception@
