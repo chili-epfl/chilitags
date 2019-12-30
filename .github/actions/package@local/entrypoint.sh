@@ -23,7 +23,8 @@ echo "chilitags ($version) unstable; urgency=low" > debian/changelog
 fakeroot debian/rules clean #ensures no residue
 fakeroot debian/rules binary #performs the package
 
+# the file is generated in the home dir, but we are in the build dir still. move it to staging for sharing
 artifact_filename=$(ls .. | grep $project_name) #the package is generated in base directory
 artifact_path="$staging_dir/$artifact_filename"
-mv $artifact_filename $artifact_path
+mv "../$artifact_filename $artifact_path"
 echo ::set-output name=artifact-path::$artifact_path  #action syntax for passing out variables
