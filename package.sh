@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/bin/bash
 
 # Makes the package, then generates the binary package and deploys it to the repository
 # Run this script in a docker container by mapping your source directory to it's root folder

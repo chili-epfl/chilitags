@@ -14,6 +14,6 @@ jobs:
           staging-dir: '${{ github.workspace }}'
       - name: The generated package
         run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
-      - name: The actual file
-        run: pwd && ls -l 
+      - name: The file details
+        run: ls -l ${{ steps.package.outputs.artifact-path }}
          

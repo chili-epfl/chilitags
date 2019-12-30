@@ -25,4 +25,5 @@ fakeroot debian/rules binary #performs the package
 
 artifact_filename=$(ls .. | grep $project_name) #the package is generated in base directory
 artifact_path="$staging_dir/$artifact_filename"
+mv $artifact_filename $artifact_path
 echo ::set-output name=artifact-path::$artifact_path  #action syntax for passing out variables
