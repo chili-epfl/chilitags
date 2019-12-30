@@ -11,6 +11,7 @@ jobs:
         with:
           author: ${{ github.actor }}
           github-ref: ${{ github.ref }}
+          staging-dir: '${{ github.workspace }}'
       - name: The generated package
         run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
       - name: The actual file
