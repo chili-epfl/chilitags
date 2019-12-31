@@ -9,7 +9,7 @@
 set -e # fail on error
 
 # the git root is always mapped to the docker's /root 
-cd ~
+cd /root
 
 #see action.yml for inputs
 
@@ -20,7 +20,6 @@ github_ref=$2 # the branch, tag or pull request path
 # see also https://medium.com/@fonseka.live/sharing-data-in-github-actions-a9841a9a6f42
 staging_dir=${1:-'./build'} 
 
-source /opt/ros/kinetic/setup.bash # to find opencv
 
 apt-get -y update
 apt-get -y install javahelper # required for debhelper

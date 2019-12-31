@@ -2,9 +2,7 @@
 
 set -e # fail on error
 
-cd ~
-
-source /opt/ros/kinetic/setup.bash
+cd /root
 
 rm -rf build #clean the build
 mkdir build
