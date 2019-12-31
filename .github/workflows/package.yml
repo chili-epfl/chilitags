@@ -5,15 +5,23 @@ jobs:
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
-      - name: package
+      - name: Package
         id: package
         uses: ./.github/actions/package@local
         with:
           author: ${{ github.actor }}
           github-ref: ${{ github.ref }}
-          staging-dir: '${{ github.workspace }}'
       - name: The generated package
         run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
-      - name: The file details
-        run: ls -l ${{ steps.package.outputs.artifact-path }}
-         
+      - name: Deploy
+        id: deploy
+        uses: AutoModality/action-cloudsmith@0.2.0
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: 'push'
+          format: 'deb'
+          owner: 'automodality'
+          repo: 'trial'
+          distro: 'ubuntu'
+          release: 'xenial'
+          file: '${{ steps.package.outputs.artifact-path }}'

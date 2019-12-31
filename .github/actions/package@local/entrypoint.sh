@@ -6,7 +6,10 @@ set -e # fail on error
 
 author=$1 # who triggered the build
 github_ref=$2 # the branch, tag or pull request path
-staging_dir=$3 # the directory where the artifact should be copied
+
+# the directory where the artifact should be copied
+# see also https://medium.com/@fonseka.live/sharing-data-in-github-actions-a9841a9a6f42
+staging_dir=/github/home  
 
 source /opt/ros/kinetic/setup.bash # to find opencv
 
@@ -15,7 +18,7 @@ apt-get -y install javahelper # required for debhelper
 
 project_name="$(basename $(git config remote.origin.url |sed "s/\.git$//"))"
 timestamp=$(date +%Y%m%d%H%M%S)
-build_number=$(echo $github_ref | cut -d'/' -f3) # refs/pull/2/merge is actuall pr# until build numbers are available
+build_number=$(echo $github_ref | cut -d'/' -f3) # refs/pull/2/merge is actually pr# until build numbers are available
 version="$build_number-$author-$timestamp"
 echo "chilitags ($version) unstable; urgency=low" > debian/changelog
 
@@ -23,8 +26,8 @@ echo "chilitags ($version) unstable; urgency=low" > debian/changelog
 fakeroot debian/rules clean #ensures no residue
 fakeroot debian/rules binary #performs the package
 
-# the file is generated in the home dir, but we are in the build dir still. move it to staging for sharing
 artifact_filename=$(ls .. | grep $project_name) #the package is generated in base directory
 artifact_path="$staging_dir/$artifact_filename"
-mv "../$artifact_filename" $artifact_path
-echo ::set-output name=artifact-path::$artifact_path  #action syntax for passing out variables
+
+echo ::set-output name=artifact-path::$artifact_path  #reference available to other actions
+
