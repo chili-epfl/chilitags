@@ -21,7 +21,7 @@ jobs:
           command: 'push'
           format: 'deb'
           owner: 'automodality'
-          repo: 'trial'
+          repo: 'dev'
           distro: 'ubuntu'
           release: 'xenial'
           file: '${{ steps.package.outputs.artifact-path }}'
