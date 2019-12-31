@@ -2,7 +2,7 @@
 
 Chilitags is not packaged so AutoModality packages our fork for easy and quick builds.
 
-![Package Workflow Status](https://github.com/AutoModality/chilitags/workflows/Development%20Package/badge.svg)
+[![Package Workflow Status](https://github.com/AutoModality/chilitags/workflows/Development%20Package/badge.svg)](https://github.com/AutoModality/chilitags/actions?query=workflow%3A%22Development+Package%22)
 
 [![Latest Version @ Cloudsmith](https://api-prd.cloudsmith.io/badges/version/automodality/dev/deb/chilitags/latest/d=ubuntu%252Fxenial;t=1/?render=true&badge_token=gAAAAABeCtIpEQj1ME47SUCAsKR-PfhDmeaDVwD07FpG69sqUpxPR-TpVSRMu9t-SgIEvoQlGOMoOihctK2VdLAk5Av_8wZ7qYNyYF0DrMqEraFkkBOd_g4%3D)](https://cloudsmith.io/~automodality/repos/dev/packages/detail/deb/chilitags/latest/d=ubuntu%252Fxenial;t=1/)
 
