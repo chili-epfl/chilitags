@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Makes and Creates a debian package
+# This script works in a local docker container or with it's Github action.yml
+# ./build directory is cleaned every time
+# the version generated is only for development builds currently
+
+
 set -e # fail on error
 
 # the git root is always mapped to the docker's /root 
