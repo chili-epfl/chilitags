@@ -2,7 +2,7 @@
 
 set -e # fail on error
 
-cd /root
+pwd
 
 rm -rf build #clean the build
 mkdir build
