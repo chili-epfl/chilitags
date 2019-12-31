@@ -8,6 +8,10 @@ inputs:
   github-ref: 
     description: 'The branch or tag reference (refs/pull/2/merge)'
     required: true
+  staging-dir: 
+    description: 'The directory where the artifact can be found by other actions.'
+    required: true
+    default: '/github/home'
 outputs:
   artifact-path:
     description: 'The file path where the artifact can be found'
@@ -18,3 +22,4 @@ runs:
   args: # see entrypoint.sh for the recipient of these
     - ${{ inputs.author }}
     - ${{ inputs.github-ref }}
+    - ${{ inputs.staging-dir }}
