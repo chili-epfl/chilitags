@@ -9,7 +9,10 @@
 set -e # fail on error
 
 # the git root is always mapped to the docker's /root 
-cd /root
+cd /github/workspace
+
+source /opt/ros/kinetic/setup.bash
+
 
 #see action.yml for inputs
 

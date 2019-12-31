@@ -2,7 +2,9 @@
 
 set -e # fail on error
 
-pwd
+cd /github/workspace
+
+source /opt/ros/kinetic/setup.bash
 
 rm -rf build #clean the build
 mkdir build

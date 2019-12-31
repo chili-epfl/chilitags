@@ -37,7 +37,7 @@ The commands maps your filesystem to the docker's root so the build directory wi
 Compiles and tests.
 
 ```
-docker run -it -v ~/am/github/chilitags/:/root ros:kinetic-perception /root/.github/actions/make@local/entrypoint.sh
+docker run -it -v ~/am/github/chilitags/:/github/workspace ros:kinetic-perception /github/workspace/.github/actions/make@local/entrypoint.sh
 ```
 
 ## Package
@@ -45,7 +45,7 @@ docker run -it -v ~/am/github/chilitags/:/root ros:kinetic-perception /root/.git
 Generates a package for local testing. The package can be found in the build directory.
 
 ```
-docker run -it -v ~/am/github/chilitags/:/root ros:kinetic-perception /root/.github/actions/package@local/entrypoint.sh
+docker run -it -v ~/am/github/chilitags/:/github/workspace ros:kinetic-perception /github/workspace/.github/actions/package@local/entrypoint.sh
 ```
 
 
