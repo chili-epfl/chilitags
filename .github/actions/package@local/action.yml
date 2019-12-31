@@ -1,0 +1,20 @@
+# see package.yml for usage 
+name: 'Package on Ros Kinetic Perception'
+description: 'Debian packaging on ros:kinetic-perception'
+inputs:
+  author:  
+    description: 'Who triggered the action'
+    required: true
+  github-ref: 
+    description: 'The branch or tag reference (refs/pull/2/merge)'
+    required: true
+outputs:
+  artifact-path:
+    description: 'The file path where the artifact can be found'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args: # see entrypoint.sh for the recipient of these
+    - ${{ inputs.author }}
+    - ${{ inputs.github-ref }}

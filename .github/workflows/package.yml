@@ -1,25 +1,27 @@
-name: Package
-
-on: [push]
-
+name: Development Package
+on: pull_request
 jobs:
-  build:
+  package:
     runs-on: ubuntu-16.04
-
     steps:
       - uses: actions/checkout@v1
-      - name: where am i?
-        run: pwd && ls
-      - name: show docker info to see if cache is working
-        run: docker info
-      - name: Cache docker images
-        uses: actions/cache@v1
+      - name: Package
+        id: package
+        uses: ./.github/actions/package@local
         with:
-          path: /var/lib/docker
-          key: ${{ runner.os }}-docker-images
-      - name: build and deploy running build script in docker container
-        # Secret required: CLOUDSMITH_API_KEY 
-        # From: https://cloudsmith.io/user/settings/api/ - Not yours, but ci@automodality.com user.
-        # To: https://github.com/AutoModality/chilitags/settings/secrets 
-        run: docker run -v /home/runner/work/chilitags/chilitags:/root --env CLOUDSMITH_API_KEY=${{ secrets.CLOUDSMITH_API_KEY }} ros:kinetic-perception /root/package.sh
-         
+          author: ${{ github.actor }}
+          github-ref: ${{ github.ref }}
+      - name: The generated package
+        run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
+      - name: Deploy
+        id: deploy
+        uses: AutoModality/action-cloudsmith@0.2.0
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: 'push'
+          format: 'deb'
+          owner: 'automodality'
+          repo: 'dev'
+          distro: 'ubuntu'
+          release: 'xenial'
+          file: '${{ steps.package.outputs.artifact-path }}'
