@@ -21,7 +21,7 @@ github_ref=$2 # the branch, tag or pull request path
 
 # the directory where the artifact should be copied so other actions can access
 # see also https://medium.com/@fonseka.live/sharing-data-in-github-actions-a9841a9a6f42
-staging_dir=${1:-'./build'} 
+staging_dir=${3:-'./build'} 
 
 
 apt-get -y update
