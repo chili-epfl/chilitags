@@ -2,14 +2,17 @@
 
 set -e # fail on error
 
+# the git root is always mapped to the docker's /root 
+cd ~
+
 #see action.yml for inputs
 
-author=$1 # who triggered the build
+author=${1:-$(whoami)} # who triggered the build
 github_ref=$2 # the branch, tag or pull request path
 
-# the directory where the artifact should be copied
+# the directory where the artifact should be copied so other actions can access
 # see also https://medium.com/@fonseka.live/sharing-data-in-github-actions-a9841a9a6f42
-staging_dir=/github/home  
+staging_dir=${1:-'./build'} 
 
 source /opt/ros/kinetic/setup.bash # to find opencv
 
@@ -19,6 +22,11 @@ apt-get -y install javahelper # required for debhelper
 project_name="$(basename $(git config remote.origin.url |sed "s/\.git$//"))"
 timestamp=$(date +%Y%m%d%H%M%S)
 build_number=$(echo $github_ref | cut -d'/' -f3) # refs/pull/2/merge is actually pr# until build numbers are available
+
+if [[ -z $build_number ]]; then
+    build_number=1
+fi
+
 version="$build_number-$author-$timestamp"
 echo "chilitags ($version) unstable; urgency=low" > debian/changelog
 
