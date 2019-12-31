@@ -30,7 +30,7 @@ Once the package has been tested it is ready to be merged into the mainline `mas
 
 Run the same build scripts locally that Github Actions runs in the cloud. Use docker to ramp up a new container for a clean build every time.
 
-The commands maps your filesystem to the docker's root so the build directory will be generated on your filesystem.
+The commands maps your filesystem to the docker's filesystem so the build directory will be generated on your filesystem for easy access. `/github/workspace` is the working directory for Github actions.
 
 ## Make
 
@@ -48,5 +48,6 @@ Generates a package for local testing. The package can be found in the build dir
 docker run -it -v ~/am/github/chilitags/:/github/workspace ros:kinetic-perception /github/workspace/.github/actions/package@local/entrypoint.sh
 ```
 
+A developer could optionally deploy a package to Cloudsmith if such a situation is necessary, although it is recommended to just let Github Actions do the deployment by making a pull request.
 
 
