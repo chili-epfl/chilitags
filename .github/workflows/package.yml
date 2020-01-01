@@ -1,4 +1,4 @@
-name: Development Package
+name: Prepare for Mainline
 on: 
   pull_request:
     branches:
