@@ -1,0 +1,44 @@
+name: Development Package
+on: 
+  push:
+    branches:
+      - master
+jobs:
+  package:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v2
+        id: semantic   # `id` for output variables
+        with:
+          branch: master
+          semantic_version: 15.13.28
+          extra_plugins: |
+            @semantic-release/git
+            @semantic-release/changelog@3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Package
+        if: steps.semantic.outputs.new_release_published == 'true'
+        id: package
+        uses: ./.github/actions/package@local
+        with:
+          author: ${{ github.actor }}
+          github-ref: ${{ github.ref }}
+      - name: The generated package
+        run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
+      - name: Deploy
+        if: steps.semantic.outputs.new_release_published == 'true'
+        id: deploy
+        uses: AutoModality/action-cloudsmith@0.2.0
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: 'push'
+          format: 'deb'
+          owner: 'automodality'
+          repo: 'trial'
+          distro: 'ubuntu'
+          release: 'xenial'
+          file: '${{ steps.package.outputs.artifact-path }}'
