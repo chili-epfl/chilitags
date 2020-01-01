@@ -17,7 +17,7 @@ jobs:
         id: package
         uses: ./.github/actions/package@local
         with:
-          version: ${{ steps.buildnumber.outputs.build_number }}
+          version: ${{ github.event.number }}.${{ github.event.pull_request.head.ref }}.${{ steps.buildnumber.outputs.build_number }}
       - name: The generated package
         run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
       - name: Deploy

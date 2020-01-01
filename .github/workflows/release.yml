@@ -1,4 +1,4 @@
-name: Development Package
+name: Release
 on: 
   push:
     branches:
@@ -12,21 +12,18 @@ jobs:
         uses: cycjimmy/semantic-release-action@v2
         id: semantic   # `id` for output variables
         with:
-          branch: master
-          semantic_version: 15.13.28
+          semantic_version: 15.14.0
           extra_plugins: |
             @semantic-release/git
             @semantic-release/changelog@3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Package
         if: steps.semantic.outputs.new_release_published == 'true'
         id: package
         uses: ./.github/actions/package@local
         with:
-          author: ${{ github.actor }}
-          github-ref: ${{ github.ref }}
+          version: ${{ steps.semantic.outputs.new_release_version }}
       - name: The generated package
         run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
       - name: Deploy
@@ -38,7 +35,7 @@ jobs:
           command: 'push'
           format: 'deb'
           owner: 'automodality'
-          repo: 'trial'
+          repo: 'release'
           distro: 'ubuntu'
           release: 'xenial'
           file: '${{ steps.package.outputs.artifact-path }}'
