@@ -26,6 +26,8 @@ The package should be tested with other systems prior to merging the pull reques
 
 Once the package has been tested it is ready to be merged into the mainline `master` branch where it will be released.
 
+Releases use [Semantic Release](https://github.com/semantic-release) strategy. 
+
 # Local Development 
 
 Run the same build scripts locally that Github Actions runs in the cloud. Use docker to ramp up a new container for a clean build every time.
