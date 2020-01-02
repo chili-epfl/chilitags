@@ -10,7 +10,7 @@ You must work in a story branch named after your JIRA issue(XX-###). Let Github 
 
 Runs every `push` to your story branch to compile and test your code. 
 
-![Make Workflow Status](https://github.com/AutoModality/chilitags/workflows/Story/badge.svg)
+[![Make Workflow Status](https://github.com/AutoModality/chilitags/workflows/Story%20Development/badge.svg)](https://github.com/AutoModality/chilitags/actions?query=workflow%3A%22Story+Development%22)
 
 ## Package a Story
 
@@ -18,7 +18,7 @@ Runs only in a `pull_request` or when a pull_request is updated with a `push`.  
 
 The package should be tested with other systems prior to merging the pull request. 
 
-[![Package Workflow Status](https://github.com/AutoModality/chilitags/workflows/Development%20Package/badge.svg)](https://github.com/AutoModality/chilitags/actions?query=workflow%3A%22Development+Package%22)
+[![Package Workflow Status](https://github.com/AutoModality/chilitags/workflows/Release%20Candidate/badge.svg)](https://github.com/AutoModality/chilitags/actions?query=workflow%3A%22Release+Candidate%22)
 
 [![Latest Version @ Cloudsmith](https://api-prd.cloudsmith.io/badges/version/automodality/dev/deb/chilitags/latest/d=ubuntu%252Fxenial;t=1/?render=true&badge_token=gAAAAABeCtIpEQj1ME47SUCAsKR-PfhDmeaDVwD07FpG69sqUpxPR-TpVSRMu9t-SgIEvoQlGOMoOihctK2VdLAk5Av_8wZ7qYNyYF0DrMqEraFkkBOd_g4%3D)](https://cloudsmith.io/~automodality/repos/dev/packages/detail/deb/chilitags/latest/d=ubuntu%252Fxenial;t=1/)
 
@@ -27,6 +27,10 @@ The package should be tested with other systems prior to merging the pull reques
 Once the package has been tested it is ready to be merged into the mainline `master` branch where it will be released.
 
 Releases use [Semantic Release](https://github.com/semantic-release) strategy. 
+
+[![Release Workflow Status](https://github.com/AutoModality/chilitags/workflows/Release/badge.svg)](https://github.com/AutoModality/chilitags/actions?query=workflow%3ARelease)
+
+[![Latest Version @ Cloudsmith](https://api-prd.cloudsmith.io/badges/version/automodality/release/deb/chilitags/latest/d=ubuntu%252Fxenial;t=1/?render=true&badge_token=gAAAAABeDSC-Zfya6gw_oay8o-YgaWW8pBRh-gU5IwMg5GqgoP3DysnGd3fnD0ESoC37cKMp-d-7JMhmH8cDZjbK_uH5ndPUUYELJEs6Rq7xS3t4tZjdE7U%3D)](https://cloudsmith.io/~automodality/repos/release/packages/detail/deb/chilitags/latest/d=ubuntu%252Fxenial;t=1/)
 
 # Local Development 
 
