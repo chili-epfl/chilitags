@@ -1,6 +1,0 @@
-# action.yml
-name: 'Make on Ros Kinetic Perception'
-description: 'Standard cmake and make on ros:kinetic-perception'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'
