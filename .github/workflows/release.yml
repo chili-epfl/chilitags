@@ -21,7 +21,7 @@ jobs:
       - name: Package
         if: steps.semantic.outputs.new_release_published == 'true'
         id: package
-        uses: ./.github/actions/package@local
+        uses: AutoModality/action-package-debian-ros@v1.0.0
         with:
           version: ${{ steps.semantic.outputs.new_release_version }}
       - name: The generated package
