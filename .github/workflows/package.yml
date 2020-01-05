@@ -15,9 +15,11 @@ jobs:
           token: ${{secrets.github_token}}
       - name: Package
         id: package
-        uses: ./.github/actions/package@local
+        uses: AutoModality/action-package-debian-ros@v1.1.0
         with:
-          version: ${{ github.event.number }}.${{ github.event.pull_request.head.ref }}.${{ steps.buildnumber.outputs.build_number }}
+          branch: ${{ github.event.pull_request.head.ref }}
+          pull-request-number: ${{ github.event.number }}
+          build-number: ${{ steps.buildnumber.outputs.build_number }}
       - name: The generated package
         run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
       - name: Deploy
