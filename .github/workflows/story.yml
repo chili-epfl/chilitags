@@ -10,6 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: make
-        uses: AutoModality/action-make-ros@BB-776/common-make
+        uses: AutoModality/action-make-ros@v1.0.0
 
 
