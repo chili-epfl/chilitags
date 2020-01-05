@@ -2,14 +2,14 @@ name: Story Development
 
 on:
   push:
-    branches:    
-    - '[A-Z]+-[0-9]+'
-    - '[A-Z]+-[0-9]+/*'
+    branches-ignore:
+      - master    
 jobs:
   build:
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
       - name: make
-        uses: ./.github/actions/make@local
+        uses: AutoModality/action-make-ros@v1.0.0
+
 
