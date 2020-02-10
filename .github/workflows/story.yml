@@ -10,6 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: make
-        uses: AutoModality/action-make-ros@BB-800/melodic
+        uses: AutoModality/action-package-debian-ros@BB-800/melodic
 
 
