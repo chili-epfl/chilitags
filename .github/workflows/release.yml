@@ -5,7 +5,7 @@ on:
       - master
 jobs:
   package:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
       - name: Semantic Release
@@ -21,7 +21,7 @@ jobs:
       - name: Package
         if: steps.semantic.outputs.new_release_published == 'true'
         id: package
-        uses: AutoModality/action-package-debian-ros@v1.1.0
+        uses: AutoModality/action-package-debian-ros@BB-800/melodic
         with:
           version: ${{ steps.semantic.outputs.new_release_version }}
       - name: The generated package
@@ -37,5 +37,5 @@ jobs:
           owner: 'automodality'
           repo: 'release'
           distro: 'ubuntu'
-          release: 'xenial'
+          release: 'bionic'
           file: '${{ steps.package.outputs.artifact-path }}'

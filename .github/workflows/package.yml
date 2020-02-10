@@ -5,21 +5,16 @@ on:
       - master
 jobs:
   package:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - name: Generate build number
-        id: buildnumber
-        uses: einaregilsson/build-number@v2 
-        with:
-          token: ${{secrets.github_token}}
       - name: Package
         id: package
-        uses: AutoModality/action-package-debian-ros@v1.1.0
+        uses: AutoModality/action-package-debian-ros@BB-800/melodic
         with:
           branch: ${{ github.event.pull_request.head.ref }}
           pull-request-number: ${{ github.event.number }}
-          build-number: ${{ steps.buildnumber.outputs.build_number }}
+          build-number: ${{ github.run_number }}
       - name: The generated package
         run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
       - name: Deploy
@@ -32,5 +27,5 @@ jobs:
           owner: 'automodality'
           repo: 'dev'
           distro: 'ubuntu'
-          release: 'xenial'
+          release: 'bionic'
           file: '${{ steps.package.outputs.artifact-path }}'
