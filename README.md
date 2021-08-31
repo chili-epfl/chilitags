@@ -23,8 +23,6 @@ interfaces](http://youtu.be/F_gSwHZ2u1Y).
 Overview
 --------
 
-[![Build Status](https://travis-ci.org/chili-epfl/chilitags.svg?branch=master)](https://travis-ci.org/chili-epfl/chilitags)
-
 ### Features
 
 Chilitags features two main functionalities:
@@ -135,7 +133,8 @@ following commands:
 
 Once the software is up and running, the tags can be generated using the
 `creator` executable in `tools`.  We also [generated sets of
-tags](http://chili.epfl.ch/files/content/sites/chili/files/files/tags.zip) with various settings.
+tags](https://github.com/chili-epfl/chilitags/releases/download/2.0.0/tags.zip)
+with various settings.
 
 The `README` file accompanying `creator` gives important guidelines on how to
 design and print chilitags.  It also explains the usage of `creator`.
