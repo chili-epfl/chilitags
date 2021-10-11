@@ -1,0 +1,10 @@
+#ALTabletService
+ALTabletService.onTouch:tabletTouched
+
+#Package Manager
+PackageManager._onPackageInstalled:packageInstalled
+PackageManager._onPackageRemoved:packageRemoved
+
+#ALStore
+ALStore.systemImageDowloaded:ALStore/SystemImageDownloaded
+ALStore.updated:ALStore/Updated

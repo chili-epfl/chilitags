@@ -1,8 +1,9 @@
 ################################################################################
 #   Copyright 2013-2014 EPFL                                                   #
 #   Copyright 2013-2014 Quentin Bonnard                                        #
+#   Copyright 2016 Bahar Irfan                                                 #
 #                                                                              #
-#   This file is part of chilitags.                                            #
+#   This file was modified to implement Chilitags on NAO robot.                #
 #                                                                              #
 #   Chilitags is free software: you can redistribute it and/or modify          #
 #   it under the terms of the Lesser GNU General Public License as             #
@@ -26,7 +27,7 @@ set(CPACK_PACKAGE_VERSION_MAJOR "2")
 set(CPACK_PACKAGE_VERSION_MINOR "0")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 
-add_definitions(-std=c++11)
+add_definitions(-std=gnu++11)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 find_package(OpenCV REQUIRED )
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -37,6 +38,7 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 ##########################################
 
 option(WITH_SAMPLES                     "Build demos" OFF)
+option(WITH_NAOMODULE                   "Build module for NAO" OFF)
 option(WITH_TESTS                       "Build tests" OFF)
 option(WITH_JNI_BINDINGS                "Build JNI bindings compatible with ordinary Java and Android" OFF)
 option(WITH_INVERTED_TAGS               "Support for 'inverted' tags" OFF)
@@ -101,6 +103,10 @@ endif()
 
 if (WITH_SAMPLES)
     add_subdirectory(samples)
+endif()
+
+if (WITH_NAOMODULE)
+    add_subdirectory(naoModule)
 endif()
 
 if(WITH_TESTS)
