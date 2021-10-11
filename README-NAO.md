@@ -1,5 +1,4 @@
 # ChilitagsModule: Chilitags for NAO Robot
-=====================================================
 
 ChilitagsModule implements Chilitags (Bonnard et al., 2013) on a NAO robot (SoftBank Robotics Europe, France). Chilitags are 2D fiducial markers to detect objects and determine their positions. ChilitagsModule was tested on NAOqi 2.1 and 2.4 on a NAO robot. While Pepper robot (SoftBank Robotics Europe, France) also has a NAOqi operating system, ChilitagsModule was not tested on it.
  
