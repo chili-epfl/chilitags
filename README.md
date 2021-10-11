@@ -154,6 +154,9 @@ in its source code.
 Specific instructions for building Chilitags for Android can be found under 
 [README-ANDROID.md](README-ANDROID.md).
 
+Specific instructions for building Chilitags for NAO robot can be found under 
+[README-NAO.md](README-NAO.md), which was developed by B. Irfan and S. Lemaignan.
+
 ### Coding style
 
 This repository uses `uncrustify`, a tool that does automatic code formatting based on a predefined configuration defined in `uncrustify.cfg`.
